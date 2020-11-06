@@ -1,0 +1,13 @@
+/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /Users/enricoclemente/CLionProjects/TCPClient
+CMake Warning at /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.15/Modules/FindBoost.cmake:1144 (message):
+  New Boost version may have incorrect or missing dependencies and imported
+  targets
+Call Stack (most recent call first):
+  /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.15/Modules/FindBoost.cmake:1266 (_Boost_COMPONENT_DEPENDENCIES)
+  /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.15/Modules/FindBoost.cmake:1904 (_Boost_MISSING_DEPENDENCIES)
+  CMakeLists.txt:10 (find_package)
+
+
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /Users/enricoclemente/CLionProjects/TCPClient/cmake-build-debug

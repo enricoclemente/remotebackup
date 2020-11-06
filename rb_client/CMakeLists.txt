@@ -1,15 +1,16 @@
-cmake_minimum_required(VERSION 3.0.0)
-PROJECT(rb_client)
+cmake_minimum_required(VERSION 3.15)
+project(TCPClient)
 
-SET(Boost_USE_STATIC_LIBS OFF)
-SET(Boost_USE_MULTITHREAD ON)
-FIND_PACKAGE(Boost 1.42.0 REQUIRED COMPONENTS system thread regex)
-IF(Boost_FOUND)
-  INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-  LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
-ENDIF(Boost_FOUND)
+set(CMAKE_CXX_STANDARD 17)
 
-SET(USED_LIBS ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIBRARY})
+set(Boost_USE_STATIC_LIBS OFF) #enable dynamic linking
+set(Boost_INCLUDE_DIR /Users/enricoclemente/CLionProjects/boost/boost_1_73_0)
+set(Boost_LIBRARIES /Users/enricoclemente/CLionProjects/boost/boost_1_73_0/libs)
 
-ADD_EXECUTABLE(rb_client main.cpp)
-TARGET_LINK_LIBRARIES(rb_client ${USED_LIBS})
+find_package(Boost REQUIRED COMPONENTS filesystem)
+
+include_directories(${Boost_INCLUDE_DIR})
+
+add_executable(TCPClient main.cpp FileWatcher.cpp FileWatcher.h OutputQueue.cpp OutputQueue.h)
+
+target_link_libraries(TCPClient ${Boost_LIBRARIES})

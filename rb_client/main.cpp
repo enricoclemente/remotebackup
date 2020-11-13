@@ -32,14 +32,37 @@ class Buffer{
 
 public:
 
+    std::pair<std::vector<char>, size_t> read_file_bytes(const std::string &file_path)
+    {
+        std::ifstream fl(file_path);
+        fl.seekg( 0, std::ios::end );
+
+        std::size_t file_len = fl.tellg();
+
+        std::vector<char> bytes(file_len);
+        fl.seekg(0, std::ios::beg);
+
+        if (file_len)
+            fl.read(&bytes[0], file_len);
+
+        fl.close();
+        return std::pair<std::vector<char>, size_t>(std::move(bytes), file_len);
+    }
+
     void write_file(std::string comand, std::string file_path) {
         std::lock_guard lg(bufm);
         std::ostream output(&buf);
 
-        output<< comand << "\n" << file_path << "\n";
+        auto file = std::move(read_file_bytes(file_path));
+
+
+        output<< comand << ": " << file_path << " Lenght: " << file.second << "\n";
+
+        output.write(&file.first[0], file.second);
+
     }
 
-    std::string read() {
+    std::string read_header() {
         std::lock_guard lg(bufm);
         std::istream input(&buf);
 
@@ -47,6 +70,16 @@ public:
         std::getline(input, message);
 
         return message;
+    }
+
+    std::vector<char> read_file(std::size_t file_len) {
+        std::lock_guard lg(bufm);
+        std::istream input(&buf);
+
+        std::vector<char> file(file_len);
+        input.read(&file[0], file_len);
+
+        return file;
     }
 };
 
@@ -92,6 +125,7 @@ int main() {
         });
     });
 
+
     // Thread for sending files to the server
     for(int i=0; i<3; i++) {
         sending_threads.emplace_back([&oq, &buf, i, running](){
@@ -105,11 +139,9 @@ int main() {
                 buf.write_file(arguments[0], arguments[1]);
                 //myprint("I'm going to " + operation);
 
-
                 //int queue_size = oq.size();
                 //myprint("Queue size: " + std::to_string(queue_size));
                 // altrimenti non faccio niente
-
             }
         });
     }
@@ -119,8 +151,21 @@ int main() {
     std::thread receiving_thread([&buf, running](){
         while(running) {
             std::this_thread::sleep_for(std::chrono::milliseconds(10000));
-            std::string message = buf.read();
-            if(!message.empty())   myprint("I just received: " + message);
+            std::string message = buf.read_header();
+            if(!message.empty()){
+                myprint("I just received: " + message);
+                std::vector<std::string> header = split_string(message, " ");
+                auto file = buf.read_file(std::stoi(header[3], nullptr, 10));
+
+
+                // fake write on server
+                std::vector<std::string> path = split_string(header[1], "/");
+                ofstream fout("/Users/enricoclemente/Desktop/Provastream/" + path[4] , std::ios::out | std::ios::binary);
+                fout.write((char*)&file[0], file.size() * sizeof(char));
+                fout.close();
+
+
+            }
         }
     });
 

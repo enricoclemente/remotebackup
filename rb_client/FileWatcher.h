@@ -71,22 +71,7 @@ public:
         }
     }
 
-    std::vector<char> read_file_bytes(const std::string &file_path)
-    {
-        std::ifstream fl(file_path);
-        fl.seekg( 0, std::ios::end );
 
-        size_t file_len = fl.tellg();
-
-        std::vector<char> bytes(file_len);
-        fl.seekg(0, std::ios::beg);
-
-        if (file_len)
-            fl.read(&bytes[0], file_len);
-
-        fl.close();
-        return std::move(bytes);
-    }
 };
 
 #endif //TCPCLIENT_FILEWATCHER_H

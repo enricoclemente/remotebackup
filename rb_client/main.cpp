@@ -6,6 +6,8 @@
 #include <mutex>
 
 #include <boost/asio.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
 
 using namespace boost;
 
@@ -16,6 +18,12 @@ void myprint(const std::string& output) {
     std::cout<<output<<std::endl;
 }
 
+std::vector<std::string> split_string(const std::string& str, const std::string& delimitator) {
+    std::vector<std::string> container;
+    split(container, str, is_any_of(delimitator));
+
+    return container;
+}
 
 // Fake TCP stream
 class Buffer{
@@ -24,11 +32,11 @@ class Buffer{
 
 public:
 
-    void write(std::string message) {
+    void write_file(std::string comand, std::string file_path) {
         std::lock_guard lg(bufm);
         std::ostream output(&buf);
 
-        output<< message << "\n";
+        output<< comand << "\n" << file_path << "\n";
     }
 
     std::string read() {
@@ -56,7 +64,7 @@ int main() {
 
     // File system watcher thread which fill every 5s the output queue if any change
     std::thread system([&fw, &oq](){
-        fw.start([&oq](std::string path_to_watch, FileStatus status) -> void{
+        fw.start_monitoring([&oq](std::string path_to_watch, FileStatus status) -> void{
             if(!is_regular_file(path_to_watch) && status != FileStatus::erased ) {
                 return;
             }
@@ -93,7 +101,8 @@ int main() {
 
                 // probe del singolo file
                 // se si mando il file.
-                buf.write(operation);
+                std::vector<std::string> arguments = split_string(operation, " ");
+                buf.write_file(arguments[0], arguments[1]);
                 //myprint("I'm going to " + operation);
 
 

@@ -43,10 +43,10 @@ RM = /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/enricoclemente/CLionProjects/TCPClient
+CMAKE_SOURCE_DIR = "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client"
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/enricoclemente/CLionProjects/TCPClient/cmake-build-debug
+CMAKE_BINARY_DIR = "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug"
 
 # Include any dependencies generated for this target.
 include CMakeFiles/TCPClient.dir/depend.make
@@ -59,42 +59,42 @@ include CMakeFiles/TCPClient.dir/flags.make
 
 CMakeFiles/TCPClient.dir/main.cpp.o: CMakeFiles/TCPClient.dir/flags.make
 CMakeFiles/TCPClient.dir/main.cpp.o: ../main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/enricoclemente/CLionProjects/TCPClient/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/TCPClient.dir/main.cpp.o"
-	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/TCPClient.dir/main.cpp.o -c /Users/enricoclemente/CLionProjects/TCPClient/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/TCPClient.dir/main.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/TCPClient.dir/main.cpp.o -c "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/main.cpp"
 
 CMakeFiles/TCPClient.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/TCPClient.dir/main.cpp.i"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/enricoclemente/CLionProjects/TCPClient/main.cpp > CMakeFiles/TCPClient.dir/main.cpp.i
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/main.cpp" > CMakeFiles/TCPClient.dir/main.cpp.i
 
 CMakeFiles/TCPClient.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/TCPClient.dir/main.cpp.s"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/enricoclemente/CLionProjects/TCPClient/main.cpp -o CMakeFiles/TCPClient.dir/main.cpp.s
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/main.cpp" -o CMakeFiles/TCPClient.dir/main.cpp.s
 
 CMakeFiles/TCPClient.dir/FileWatcher.cpp.o: CMakeFiles/TCPClient.dir/flags.make
 CMakeFiles/TCPClient.dir/FileWatcher.cpp.o: ../FileWatcher.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/enricoclemente/CLionProjects/TCPClient/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/TCPClient.dir/FileWatcher.cpp.o"
-	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/TCPClient.dir/FileWatcher.cpp.o -c /Users/enricoclemente/CLionProjects/TCPClient/FileWatcher.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/TCPClient.dir/FileWatcher.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/TCPClient.dir/FileWatcher.cpp.o -c "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/FileWatcher.cpp"
 
 CMakeFiles/TCPClient.dir/FileWatcher.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/TCPClient.dir/FileWatcher.cpp.i"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/enricoclemente/CLionProjects/TCPClient/FileWatcher.cpp > CMakeFiles/TCPClient.dir/FileWatcher.cpp.i
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/FileWatcher.cpp" > CMakeFiles/TCPClient.dir/FileWatcher.cpp.i
 
 CMakeFiles/TCPClient.dir/FileWatcher.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/TCPClient.dir/FileWatcher.cpp.s"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/enricoclemente/CLionProjects/TCPClient/FileWatcher.cpp -o CMakeFiles/TCPClient.dir/FileWatcher.cpp.s
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/FileWatcher.cpp" -o CMakeFiles/TCPClient.dir/FileWatcher.cpp.s
 
 CMakeFiles/TCPClient.dir/OutputQueue.cpp.o: CMakeFiles/TCPClient.dir/flags.make
 CMakeFiles/TCPClient.dir/OutputQueue.cpp.o: ../OutputQueue.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/enricoclemente/CLionProjects/TCPClient/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/TCPClient.dir/OutputQueue.cpp.o"
-	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/TCPClient.dir/OutputQueue.cpp.o -c /Users/enricoclemente/CLionProjects/TCPClient/OutputQueue.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/TCPClient.dir/OutputQueue.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/TCPClient.dir/OutputQueue.cpp.o -c "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/OutputQueue.cpp"
 
 CMakeFiles/TCPClient.dir/OutputQueue.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/TCPClient.dir/OutputQueue.cpp.i"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/enricoclemente/CLionProjects/TCPClient/OutputQueue.cpp > CMakeFiles/TCPClient.dir/OutputQueue.cpp.i
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/OutputQueue.cpp" > CMakeFiles/TCPClient.dir/OutputQueue.cpp.i
 
 CMakeFiles/TCPClient.dir/OutputQueue.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/TCPClient.dir/OutputQueue.cpp.s"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/enricoclemente/CLionProjects/TCPClient/OutputQueue.cpp -o CMakeFiles/TCPClient.dir/OutputQueue.cpp.s
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/OutputQueue.cpp" -o CMakeFiles/TCPClient.dir/OutputQueue.cpp.s
 
 # Object files for target TCPClient
 TCPClient_OBJECTS = \
@@ -111,7 +111,7 @@ TCPClient: CMakeFiles/TCPClient.dir/OutputQueue.cpp.o
 TCPClient: CMakeFiles/TCPClient.dir/build.make
 TCPClient: /Users/enricoclemente/CLionProjects/boost/boost_1_73_0/stage/lib/libboost_filesystem.dylib
 TCPClient: CMakeFiles/TCPClient.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/enricoclemente/CLionProjects/TCPClient/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable TCPClient"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable TCPClient"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/TCPClient.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -124,6 +124,6 @@ CMakeFiles/TCPClient.dir/clean:
 .PHONY : CMakeFiles/TCPClient.dir/clean
 
 CMakeFiles/TCPClient.dir/depend:
-	cd /Users/enricoclemente/CLionProjects/TCPClient/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/enricoclemente/CLionProjects/TCPClient /Users/enricoclemente/CLionProjects/TCPClient /Users/enricoclemente/CLionProjects/TCPClient/cmake-build-debug /Users/enricoclemente/CLionProjects/TCPClient/cmake-build-debug /Users/enricoclemente/CLionProjects/TCPClient/cmake-build-debug/CMakeFiles/TCPClient.dir/DependInfo.cmake --color=$(COLOR)
+	cd "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug" && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client" "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client" "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug" "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug" "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/DependInfo.cmake" --color=$(COLOR)
 .PHONY : CMakeFiles/TCPClient.dir/depend
 

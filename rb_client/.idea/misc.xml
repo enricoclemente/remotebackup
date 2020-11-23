@@ -4,4 +4,7 @@
   <component name="JavaScriptSettings">
     <option name="languageLevel" value="ES6" />
   </component>
+  <component name="ProtolintService">
+    <option name="executable" value="$PROJECT_DIR$/sample.proto" />
+  </component>
 </project>

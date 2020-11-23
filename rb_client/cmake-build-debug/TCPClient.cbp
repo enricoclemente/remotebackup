@@ -8,43 +8,44 @@
 		<Option virtualFolders="CMake Files\;"/>
 		<Build>
 			<Target title="all">
-				<Option working_dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug"/>
+				<Option working_dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
-					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="rebuild_cache">
-				<Option working_dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug"/>
+				<Option working_dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
-					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="edit_cache">
-				<Option working_dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug"/>
+				<Option working_dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
-					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="TCPClient">
-				<Option output="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/TCPClient" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug"/>
+				<Option output="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/TCPClient" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="/Users/enricoclemente/CLionProjects/boost/boost_1_73_0"/>
+					<Add directory="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/include/c++/v1"/>
 					<Add directory="/usr/local/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/10.0.0/include"/>
@@ -54,20 +55,21 @@
 					<Add directory="/Library/Frameworks"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 TCPClient"/>
-					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 TCPClient"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="TCPClient/fast">
-				<Option output="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/TCPClient" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug"/>
+				<Option output="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/TCPClient" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="/Users/enricoclemente/CLionProjects/boost/boost_1_73_0"/>
+					<Add directory="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/include/c++/v1"/>
 					<Add directory="/usr/local/include"/>
 					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/10.0.0/include"/>
@@ -77,29 +79,44 @@
 					<Add directory="/Library/Frameworks"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 TCPClient/fast"/>
-					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/remotebackup/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 TCPClient/fast"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/FileWatcher.cpp">
+		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/Buffer.cpp">
 			<Option target="TCPClient"/>
 		</Unit>
-		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/FileWatcher.h">
+		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/Buffer.h">
 			<Option target="TCPClient"/>
 		</Unit>
-		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/OutputQueue.cpp">
+		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/FileWatcher.cpp">
 			<Option target="TCPClient"/>
 		</Unit>
-		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/OutputQueue.h">
+		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/FileWatcher.h">
 			<Option target="TCPClient"/>
 		</Unit>
-		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/main.cpp">
+		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/OutputQueue.cpp">
 			<Option target="TCPClient"/>
 		</Unit>
-		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/CMakeLists.txt">
+		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/OutputQueue.h">
+			<Option target="TCPClient"/>
+		</Unit>
+		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/packet.pb.cc">
+			<Option target="TCPClient"/>
+		</Unit>
+		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/packet.pb.h">
+			<Option target="TCPClient"/>
+		</Unit>
+		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/packet.pb.h.rule">
+			<Option target="TCPClient"/>
+		</Unit>
+		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/main.cpp">
+			<Option target="TCPClient"/>
+		</Unit>
+		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>
 	</Project>

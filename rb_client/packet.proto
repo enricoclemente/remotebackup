@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+message FilePacket {
+
+  string path = 1;
+  FileCommand command = 2;
+  int64 file_size = 3;
+  repeated bytes file_chunck = 4;
+}
+
+enum FileCommand {
+  create = 0;
+  modify = 1;
+  delete = 2;
+}
+
+message Header {
+
+}
+message ServerRequest {
+
+}

@@ -8,9 +8,16 @@ set(Boost_INCLUDE_DIR /Users/enricoclemente/CLionProjects/boost/boost_1_73_0)
 set(Boost_LIBRARIES /Users/enricoclemente/CLionProjects/boost/boost_1_73_0/libs)
 
 find_package(Boost REQUIRED COMPONENTS filesystem)
+find_package(Protobuf REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIR})
+include_directories(${Protobuf_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-add_executable(TCPClient main.cpp FileWatcher.cpp FileWatcher.h OutputQueue.cpp OutputQueue.h)
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS packet.proto)
+# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS EXPORT_MACRO DLL_EXPORT sample.proto)
+# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS DESCRIPTORS PROTO_DESCS sample.proto)
 
-target_link_libraries(TCPClient ${Boost_LIBRARIES})
+add_executable(TCPClient main.cpp FileWatcher.cpp FileWatcher.h OutputQueue.cpp OutputQueue.h ${PROTO_SRCS} ${PROTO_HDRS} Buffer.cpp Buffer.h)
+
+target_link_libraries(TCPClient ${Boost_LIBRARIES} ${Protobuf_LIBRARIES})

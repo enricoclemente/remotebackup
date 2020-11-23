@@ -17570,7 +17570,21 @@ boost/winapi/basic_types.hpp
 boost/winapi/basic_types.hpp
 -
 
-/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/FileWatcher.h
+/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/Buffer.cpp
+Buffer.h
+/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/Buffer.h
+
+/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/Buffer.h
+packet.pb.h
+/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/packet.pb.h
+boost/asio.hpp
+-
+boost/filesystem.hpp
+-
+boost/algorithm/string.hpp
+-
+
+/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/FileWatcher.h
 boost/filesystem.hpp
 -
 iostream
@@ -17588,7 +17602,7 @@ string
 functional
 -
 
-/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/OutputQueue.h
+/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/OutputQueue.h
 iostream
 -
 queue
@@ -17598,11 +17612,15 @@ mutex
 condition_variable
 -
 
-/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/main.cpp
+/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/main.cpp
 FileWatcher.h
-/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/FileWatcher.h
+/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/FileWatcher.h
 OutputQueue.h
-/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/remotebackup/rb_client/OutputQueue.h
+/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/OutputQueue.h
+Buffer.h
+/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/Buffer.h
+packet.pb.h
+/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/packet.pb.h
 iostream
 -
 thread
@@ -17614,5 +17632,43 @@ boost/asio.hpp
 boost/filesystem.hpp
 -
 boost/algorithm/string.hpp
+-
+
+packet.pb.h
+limits
+-
+string
+-
+google/protobuf/port_def.inc
+-
+google/protobuf/port_undef.inc
+-
+google/protobuf/io/coded_stream.h
+-
+google/protobuf/arena.h
+-
+google/protobuf/arenastring.h
+-
+google/protobuf/generated_message_table_driven.h
+-
+google/protobuf/generated_message_util.h
+-
+google/protobuf/metadata_lite.h
+-
+google/protobuf/generated_message_reflection.h
+-
+google/protobuf/message.h
+-
+google/protobuf/repeated_field.h
+-
+google/protobuf/extension_set.h
+-
+google/protobuf/generated_enum_reflection.h
+-
+google/protobuf/unknown_field_set.h
+-
+google/protobuf/port_def.inc
+-
+google/protobuf/port_undef.inc
 -
 

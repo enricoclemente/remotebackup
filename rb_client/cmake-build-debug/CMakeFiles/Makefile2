@@ -53,7 +53,7 @@ CMAKE_BINARY_DIR = "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmaz
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/TCPClient.dir/all
+all: CMakeFiles/client.dir/all
 
 .PHONY : all
 
@@ -63,36 +63,36 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/TCPClient.dir/clean
+clean: CMakeFiles/client.dir/clean
 
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/TCPClient.dir
+# Target rules for target CMakeFiles/client.dir
 
 # All Build rule for target.
-CMakeFiles/TCPClient.dir/all:
-	$(MAKE) -f CMakeFiles/TCPClient.dir/build.make CMakeFiles/TCPClient.dir/depend
-	$(MAKE) -f CMakeFiles/TCPClient.dir/build.make CMakeFiles/TCPClient.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/CMakeFiles" --progress-num=1,2,3,4,5,6,7 "Built target TCPClient"
-.PHONY : CMakeFiles/TCPClient.dir/all
+CMakeFiles/client.dir/all:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/depend
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/CMakeFiles" --progress-num=1,2,3,4,5,6,7,8 "Built target client"
+.PHONY : CMakeFiles/client.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/TCPClient.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/CMakeFiles" 7
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/TCPClient.dir/all
+CMakeFiles/client.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/CMakeFiles" 8
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/client.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/CMakeFiles" 0
-.PHONY : CMakeFiles/TCPClient.dir/rule
+.PHONY : CMakeFiles/client.dir/rule
 
 # Convenience name for target.
-TCPClient: CMakeFiles/TCPClient.dir/rule
+client: CMakeFiles/client.dir/rule
 
-.PHONY : TCPClient
+.PHONY : client
 
 # clean rule for target.
-CMakeFiles/TCPClient.dir/clean:
-	$(MAKE) -f CMakeFiles/TCPClient.dir/build.make CMakeFiles/TCPClient.dir/clean
-.PHONY : CMakeFiles/TCPClient.dir/clean
+CMakeFiles/client.dir/clean:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/clean
+.PHONY : CMakeFiles/client.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

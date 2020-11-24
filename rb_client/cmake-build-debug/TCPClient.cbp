@@ -37,8 +37,8 @@
 					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
-			<Target title="TCPClient">
-				<Option output="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/TCPClient" prefix_auto="0" extension_auto="0"/>
+			<Target title="client">
+				<Option output="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/client" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
@@ -55,14 +55,14 @@
 					<Add directory="/Library/Frameworks"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 TCPClient"/>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 client"/>
 					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
 					<Clean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
-			<Target title="TCPClient/fast">
-				<Option output="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/TCPClient" prefix_auto="0" extension_auto="0"/>
+			<Target title="client/fast">
+				<Option output="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/client" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
@@ -79,42 +79,51 @@
 					<Add directory="/Library/Frameworks"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 TCPClient/fast"/>
+					<Build command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 client/fast"/>
 					<CompileFile command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
 					<Clean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 					<DistClean command="/usr/bin/make -j4 -f &quot;/Users/enricoclemente/Documents/Scuola/2\ semestre/Programmazione\ di\ sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/AsioAdapting.h">
+			<Option target="client"/>
+		</Unit>
 		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/Buffer.cpp">
-			<Option target="TCPClient"/>
+			<Option target="client"/>
 		</Unit>
 		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/Buffer.h">
-			<Option target="TCPClient"/>
+			<Option target="client"/>
 		</Unit>
 		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/FileWatcher.cpp">
-			<Option target="TCPClient"/>
+			<Option target="client"/>
 		</Unit>
 		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/FileWatcher.h">
-			<Option target="TCPClient"/>
+			<Option target="client"/>
 		</Unit>
 		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/OutputQueue.cpp">
-			<Option target="TCPClient"/>
+			<Option target="client"/>
 		</Unit>
 		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/OutputQueue.h">
-			<Option target="TCPClient"/>
+			<Option target="client"/>
+		</Unit>
+		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/ProtobufHelpers.cpp">
+			<Option target="client"/>
+		</Unit>
+		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/ProtobufHelpers.h">
+			<Option target="client"/>
 		</Unit>
 		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/packet.pb.cc">
-			<Option target="TCPClient"/>
+			<Option target="client"/>
 		</Unit>
 		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/packet.pb.h">
-			<Option target="TCPClient"/>
+			<Option target="client"/>
 		</Unit>
 		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/packet.pb.h.rule">
-			<Option target="TCPClient"/>
+			<Option target="client"/>
 		</Unit>
 		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/main.cpp">
-			<Option target="TCPClient"/>
+			<Option target="client"/>
 		</Unit>
 		<Unit filename="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>

@@ -2,6 +2,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/TCPClient.dir/Buffer.cpp.o"
   "CMakeFiles/TCPClient.dir/FileWatcher.cpp.o"
   "CMakeFiles/TCPClient.dir/OutputQueue.cpp.o"
+  "CMakeFiles/TCPClient.dir/ProtobufHelpers.cpp.o"
   "CMakeFiles/TCPClient.dir/main.cpp.o"
   "CMakeFiles/TCPClient.dir/packet.pb.cc.o"
   "TCPClient"

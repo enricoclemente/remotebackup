@@ -18,6 +18,7 @@ protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS packet.proto)
 # protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS EXPORT_MACRO DLL_EXPORT sample.proto)
 # protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS DESCRIPTORS PROTO_DESCS sample.proto)
 
-add_executable(TCPClient main.cpp FileWatcher.cpp FileWatcher.h OutputQueue.cpp OutputQueue.h ${PROTO_SRCS} ${PROTO_HDRS} Buffer.cpp Buffer.h)
+add_executable(client main.cpp FileWatcher.cpp FileWatcher.h OutputQueue.cpp OutputQueue.h
+                Buffer.cpp Buffer.h AsioAdapting.h ProtobufHelpers.cpp ProtobufHelpers.h ${PROTO_SRCS} ${PROTO_HDRS} )
 
-target_link_libraries(TCPClient ${Boost_LIBRARIES} ${Protobuf_LIBRARIES})
+target_link_libraries(client ${Boost_LIBRARIES} ${Protobuf_LIBRARIES})

@@ -1,15 +1,23 @@
-cmake_minimum_required(VERSION 3.0.0)
-PROJECT(rb_server)
+cmake_minimum_required(VERSION 3.15)
+project(TCPServer)
 
-SET(Boost_USE_STATIC_LIBS OFF)
-SET(Boost_USE_MULTITHREAD ON)
-FIND_PACKAGE(Boost 1.42.0 REQUIRED COMPONENTS system thread regex)
-IF(Boost_FOUND)
-  INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-  LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
-ENDIF(Boost_FOUND)
+set(CMAKE_CXX_STANDARD 17)
 
-SET(USED_LIBS ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIBRARY})
+set(Boost_USE_STATIC_LIBS OFF) #enable dynamic linking
+set(Boost_INCLUDE_DIR /Users/enricoclemente/CLionProjects/boost/boost_1_73_0)
+set(Boost_LIBRARIES /Users/enricoclemente/CLionProjects/boost/boost_1_73_0/libs)
 
-ADD_EXECUTABLE(rb_server main.cpp)
-TARGET_LINK_LIBRARIES(rb_server ${USED_LIBS})
+find_package(Boost REQUIRED COMPONENTS filesystem)
+find_package(Protobuf REQUIRED)
+
+include_directories(${Boost_INCLUDE_DIR})
+include_directories(${Protobuf_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS packet.proto)
+# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS EXPORT_MACRO DLL_EXPORT sample.proto)
+# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS DESCRIPTORS PROTO_DESCS sample.proto)
+
+add_executable(server main.cpp  AsioAdapting.h ProtobufHelpers.cpp ProtobufHelpers.h ${PROTO_SRCS} ${PROTO_HDRS})
+
+target_link_libraries(server ${Boost_LIBRARIES} ${Protobuf_LIBRARIES})

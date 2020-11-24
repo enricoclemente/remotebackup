@@ -104,22 +104,9 @@ CMakeFiles/TCPClient.dir/OutputQueue.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/TCPClient.dir/OutputQueue.cpp.s"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/OutputQueue.cpp" -o CMakeFiles/TCPClient.dir/OutputQueue.cpp.s
 
-CMakeFiles/TCPClient.dir/packet.pb.cc.o: CMakeFiles/TCPClient.dir/flags.make
-CMakeFiles/TCPClient.dir/packet.pb.cc.o: packet.pb.cc
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/TCPClient.dir/packet.pb.cc.o"
-	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/TCPClient.dir/packet.pb.cc.o -c "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/packet.pb.cc"
-
-CMakeFiles/TCPClient.dir/packet.pb.cc.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/TCPClient.dir/packet.pb.cc.i"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/packet.pb.cc" > CMakeFiles/TCPClient.dir/packet.pb.cc.i
-
-CMakeFiles/TCPClient.dir/packet.pb.cc.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/TCPClient.dir/packet.pb.cc.s"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/packet.pb.cc" -o CMakeFiles/TCPClient.dir/packet.pb.cc.s
-
 CMakeFiles/TCPClient.dir/Buffer.cpp.o: CMakeFiles/TCPClient.dir/flags.make
 CMakeFiles/TCPClient.dir/Buffer.cpp.o: ../Buffer.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/TCPClient.dir/Buffer.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/TCPClient.dir/Buffer.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/TCPClient.dir/Buffer.cpp.o -c "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/Buffer.cpp"
 
 CMakeFiles/TCPClient.dir/Buffer.cpp.i: cmake_force
@@ -130,13 +117,40 @@ CMakeFiles/TCPClient.dir/Buffer.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/TCPClient.dir/Buffer.cpp.s"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/Buffer.cpp" -o CMakeFiles/TCPClient.dir/Buffer.cpp.s
 
+CMakeFiles/TCPClient.dir/ProtobufHelpers.cpp.o: CMakeFiles/TCPClient.dir/flags.make
+CMakeFiles/TCPClient.dir/ProtobufHelpers.cpp.o: ../ProtobufHelpers.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/TCPClient.dir/ProtobufHelpers.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/TCPClient.dir/ProtobufHelpers.cpp.o -c "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/ProtobufHelpers.cpp"
+
+CMakeFiles/TCPClient.dir/ProtobufHelpers.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/TCPClient.dir/ProtobufHelpers.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/ProtobufHelpers.cpp" > CMakeFiles/TCPClient.dir/ProtobufHelpers.cpp.i
+
+CMakeFiles/TCPClient.dir/ProtobufHelpers.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/TCPClient.dir/ProtobufHelpers.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/ProtobufHelpers.cpp" -o CMakeFiles/TCPClient.dir/ProtobufHelpers.cpp.s
+
+CMakeFiles/TCPClient.dir/packet.pb.cc.o: CMakeFiles/TCPClient.dir/flags.make
+CMakeFiles/TCPClient.dir/packet.pb.cc.o: packet.pb.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/TCPClient.dir/packet.pb.cc.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/TCPClient.dir/packet.pb.cc.o -c "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/packet.pb.cc"
+
+CMakeFiles/TCPClient.dir/packet.pb.cc.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/TCPClient.dir/packet.pb.cc.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/packet.pb.cc" > CMakeFiles/TCPClient.dir/packet.pb.cc.i
+
+CMakeFiles/TCPClient.dir/packet.pb.cc.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/TCPClient.dir/packet.pb.cc.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/packet.pb.cc" -o CMakeFiles/TCPClient.dir/packet.pb.cc.s
+
 # Object files for target TCPClient
 TCPClient_OBJECTS = \
 "CMakeFiles/TCPClient.dir/main.cpp.o" \
 "CMakeFiles/TCPClient.dir/FileWatcher.cpp.o" \
 "CMakeFiles/TCPClient.dir/OutputQueue.cpp.o" \
-"CMakeFiles/TCPClient.dir/packet.pb.cc.o" \
-"CMakeFiles/TCPClient.dir/Buffer.cpp.o"
+"CMakeFiles/TCPClient.dir/Buffer.cpp.o" \
+"CMakeFiles/TCPClient.dir/ProtobufHelpers.cpp.o" \
+"CMakeFiles/TCPClient.dir/packet.pb.cc.o"
 
 # External object files for target TCPClient
 TCPClient_EXTERNAL_OBJECTS =
@@ -144,13 +158,14 @@ TCPClient_EXTERNAL_OBJECTS =
 TCPClient: CMakeFiles/TCPClient.dir/main.cpp.o
 TCPClient: CMakeFiles/TCPClient.dir/FileWatcher.cpp.o
 TCPClient: CMakeFiles/TCPClient.dir/OutputQueue.cpp.o
-TCPClient: CMakeFiles/TCPClient.dir/packet.pb.cc.o
 TCPClient: CMakeFiles/TCPClient.dir/Buffer.cpp.o
+TCPClient: CMakeFiles/TCPClient.dir/ProtobufHelpers.cpp.o
+TCPClient: CMakeFiles/TCPClient.dir/packet.pb.cc.o
 TCPClient: CMakeFiles/TCPClient.dir/build.make
 TCPClient: /Users/enricoclemente/CLionProjects/boost/boost_1_73_0/stage/lib/libboost_filesystem.dylib
 TCPClient: /usr/local/lib/libprotobuf.dylib
 TCPClient: CMakeFiles/TCPClient.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable TCPClient"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir="/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable TCPClient"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/TCPClient.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

@@ -111,17 +111,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named TCPClient
+# Target rules for targets named client
 
 # Build rule for target.
-TCPClient: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 TCPClient
-.PHONY : TCPClient
+client: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 client
+.PHONY : client
 
 # fast build rule for target.
-TCPClient/fast:
-	$(MAKE) -f CMakeFiles/TCPClient.dir/build.make CMakeFiles/TCPClient.dir/build
-.PHONY : TCPClient/fast
+client/fast:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/build
+.PHONY : client/fast
 
 Buffer.o: Buffer.cpp.o
 
@@ -129,7 +129,7 @@ Buffer.o: Buffer.cpp.o
 
 # target to build an object file
 Buffer.cpp.o:
-	$(MAKE) -f CMakeFiles/TCPClient.dir/build.make CMakeFiles/TCPClient.dir/Buffer.cpp.o
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/Buffer.cpp.o
 .PHONY : Buffer.cpp.o
 
 Buffer.i: Buffer.cpp.i
@@ -138,7 +138,7 @@ Buffer.i: Buffer.cpp.i
 
 # target to preprocess a source file
 Buffer.cpp.i:
-	$(MAKE) -f CMakeFiles/TCPClient.dir/build.make CMakeFiles/TCPClient.dir/Buffer.cpp.i
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/Buffer.cpp.i
 .PHONY : Buffer.cpp.i
 
 Buffer.s: Buffer.cpp.s
@@ -147,7 +147,7 @@ Buffer.s: Buffer.cpp.s
 
 # target to generate assembly for a file
 Buffer.cpp.s:
-	$(MAKE) -f CMakeFiles/TCPClient.dir/build.make CMakeFiles/TCPClient.dir/Buffer.cpp.s
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/Buffer.cpp.s
 .PHONY : Buffer.cpp.s
 
 FileWatcher.o: FileWatcher.cpp.o
@@ -156,7 +156,7 @@ FileWatcher.o: FileWatcher.cpp.o
 
 # target to build an object file
 FileWatcher.cpp.o:
-	$(MAKE) -f CMakeFiles/TCPClient.dir/build.make CMakeFiles/TCPClient.dir/FileWatcher.cpp.o
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/FileWatcher.cpp.o
 .PHONY : FileWatcher.cpp.o
 
 FileWatcher.i: FileWatcher.cpp.i
@@ -165,7 +165,7 @@ FileWatcher.i: FileWatcher.cpp.i
 
 # target to preprocess a source file
 FileWatcher.cpp.i:
-	$(MAKE) -f CMakeFiles/TCPClient.dir/build.make CMakeFiles/TCPClient.dir/FileWatcher.cpp.i
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/FileWatcher.cpp.i
 .PHONY : FileWatcher.cpp.i
 
 FileWatcher.s: FileWatcher.cpp.s
@@ -174,7 +174,7 @@ FileWatcher.s: FileWatcher.cpp.s
 
 # target to generate assembly for a file
 FileWatcher.cpp.s:
-	$(MAKE) -f CMakeFiles/TCPClient.dir/build.make CMakeFiles/TCPClient.dir/FileWatcher.cpp.s
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/FileWatcher.cpp.s
 .PHONY : FileWatcher.cpp.s
 
 OutputQueue.o: OutputQueue.cpp.o
@@ -183,7 +183,7 @@ OutputQueue.o: OutputQueue.cpp.o
 
 # target to build an object file
 OutputQueue.cpp.o:
-	$(MAKE) -f CMakeFiles/TCPClient.dir/build.make CMakeFiles/TCPClient.dir/OutputQueue.cpp.o
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/OutputQueue.cpp.o
 .PHONY : OutputQueue.cpp.o
 
 OutputQueue.i: OutputQueue.cpp.i
@@ -192,7 +192,7 @@ OutputQueue.i: OutputQueue.cpp.i
 
 # target to preprocess a source file
 OutputQueue.cpp.i:
-	$(MAKE) -f CMakeFiles/TCPClient.dir/build.make CMakeFiles/TCPClient.dir/OutputQueue.cpp.i
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/OutputQueue.cpp.i
 .PHONY : OutputQueue.cpp.i
 
 OutputQueue.s: OutputQueue.cpp.s
@@ -201,8 +201,35 @@ OutputQueue.s: OutputQueue.cpp.s
 
 # target to generate assembly for a file
 OutputQueue.cpp.s:
-	$(MAKE) -f CMakeFiles/TCPClient.dir/build.make CMakeFiles/TCPClient.dir/OutputQueue.cpp.s
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/OutputQueue.cpp.s
 .PHONY : OutputQueue.cpp.s
+
+ProtobufHelpers.o: ProtobufHelpers.cpp.o
+
+.PHONY : ProtobufHelpers.o
+
+# target to build an object file
+ProtobufHelpers.cpp.o:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/ProtobufHelpers.cpp.o
+.PHONY : ProtobufHelpers.cpp.o
+
+ProtobufHelpers.i: ProtobufHelpers.cpp.i
+
+.PHONY : ProtobufHelpers.i
+
+# target to preprocess a source file
+ProtobufHelpers.cpp.i:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/ProtobufHelpers.cpp.i
+.PHONY : ProtobufHelpers.cpp.i
+
+ProtobufHelpers.s: ProtobufHelpers.cpp.s
+
+.PHONY : ProtobufHelpers.s
+
+# target to generate assembly for a file
+ProtobufHelpers.cpp.s:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/ProtobufHelpers.cpp.s
+.PHONY : ProtobufHelpers.cpp.s
 
 main.o: main.cpp.o
 
@@ -210,7 +237,7 @@ main.o: main.cpp.o
 
 # target to build an object file
 main.cpp.o:
-	$(MAKE) -f CMakeFiles/TCPClient.dir/build.make CMakeFiles/TCPClient.dir/main.cpp.o
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/main.cpp.o
 .PHONY : main.cpp.o
 
 main.i: main.cpp.i
@@ -219,7 +246,7 @@ main.i: main.cpp.i
 
 # target to preprocess a source file
 main.cpp.i:
-	$(MAKE) -f CMakeFiles/TCPClient.dir/build.make CMakeFiles/TCPClient.dir/main.cpp.i
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/main.cpp.i
 .PHONY : main.cpp.i
 
 main.s: main.cpp.s
@@ -228,7 +255,7 @@ main.s: main.cpp.s
 
 # target to generate assembly for a file
 main.cpp.s:
-	$(MAKE) -f CMakeFiles/TCPClient.dir/build.make CMakeFiles/TCPClient.dir/main.cpp.s
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/main.cpp.s
 .PHONY : main.cpp.s
 
 packet.pb.o: packet.pb.cc.o
@@ -237,7 +264,7 @@ packet.pb.o: packet.pb.cc.o
 
 # target to build an object file
 packet.pb.cc.o:
-	$(MAKE) -f CMakeFiles/TCPClient.dir/build.make CMakeFiles/TCPClient.dir/packet.pb.cc.o
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/packet.pb.cc.o
 .PHONY : packet.pb.cc.o
 
 packet.pb.i: packet.pb.cc.i
@@ -246,7 +273,7 @@ packet.pb.i: packet.pb.cc.i
 
 # target to preprocess a source file
 packet.pb.cc.i:
-	$(MAKE) -f CMakeFiles/TCPClient.dir/build.make CMakeFiles/TCPClient.dir/packet.pb.cc.i
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/packet.pb.cc.i
 .PHONY : packet.pb.cc.i
 
 packet.pb.s: packet.pb.cc.s
@@ -255,7 +282,7 @@ packet.pb.s: packet.pb.cc.s
 
 # target to generate assembly for a file
 packet.pb.cc.s:
-	$(MAKE) -f CMakeFiles/TCPClient.dir/build.make CMakeFiles/TCPClient.dir/packet.pb.cc.s
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/packet.pb.cc.s
 .PHONY : packet.pb.cc.s
 
 # Help Target
@@ -266,7 +293,7 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... TCPClient"
+	@echo "... client"
 	@echo "... Buffer.o"
 	@echo "... Buffer.i"
 	@echo "... Buffer.s"
@@ -276,6 +303,9 @@ help:
 	@echo "... OutputQueue.o"
 	@echo "... OutputQueue.i"
 	@echo "... OutputQueue.s"
+	@echo "... ProtobufHelpers.o"
+	@echo "... ProtobufHelpers.i"
+	@echo "... ProtobufHelpers.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

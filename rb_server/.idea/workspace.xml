@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
+    <generated>
+      <config projectName="TCPServer" targetName="server" />
+    </generated>
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="2e0f5800-7c1c-47e1-82fe-1754cc058670" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../rb_client/Buffer.h" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/Buffer.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/FileWatcher.h" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/FileWatcher.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/OutputQueue.h" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/OutputQueue.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/Makefile.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/Makefile.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/Makefile2" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/Makefile2" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/Buffer.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/Buffer.cpp.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/CXX.includecache" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/CXX.includecache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/DependInfo.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/DependInfo.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/build.make" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/cmake_clean.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/cmake_clean.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/depend.internal" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/depend.internal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/depend.make" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/depend.make" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/link.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/link.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/main.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/main.cpp.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/packet.pb.cc.o" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/packet.pb.cc.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/progress.make" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TCPClient.dir/progress.make" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TargetDirectories.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/TargetDirectories.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/progress.marks" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/progress.marks" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/TCPClient" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/TCPClient" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/TCPClient.cbp" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/TCPClient.cbp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/packet.pb.cc" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/packet.pb.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/packet.pb.h" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/packet.pb.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/packet.proto" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/packet.proto" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/main.cpp" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectId" id="1kjVlMtEUBnYVpKyOwlhRJ1NTWm" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="cf.first.check.clang-format" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="server" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TCPServer" TARGET_NAME="server" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TCPServer" RUN_TARGET_NAME="server">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="2e0f5800-7c1c-47e1-82fe-1754cc058670" name="Default Changelist" comment="" />
+      <created>1606214137724</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1606214137724</updated>
+      <workItem from="1606214139459" duration="28000" />
+      <workItem from="1606226402831" duration="1614000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="2" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="458" y="190" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1606226573995">
+      <screen x="0" y="23" width="1440" height="827" />
+    </state>
+    <state x="458" y="190" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.23.1440.827@0.23.1440.827" timestamp="1606226573995" />
+    <state width="1398" height="214" key="GridCell.Tab.0.bottom" timestamp="1606228022166">
+      <screen x="0" y="23" width="1440" height="827" />
+    </state>
+    <state width="1398" height="214" key="GridCell.Tab.0.bottom/0.23.1440.827@0.23.1440.827" timestamp="1606228022166" />
+    <state width="1398" height="214" key="GridCell.Tab.0.center" timestamp="1606228022165">
+      <screen x="0" y="23" width="1440" height="827" />
+    </state>
+    <state width="1398" height="214" key="GridCell.Tab.0.center/0.23.1440.827@0.23.1440.827" timestamp="1606228022165" />
+    <state width="1398" height="214" key="GridCell.Tab.0.left" timestamp="1606228022165">
+      <screen x="0" y="23" width="1440" height="827" />
+    </state>
+    <state width="1398" height="214" key="GridCell.Tab.0.left/0.23.1440.827@0.23.1440.827" timestamp="1606228022165" />
+    <state width="1398" height="214" key="GridCell.Tab.0.right" timestamp="1606228022166">
+      <screen x="0" y="23" width="1440" height="827" />
+    </state>
+    <state width="1398" height="214" key="GridCell.Tab.0.right/0.23.1440.827@0.23.1440.827" timestamp="1606228022166" />
+  </component>
+</project>

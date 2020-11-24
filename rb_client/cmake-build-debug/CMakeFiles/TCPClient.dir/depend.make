@@ -1379,6 +1379,7 @@ CMakeFiles/TCPClient.dir/Buffer.cpp.o: /Users/enricoclemente/CLionProjects/boost
 CMakeFiles/TCPClient.dir/Buffer.cpp.o: /Users/enricoclemente/CLionProjects/boost/boost_1_73_0/boost/winapi/timers.hpp
 CMakeFiles/TCPClient.dir/Buffer.cpp.o: ../Buffer.cpp
 CMakeFiles/TCPClient.dir/Buffer.cpp.o: ../Buffer.h
+CMakeFiles/TCPClient.dir/Buffer.cpp.o: ../FileWatcher.h
 CMakeFiles/TCPClient.dir/Buffer.cpp.o: packet.pb.h
 
 CMakeFiles/TCPClient.dir/FileWatcher.cpp.o: /Users/enricoclemente/CLionProjects/boost/boost_1_73_0/boost/assert.hpp

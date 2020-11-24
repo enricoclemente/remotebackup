@@ -1,6 +1,8 @@
 #include "FileWatcher.h"
 #include "OutputQueue.h"
 #include "Buffer.h"
+#include "ProtobufHelpers.h"
+#include "AsioAdapting.h"
 #include "packet.pb.h"
 
 #include <iostream>
@@ -12,7 +14,7 @@
 #include <boost/algorithm/string.hpp>
 
 using namespace boost;
-
+using boost::asio::ip::tcp;
 // Concurrent console printing
 std::mutex pm;
 void myprint(const std::string& output) {
@@ -27,62 +29,65 @@ std::vector<std::string> split_string(const std::string& str, const std::string&
     return container;
 }
 
+struct file_transfer {
+    std::string file_path;
+    std::time_t last_write_time;
+    FileStatus command;
+};
+
 int main() {
 
     FileWatcher fw{"/Users/enricoclemente/Downloads", std::chrono::milliseconds(5000)};
+    OutputQueue<file_transfer> oq;
 
-    OutputQueue<std::string> oq;
-
-    std::vector<std::thread> sending_threads;
     bool running = true;
-
     Buffer buf;
 
-    // File system watcher thread which fill every 5s the output queue if any change
+    // Setting connection with the server
+    const char* hostname = "192.168.1.3";
+    const char* port = "4001";
+    boost::asio::io_service io_service;
+    tcp::resolver resolver(io_service);
+    tcp::resolver::query query(hostname, port);
+    tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+    tcp::socket socket(io_service);
+    boost::asio::connect(socket, endpoint_iterator);
+    AsioInputStream<tcp::socket> ais(socket);
+    CopyingInputStreamAdaptor cis_adp(&ais);
+    AsioOutputStream<boost::asio::ip::tcp::socket> aos(socket);
+    CopyingOutputStreamAdaptor cos_adp(&aos);
+
+
+    // Thread to monitor the file system watcher every 5s
     std::thread system([&fw, &oq](){
-        fw.start_monitoring([&oq](std::string path_to_watch, FileStatus status) -> void{
-            if(!is_regular_file(path_to_watch) && status != FileStatus::erased ) {
+        fw.start_monitoring([&oq](std::string file_path, std::time_t last_write_time, FileStatus status) -> void{
+            if(!is_regular_file(file_path) && status != FileStatus::erased ) {
                 return;
             }
 
-            switch(status) {
-                case FileStatus::created:
-                    //std::cout << "File created: " << path_to_watch << '\n';
-                    myprint("File created: " + path_to_watch);
-                    oq.push("CREATE " + path_to_watch);
-                    break;
-                case FileStatus::modified:
-                    //std::cout << "File modified: " << path_to_watch << '\n';
-                    myprint("File modified: " + path_to_watch);
-                    oq.push("MODIFY " + path_to_watch);
-                    break;
-                case FileStatus::erased:
-                    //std::cout << "File erased: " << path_to_watch << '\n';
-                    myprint("File erased: " + path_to_watch);
-                    oq.push("ERASE " + path_to_watch);
-                    break;
-                default:
-                    //std::cout << "Error! Unknown file status.\n";
-                    myprint("Error! Unknown file status.");
-            }
+            file_transfer ft{file_path, last_write_time, status};
+            oq.push(ft);
         });
     });
 
-
     // Thread for sending files to the server
-    for(int i=0; i<3; i++) {
-        sending_threads.emplace_back([&oq, &buf, i, running](){
-            while(running) {
+    std::thread sender([&oq, &buf, &fw, &cis_adp, &cos_adp, running](){
 
-                std::string operation = oq.pop();
-                // probe del singolo file
-                // se si mando il file.
-                std::vector<std::string> arguments = split_string(operation, " ");
+        while(running) {
+            auto file_operation = oq.pop();
+            // probe del singolo file
 
-                buf.send_file(arguments[1]);
-            }
-        });
-    }
+            // se si mando il file.
+            myprint("Sending: " + file_operation.file_path);
+            FilePacket packet = buf.create_FilePacket(fw.get_path_to_watch(), file_operation.file_path,
+                          file_operation.last_write_time, file_operation.command);
+            google::protobuf::io::writeDelimitedTo(packet, &cos_adp);
+            // Now we have to flush, otherwise the write to the socket won't happen until enough bytes accumulate
+            cos_adp.Flush();
+
+            // ricevo conferma
+        }
+    });
 
 
     // Fake server "receiving" every 10s
@@ -92,16 +97,17 @@ int main() {
 
             auto packet = buf.receive_file();
 
-            if( packet.file_size() > 0){
-                myprint("I just received: " + packet.path());
+            if(!packet.file_path().empty()){
+                myprint("I just received: " + packet.file_path());
 
                 // fake write on server
-                std::vector<std::string> path = split_string(packet.path(), "/");
-                ofstream fout("/Users/enricoclemente/Desktop/Provastream/" + path[4] , std::ios::out | std::ios::binary);
+                ofstream fout("/Users/enricoclemente/Desktop/Provastream/" + packet.file_path() ,
+                        std::ios::out | std::ios::binary);
 
-                int chuncks = packet.file_chunck_size();
+                int chuncks = packet.file_chuncks_size();
                 for(int i=0; i<chuncks; i++) {
-                    fout.write((char*)&packet.file_chunck(i)[0], packet.file_chunck(i).size() * sizeof(char));
+                    fout.write((char*)&packet.file_chuncks(i)[0],
+                            packet.file_chuncks(i).size() * sizeof(char));
                 }
 
                 fout.close();
@@ -110,11 +116,8 @@ int main() {
     });
 
 
-    for(auto &t: sending_threads) {
-        if(t.joinable()) t.join();
-    }
-
     receiving_thread.join();
+    sender.join();
     system.join();
 
     return 0;

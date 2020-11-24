@@ -89,34 +89,6 @@ int main() {
         }
     });
 
-
-    // Fake server "receiving" every 10s
-    std::thread receiving_thread([&buf, running](){
-        while(running) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10000));
-
-            auto packet = buf.receive_file();
-
-            if(!packet.file_path().empty()){
-                myprint("I just received: " + packet.file_path());
-
-                // fake write on server
-                ofstream fout("/Users/enricoclemente/Desktop/Provastream/" + packet.file_path() ,
-                        std::ios::out | std::ios::binary);
-
-                int chuncks = packet.file_chuncks_size();
-                for(int i=0; i<chuncks; i++) {
-                    fout.write((char*)&packet.file_chuncks(i)[0],
-                            packet.file_chuncks(i).size() * sizeof(char));
-                }
-
-                fout.close();
-            }
-        }
-    });
-
-
-    receiving_thread.join();
     sender.join();
     system.join();
 

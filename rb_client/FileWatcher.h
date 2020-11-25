@@ -70,6 +70,10 @@ public:
         }
     }
 
+    bool check_last_write_time(std::string file_path, std::time_t time) {
+        return files[file_path] == time;
+    }
+
     std::string get_path_to_watch() {
         return path_to_watch;
     }

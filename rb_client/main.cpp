@@ -29,30 +29,26 @@ std::vector<std::string> split_string(const std::string& str, const std::string&
     return container;
 }
 
-struct file_transfer {
-    std::string file_path;
-    std::time_t last_write_time;
-    FileStatus command;
-};
+
 
 int main() {
 
     FileWatcher fw{"/Users/enricoclemente/Downloads", std::chrono::milliseconds(5000)};
-    OutputQueue<file_transfer> oq;
+    OutputQueue oq;
 
     bool running = true;
     Buffer buf;
 
     // Setting connection with the server
     const char* hostname = "192.168.1.3";
-    const char* port = "4001";
+    const char* port = "4561";
     boost::asio::io_service io_service;
     tcp::resolver resolver(io_service);
     tcp::resolver::query query(hostname, port);
     tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
     tcp::socket socket(io_service);
     boost::asio::connect(socket, endpoint_iterator);
-    AsioInputStream<tcp::socket> ais(socket);
+    AsioInputStream<boost::asio::ip::tcp::socket> ais(socket);
     CopyingInputStreamAdaptor cis_adp(&ais);
     AsioOutputStream<boost::asio::ip::tcp::socket> aos(socket);
     CopyingOutputStreamAdaptor cos_adp(&aos);
@@ -72,20 +68,48 @@ int main() {
 
     // Thread for sending files to the server
     std::thread sender([&oq, &buf, &fw, &cis_adp, &cos_adp, running](){
-
+        bool net_op = false;
         while(running) {
             auto file_operation = oq.pop();
+            myprint("System modified: " + file_operation.file_path);
             // probe del singolo file
-
-            // se si mando il file.
-            myprint("Sending: " + file_operation.file_path);
-            FilePacket packet = buf.create_FilePacket(fw.get_path_to_watch(), file_operation.file_path,
-                          file_operation.last_write_time, file_operation.command);
-            google::protobuf::io::writeDelimitedTo(packet, &cos_adp);
-            // Now we have to flush, otherwise the write to the socket won't happen until enough bytes accumulate
+            ProbeSingleFileRequest psfr_request = buf.create_ProbeSingleFileRequest(fw.get_path_to_watch(),
+                    file_operation.file_path, file_operation.last_write_time);
+            net_op = google::protobuf::io::writeDelimitedTo(psfr_request, &cos_adp);
             cos_adp.Flush();
 
-            // ricevo conferma
+            if(net_op) {
+                myprint("Sent ProbeSingleFileRequest for: " + psfr_request.file_path());
+                ProbeSingleFileResponse psfr_response;
+                net_op = google::protobuf::io::readDelimitedFrom(&psfr_response, &cis_adp);
+
+                if(net_op) {
+                    myprint("Just received ProbeSingleFileResponse for: " + psfr_response.file_path());
+
+                    if(psfr_response.send_file()) {
+                        // se si mando il file.
+                        myprint("Sending: " + file_operation.file_path);
+                        FilePacket f_packet = buf.create_FilePacket(fw.get_path_to_watch(), file_operation.file_path,
+                                                                    file_operation.last_write_time, file_operation.command);
+                        myprint("Packet checksum: " + std::to_string(f_packet.file_checksum()));
+                        google::protobuf::io::writeDelimitedTo(f_packet, &cos_adp);
+                        // Now we have to flush, otherwise the write to the socket won't happen until enough bytes accumulate
+                        cos_adp.Flush();
+
+                        // ricevo conferma
+                        FilePacketResponse fp_response;
+                        google::protobuf::io::readDelimitedFrom(&fp_response, &cis_adp);
+                        if(fp_response.success()) {
+                            myprint("File successfully transfered");
+                        } else {
+                            // add again the operation in the queue
+                            oq.push(file_operation);
+                        }
+
+                    }
+                }
+            }
+
         }
     });
 

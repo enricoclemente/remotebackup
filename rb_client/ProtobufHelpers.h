@@ -9,6 +9,6 @@ namespace google::protobuf::io {
         google::protobuf::io::ZeroCopyOutputStream* rawOutput);
 
     bool readDelimitedFrom(
-        google::protobuf::io::ZeroCopyInputStream* rawInput,
-        google::protobuf::MessageLite* message);
+        google::protobuf::MessageLite* message,
+        google::protobuf::io::ZeroCopyInputStream* rawInput);
 }

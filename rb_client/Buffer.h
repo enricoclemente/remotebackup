@@ -7,6 +7,8 @@
 
 #include "FileWatcher.h"
 #include "packet.pb.h"
+#include "CRC.h"
+
 #include <boost/asio.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
@@ -26,17 +28,16 @@ public:
         return output;
     }
 
-    void send_probe_single(const std::string& root_path, const std::string& file_path) {
+    ProbeSingleFileRequest create_ProbeSingleFileRequest(const std::string& root_path, const std::string& file_path,
+            std::time_t last_write_time) {
         ProbeSingleFileRequest packet;
 
         // put relative path of the file in the packet
         std::string path = string_remove_pref(root_path, file_path);
         packet.set_file_path(path);
+        packet.set_file_last_write_time(last_write_time);
 
-        std::lock_guard lg(bufm);
-        std::ostream output(&buf);
-
-        packet.SerializeToOstream(&output);
+        return packet;
     }
 
     FilePacket create_FilePacket(const std::string& root_path, const std::string& file_path,
@@ -61,34 +62,32 @@ public:
             packet.set_command(FilePacket::CREATE_MODIFY);
             packet.set_file_size(file_len);
 
+            std::uint32_t checksum;
+
             // file read by chuncks
             size_t tot_read = 0;
             size_t current_read = 0;
             while(tot_read < file_len) {
+
                 if(file_len - tot_read >= chunck_size) {
                     fl.read(&file_chunck[0], chunck_size);
                 } else {
                     fl.read(&file_chunck[0],file_len-tot_read);
                 }
+
+                checksum = CRC::Calculate(&file_chunck[0], sizeof(file_chunck), CRC::CRC_32(),checksum);
                 current_read = fl.gcount();
                 packet.add_file_chuncks(&file_chunck[0], current_read);
+
                 tot_read += current_read;
             }
+
+            packet.set_file_checksum(checksum);
             fl.close();
         } else if(command == FileStatus::erased) {
             // just send the command to delete file on the server
             packet.set_command(FilePacket::ERASE);
         }
-
-        return packet;
-    }
-
-    FilePacket receive_file() {
-        std::lock_guard lg(bufm);
-        std::istream input(&buf);
-
-        FilePacket packet;
-        packet.ParseFromIstream(&input);
 
         return packet;
     }

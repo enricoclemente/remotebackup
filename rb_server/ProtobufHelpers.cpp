@@ -27,8 +27,8 @@ namespace google::protobuf::io {
     }
 
     bool readDelimitedFrom(
-        google::protobuf::io::ZeroCopyInputStream* rawInput,
-        google::protobuf::MessageLite* message) {
+        google::protobuf::MessageLite* message,
+        google::protobuf::io::ZeroCopyInputStream* rawInput) {
         // We create a new coded stream for each message.  Don't worry, this is fast,
         // and it makes sure the 64MB total size limit is imposed per-message rather
         // than on the whole stream.  (See the CodedInputStream interface for more

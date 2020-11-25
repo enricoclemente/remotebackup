@@ -17574,15 +17574,13 @@ boost/winapi/basic_types.hpp
 google/protobuf/io/zero_copy_stream_impl_lite.h
 -
 
-/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/Buffer.cpp
-Buffer.h
-/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/Buffer.h
-
 /Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/Buffer.h
 FileWatcher.h
 /Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/FileWatcher.h
 packet.pb.h
 /Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/packet.pb.h
+CRC.h
+/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/CRC.h
 boost/asio.hpp
 -
 boost/filesystem.hpp
@@ -17590,9 +17588,21 @@ boost/filesystem.hpp
 boost/algorithm/string.hpp
 -
 
-/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/FileWatcher.cpp
-FileWatcher.h
-/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/FileWatcher.h
+/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/CRC.h
+climits
+-
+cstddef
+-
+cstdint
+-
+stddef.h
+-
+stdint.h
+-
+limits
+-
+utility
+-
 
 /Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/FileWatcher.h
 boost/filesystem.hpp
@@ -17617,6 +17627,8 @@ OutputQueue.h
 /Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/OutputQueue.h
 
 /Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/OutputQueue.h
+FileWatcher.h
+/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/FileWatcher.h
 iostream
 -
 queue
@@ -17626,78 +17638,12 @@ mutex
 condition_variable
 -
 
-/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/ProtobufHelpers.cpp
-ProtobufHelpers.h
-/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/ProtobufHelpers.h
-
 /Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/ProtobufHelpers.h
 google/protobuf/io/coded_stream.h
 -
 google/protobuf/io/zero_copy_stream.h
 -
 google/protobuf/message_lite.h
--
-
-/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/packet.pb.cc
-packet.pb.h
-/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/packet.pb.h
-algorithm
--
-google/protobuf/io/coded_stream.h
--
-google/protobuf/extension_set.h
--
-google/protobuf/wire_format_lite.h
--
-google/protobuf/descriptor.h
--
-google/protobuf/generated_message_reflection.h
--
-google/protobuf/reflection_ops.h
--
-google/protobuf/wire_format.h
--
-google/protobuf/port_def.inc
--
-google/protobuf/port_undef.inc
--
-
-/Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/cmake-build-debug/packet.pb.h
-limits
--
-string
--
-google/protobuf/port_def.inc
--
-google/protobuf/port_undef.inc
--
-google/protobuf/io/coded_stream.h
--
-google/protobuf/arena.h
--
-google/protobuf/arenastring.h
--
-google/protobuf/generated_message_table_driven.h
--
-google/protobuf/generated_message_util.h
--
-google/protobuf/metadata_lite.h
--
-google/protobuf/generated_message_reflection.h
--
-google/protobuf/message.h
--
-google/protobuf/repeated_field.h
--
-google/protobuf/extension_set.h
--
-google/protobuf/generated_enum_reflection.h
--
-google/protobuf/unknown_field_set.h
--
-google/protobuf/port_def.inc
--
-google/protobuf/port_undef.inc
 -
 
 /Users/enricoclemente/Documents/Scuola/2 semestre/Programmazione di sistema/Progetto/Repo/develop/rb_client/main.cpp

@@ -1188,6 +1188,7 @@ CMakeFiles/server.dir/main.cpp.o: /Users/enricoclemente/CLionProjects/boost/boos
 CMakeFiles/server.dir/main.cpp.o: /Users/enricoclemente/CLionProjects/boost/boost_1_73_0/boost/winapi/time.hpp
 CMakeFiles/server.dir/main.cpp.o: /Users/enricoclemente/CLionProjects/boost/boost_1_73_0/boost/winapi/timers.hpp
 CMakeFiles/server.dir/main.cpp.o: ../AsioAdapting.h
+CMakeFiles/server.dir/main.cpp.o: ../CRC.h
 CMakeFiles/server.dir/main.cpp.o: ../ProtobufHelpers.h
 CMakeFiles/server.dir/main.cpp.o: ../main.cpp
 CMakeFiles/server.dir/main.cpp.o: packet.pb.h

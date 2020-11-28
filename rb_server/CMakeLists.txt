@@ -1,23 +1,12 @@
-cmake_minimum_required(VERSION 3.15)
-project(TCPServer)
+file(GLOB rb_server_SRC
+    "inc/*.h"
+    "src/*.cpp"
+)
 
-set(CMAKE_CXX_STANDARD 17)
-
-set(Boost_USE_STATIC_LIBS OFF) #enable dynamic linking
-set(Boost_INCLUDE_DIR /Users/enricoclemente/CLionProjects/boost/boost_1_73_0)
-set(Boost_LIBRARIES /Users/enricoclemente/CLionProjects/boost/boost_1_73_0/libs)
-
-find_package(Boost REQUIRED COMPONENTS filesystem)
-find_package(Protobuf REQUIRED)
-
-include_directories(${Boost_INCLUDE_DIR})
-include_directories(${Protobuf_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${remotebackup_SOURCE_DIR}/rb_server/inc)
 
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS packet.proto)
-# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS EXPORT_MACRO DLL_EXPORT sample.proto)
-# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS DESCRIPTORS PROTO_DESCS sample.proto)
+add_executable(server ${PROTO_HDRS} ${rb_server_SRC})
 
-add_executable(server main.cpp  AsioAdapting.h ProtobufHelpers.cpp ProtobufHelpers.h ${PROTO_SRCS} ${PROTO_HDRS})
-
-target_link_libraries(server ${Boost_LIBRARIES} ${Protobuf_LIBRARIES})
+target_link_libraries(server rb_lib ${Boost_LIBRARIES}  ${Protobuf_LIBRARIES})
+link_directories(${remotebackup_SOURCE_DIR}/rb_lib/src)

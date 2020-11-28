@@ -1,0 +1,5 @@
+*~
+build
+Debug
+.vscode
+cmake-build-and-Debug

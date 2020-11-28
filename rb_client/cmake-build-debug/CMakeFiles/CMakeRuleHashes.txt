@@ -1,3 +1,0 @@
-# Hashes of file build rules.
-e557f3313a0eb419e7f97f734ab73cb9 packet.pb.h
-5092ed7a3998476bafda591addc1be65 sample.pb.h

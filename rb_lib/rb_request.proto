@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+// Shipped with Request->type: upload, remove
+message RBFileSegment {
+  string path = 1;
+  int64 size = 2;
+  int64 checksum = 3;
+  int64 segmentID = 4;
+  repeated bytes data = 5;
+}
+
+// Shipped with Request->type: auth
+message RBAuthRequest {
+  string user = 1;
+  string pass = 2;
+}
+
+// Main request wrapper, sent by client
+message RBRequest {
+  string type = 1;
+  string token = 2;
+  RBAuthRequest authRequest = 30;
+  RBFileSegment fileSegment = 40;
+}

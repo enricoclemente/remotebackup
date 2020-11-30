@@ -6,7 +6,7 @@ file(GLOB rb_server_SRC
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${remotebackup_SOURCE_DIR}/rb_server/inc)
 
-add_executable(server ${PROTO_HDRS} ${rb_server_SRC})
+add_executable(server ${rb_server_SRC})
 
 target_link_libraries(server rb_lib ${Boost_LIBRARIES}  ${Protobuf_LIBRARIES})
 link_directories(${remotebackup_SOURCE_DIR}/rb_lib/src)

@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+// Shipped with Response->type: auth
+message RBAuthResponse {
+  string token = 1;
+}
+
+// Shipped with Response->type: probe
+message RBProbeResponse {
+  repeated bytes schema = 5;
+}
+
+// Main response wrapper, sent by server
+message RBResponse {
+  string type = 1;
+  bool success = 2;
+  string error = 3;
+  RBAuthResponse authResponse = 40;
+  RBProbeResponse probeResponse = 50;
+}

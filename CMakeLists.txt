@@ -12,6 +12,7 @@ find_package(Protobuf REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 include_directories(${Protobuf_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${remotebackup_SOURCE_DIR}/rb_lib/inc)
 
 add_subdirectory(rb_lib)
 

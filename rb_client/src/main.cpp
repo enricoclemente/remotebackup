@@ -31,7 +31,7 @@ std::vector<std::string> split_string(const std::string& str, const std::string&
 
 
 
-int main() {
+int main_() {
 
     FileWatcher fw{"/Users/enricoclemente/Downloads", std::chrono::milliseconds(5000)};
     OutputQueue oq;

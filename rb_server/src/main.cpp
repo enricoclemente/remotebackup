@@ -9,7 +9,7 @@
 
 
 using boost::asio::ip::tcp;
-int main()
+int main_()
 {
     boost::asio::io_service io_service;
     int port = 4561;

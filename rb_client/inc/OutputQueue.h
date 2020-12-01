@@ -8,60 +8,36 @@
 #include "FileWatcher.h"
 
 #include <iostream>
+#include <optional>
+#include <chrono>
 #include <queue>
 #include <mutex>
 #include <condition_variable>
 
 
-struct file_transfer {
-    std::string file_path;
-    std::time_t last_write_time;
+struct file_operation {
+    std::string path;
+    std::uint32_t checksum;
     FileStatus command;
+    std::time_t time;
+    bool processing;
 };
 
 class OutputQueue {
-    std::vector<file_transfer> queue;
+    std::vector<file_operation> queue;
     int dim;
+    int free;
     std::mutex m;
     std::condition_variable cv;
 
 public:
-    bool push(file_transfer element) {
-        std::lock_guard lg(m);
+    void push(file_operation element);
 
-        bool push = true;
-        auto it = queue.begin();
+    std::optional<file_operation> get();
 
-        // check if there is a more recent operation on that file
-        while(it != queue.end()) {
-            if(it->file_path == element.file_path && it->last_write_time < element.last_write_time) {
-                push = false;
-                break;
-            }
-        }
+    void pop(file_operation& fo);
 
-        if(push) {
-            queue.push_back(element);
-            dim++;
-            cv.notify_one();
-        }
-
-        return push;
-    }
-
-    file_transfer pop() {
-        std::unique_lock ul(m);
-        cv.wait(ul, [this](){ return !this->queue.empty(); });
-        file_transfer output = queue.front();
-        queue.erase(queue.begin());
-        dim--;
-        return output;
-    }
-
-    int size() {
-        std::lock_guard lg(m);
-        return queue.size();
-    }
+    int size();
 };
 
 

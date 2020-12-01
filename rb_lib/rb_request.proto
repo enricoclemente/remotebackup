@@ -17,8 +17,9 @@ message RBAuthRequest {
 
 // Main request wrapper, sent by client
 message RBRequest {
-  string type = 1;
-  string token = 2;
+  uint32 protoVer = 1;
+  string type = 10;
+  string token = 20;
   RBAuthRequest authRequest = 30;
   RBFileSegment fileSegment = 40;
 }

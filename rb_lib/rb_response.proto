@@ -7,14 +7,15 @@ message RBAuthResponse {
 
 // Shipped with Response->type: probe
 message RBProbeResponse {
-  repeated bytes schema = 5;
+  repeated bytes schema = 1;
 }
 
 // Main response wrapper, sent by server
 message RBResponse {
-  string type = 1;
-  bool success = 2;
-  string error = 3;
-  RBAuthResponse authResponse = 40;
-  RBProbeResponse probeResponse = 50;
+  uint32 protoVer = 1;
+  string type = 10;
+  bool success = 20;
+  string error = 21;
+  RBAuthResponse authResponse = 30;
+  RBProbeResponse probeResponse = 40;
 }

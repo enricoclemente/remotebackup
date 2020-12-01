@@ -1,6 +1,4 @@
 #include "Client.h"
-#include "ProtobufHelpers.h"
-#include "AsioAdapting.h"
 
 using boost::asio::ip::tcp;
 
@@ -12,28 +10,50 @@ Client::Client(std::string ip, std::string port) {
 }
 
 RBResponse Client::run(RBRequest req) {
-  tcp::socket socket(io_service);
-  boost::asio::connect(socket, endpoints);
 
-  if (!socket.is_open()) throw RBNetException("can't open socket");
+  if (!req.final()) throw RBException("notFinalClientRun");
 
-  AsioInputStream<boost::asio::ip::tcp::socket> ais(socket);
-  CopyingInputStreamAdaptor cis_adp(&ais);
-  AsioOutputStream<boost::asio::ip::tcp::socket> aos(socket);
-  CopyingOutputStreamAdaptor cos_adp(&aos);
+  ProtoChannel chan = openChannel();
+  return chan.run(req);
+}
+
+RBResponse ProtoChannel::run(RBRequest req) {
+
+  std::lock_guard<std::mutex> lock(mutex);
+
+  if (!socket.is_open()) throw RBException("socketClosed");
 
   bool net_op = google::protobuf::io::writeDelimitedTo(req, &cos_adp);
   cos_adp.Flush();
 
-  if(!net_op) throw RBNetException("reqSend");
+  if(!net_op) throw RBException("reqSend");
 
   RBResponse res;
 
   net_op = google::protobuf::io::readDelimitedFrom(&res, &cis_adp);
 
-  if(!net_op) throw RBNetException("resRecv");
+  if(!net_op) throw RBException("resRecv");
 
-  socket.close();
+  if (req.final()) socket.close();
 
   return res;
+}
+
+ProtoChannel::ProtoChannel(
+  tcp::resolver::iterator &endpoints,
+  boost::asio::io_service &io_service)
+  : socket(io_service),
+  ais(socket),
+  cis_adp(&ais),
+  aos(socket),
+  cos_adp(&aos) {
+  boost::asio::connect(socket, endpoints);
+}
+
+ProtoChannel Client::openChannel() {
+  return ProtoChannel(endpoints, io_service);
+}
+
+ProtoChannel::~ProtoChannel() {
+  if (socket.is_open()) socket.close();
 }

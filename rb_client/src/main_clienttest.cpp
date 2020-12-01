@@ -6,13 +6,21 @@ int main() {
 
   RBRequest test;
 
-  test.set_type("auth");
+  test.set_type(RBMsgType::AUTH);
+  test.set_final(true);
 
   std::cout << "Running test request" << std::endl;
 
-  RBResponse res = pippo.run(test);
+  try {
+    RBResponse res = pippo.run(test);
+    std::cout << "RES: " << res.type() << std::endl;
+    if (res.error().size()) {
+      RBLog(res.error());
+    }
+  } catch (RBException &e) {
+    excHandler(e);
+  }
 
-  std::cout << "RES: " << res.type() << std::endl;
 
   return 0;  
 

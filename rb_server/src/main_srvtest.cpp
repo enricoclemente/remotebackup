@@ -1,7 +1,6 @@
 #include "ProtobufHelpers.h"
 #include "AsioAdapting.h"
-#include "rb_request.pb.h"
-#include "rb_response.pb.h"
+#include "rbproto.pb.h"
 #include "packet.pb.h"
 #include "CRC.h"
 
@@ -13,16 +12,25 @@
 int main() {
     Server srv(8888, [](RBRequest req) {
 
-        if (req.type() == "auth") {
-            std::cout << "Auth request!";
-        } else if (req.type() == "upload") {
-            std::cout << "Upload request!";
-        } else if (req.type() == "remove") {
-            std::cout << "Remove request!";
+        RBResponse res;
+
+        if (req.type() == RBMsgType::AUTH) {
+            res.set_error("unimplemented:AUTH");
+            RBLog("Auth request!");
+        } else if (req.type() == RBMsgType::UPLOAD) {
+            res.set_error("unimplemented:UPLOAD");
+            RBLog("Upload request!");
+        } else if (req.type() == RBMsgType::REMOVE) {
+            res.set_error("unimplemented:REMOVE");
+            RBLog("Remove request!");
+        } else if (req.type() == RBMsgType::PROBE) {
+            res.set_error("unimplemented:PROBE");
+            RBLog("Probe request!");
+        } else {
+            throw RBException("unknownReqType:"+req.type());
         }
 
-        RBResponse res;
-        res.set_type("res_to_" + req.type());
+        res.set_type(req.type());
 
         return res;
     });

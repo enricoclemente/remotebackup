@@ -1,17 +1,10 @@
 #include "Server.h"
-#include "AsioAdapting.h"
-#include "ProtobufHelpers.h"
-
-#include <exception>
-
 using namespace boost;
 
-void excHandler(std::exception &e) {
-    std::cout << "Error occured! Message: " << e.what();
-}
-
 Service::Service(sockPtr_t sock, std::function<void(sockPtr_t)> &acceptor)
-    : sock(sock), acceptor(acceptor) {}
+    : sock(sock), acceptor(acceptor) {
+        RBLog("Service()");
+    }
 
 Service *Service::serve(sockPtr_t sock,
                         std::function<void(sockPtr_t)> &acceptor) {
@@ -30,6 +23,8 @@ void Service::handleClient() {
         acceptor(sock);
         sock.get()->close();
     } catch (std::exception &e) {
+        excHandler(e);
+    } catch (RBException &e) {
         excHandler(e);
     }
 
@@ -53,16 +48,19 @@ Server::Server(unsigned short port_num, std::function<RBResponse (RBRequest)> fu
         CopyingOutputStreamAdaptor cos_adp(&aos);
 
         RBRequest req;
-
-        bool op = google::protobuf::io::readDelimitedFrom(&req, &cis_adp);
+        req.set_final(false);
         
-        if (!op) throw RBNetException("reqRecv");
+        while(!req.final()) {
+            bool op = google::protobuf::io::readDelimitedFrom(&req, &cis_adp);
+            
+            if (!op) throw RBException("reqRecv");
 
-        RBResponse res = func(req);
+            RBResponse res = func(req);
 
-        op = google::protobuf::io::writeDelimitedTo(res, &cos_adp);
-        cos_adp.Flush();
-        if (!op) throw RBNetException("resSend");
+            op = google::protobuf::io::writeDelimitedTo(res, &cos_adp);
+            cos_adp.Flush();
+            if (!op) throw RBException("resSend");
+        }
 
     }){}
 
@@ -76,10 +74,10 @@ void Server::stop() {
 }
 
 void Server::run() {
+    RBLog("Server started");
     while (!m_stop.load()) {
         sockPtr_t sock(new asio::ip::tcp::socket(m_ios));
         tcp_acceptor.accept(*sock.get());
-        std::cout << "Client accepted!" << std::endl;
         Service::serve(sock, acceptor);
     }
 }

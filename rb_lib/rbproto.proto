@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+enum RBMsgType {
+  AUTH = 0;
+  UPLOAD = 1;
+  REMOVE = 2;
+  PROBE = 3;
+}
+
+// RESPONSES
+
+// Shipped with Response->type: auth
+message RBAuthResponse {
+  string token = 1;
+}
+
+// Shipped with Response->type: probe
+message RBProbeResponse {
+  repeated bytes schema = 1;
+}
+
+// Main response wrapper, sent by server
+message RBResponse {
+  uint32 protoVer = 1;
+  RBMsgType type = 10;
+  bool success = 20;
+  string error = 21;
+  RBAuthResponse authResponse = 30;
+  RBProbeResponse probeResponse = 40;
+}
+
+
+
+// REQUESTS
+
+// Shipped with Request->type: upload, remove
+message RBFileSegment {
+  string path = 1;
+  int64 size = 2;
+  int64 checksum = 3;
+  int64 segmentID = 4;
+  repeated bytes data = 5;
+}
+
+// Shipped with Request->type: auth
+message RBAuthRequest {
+  string user = 1;
+  string pass = 2;
+}
+
+// Main request wrapper, sent by client
+message RBRequest {
+  uint32 protoVer = 1;
+  bool final = 2;
+  RBMsgType type = 10;
+  string token = 20;
+  RBAuthRequest authRequest = 30;
+  RBFileSegment fileSegment = 40;
+}

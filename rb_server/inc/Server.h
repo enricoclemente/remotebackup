@@ -7,17 +7,19 @@
 #include <thread>
 #include <functional>
 #include "RBHelpers.h"
-#include "rb_request.pb.h"
-#include "rb_response.pb.h"
+#include "rbproto.pb.h"
+
+#include "AsioAdapting.h"
+#include "ProtobufHelpers.h"
 
 using namespace boost;
-
-void excHandler(system::system_error & e);
 
 class Service {
  public:
   static Service* serve(sockPtr_t sock, std::function<void(sockPtr_t)>&);
-
+  ~Service() {
+    RBLog("~Service()");
+  }
  private:
   Service(sockPtr_t sock,std::function<void(sockPtr_t)>&);
   void startHandle();

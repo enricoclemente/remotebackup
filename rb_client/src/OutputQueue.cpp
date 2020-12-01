@@ -4,7 +4,7 @@
 
 #include "OutputQueue.h"
 
-void OutputQueue::push(file_operation element) {
+void OutputQueue::push(const file_operation& element) {
     std::lock_guard lg(m);
 
     queue.push_back(element);
@@ -22,7 +22,7 @@ std::optional<file_operation> OutputQueue::get() {
     for(auto i : queue) {
         if(!i.processing) {
             // check if there are not other process for the same file
-            for(auto j : queue) {
+            for(const auto& j : queue) {
                 if(j.processing && j.path == i.path) {
                     valid = false;
                     break;
@@ -40,13 +40,13 @@ std::optional<file_operation> OutputQueue::get() {
     return std::nullopt;
 }
 
-void OutputQueue::pop(file_operation& fo) {
+void OutputQueue::pop(int id) {
     std::unique_lock ul(m);
     cv.wait(ul, [this](){ return dim > 0; });
 
     auto it = queue.begin();
     while(it != queue.end()) {
-        if(it->path == fo.path && it->time == fo.time ) {
+        if(it->id == id) {
             queue.erase(it);
             dim--;
             free--;

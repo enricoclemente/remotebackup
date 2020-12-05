@@ -16,7 +16,11 @@
 
 using namespace boost::filesystem;
 
-enum class FileStatus{ created, modified, erased };
+enum class FileStatus{
+    CREATED = 0,
+    MODIFIED = 1,
+    REMOVED = 2,
+};
 
 class FileWatcher {
     std::string path_to_watch;
@@ -45,7 +49,7 @@ public:
             auto it = files.begin();
             while(it != files.end()) {
                 if(!exists(it->first)) {
-                    action(it->first, it->second, FileStatus::erased);
+                    action(it->first, it->second, FileStatus::REMOVED);
                     it = files.erase(it);
                 } else {
                     it++;
@@ -58,12 +62,12 @@ public:
                 // File creation
                 if(!contains(file.path().string())) {
                     files[file.path().string()] = last_write_time(file.path());
-                    action(file.path().string(), files[file.path().string()], FileStatus::created);
+                    action(file.path().string(), files[file.path().string()], FileStatus::CREATED);
                     // File modification
                 } else {
                     if(files[file.path().string()] != current_file_last_time_write) {
                         files[file.path().string()] = last_write_time(file.path());
-                        action(file.path().string(), files[file.path().string()], FileStatus::modified);
+                        action(file.path().string(), files[file.path().string()], FileStatus::MODIFIED);
                     }
                 }
             }

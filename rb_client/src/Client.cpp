@@ -2,14 +2,14 @@
 
 using boost::asio::ip::tcp;
 
-Client::Client(std::string ip, std::string port) {
+Client::Client(const std::string& ip, const std::string& port) {
     if (ec.value()) throw ec;
     tcp::resolver resolver(io_service);
     tcp::resolver::query query(ip, port);
     endpoints = resolver.resolve(query);
 }
 
-RBResponse Client::run(RBRequest req) {
+RBResponse Client::run(const RBRequest& req) {
 
   if (!req.final()) throw RBException("notFinalClientRun");
 
@@ -17,7 +17,7 @@ RBResponse Client::run(RBRequest req) {
   return chan.run(req);
 }
 
-RBResponse ProtoChannel::run(RBRequest req) {
+RBResponse ProtoChannel::run(const RBRequest& req) {
 
   std::lock_guard<std::mutex> lock(mutex);
 

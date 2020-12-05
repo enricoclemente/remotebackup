@@ -14,8 +14,8 @@ class ProtoChannel;
 
 class Client {
 public:
-    Client(std::string, std::string);
-    RBResponse run(RBRequest);
+    Client(const std::string&, const std::string&);
+    RBResponse run(const RBRequest&);
     ProtoChannel openChannel();
 
 private:
@@ -31,7 +31,7 @@ public:
     ProtoChannel(ProtoChannel &) = delete;
     ProtoChannel(ProtoChannel &&) = default;
     ~ProtoChannel();
-    RBResponse run(RBRequest);
+    RBResponse run(const RBRequest&);
 
 private:
     ProtoChannel(tcp::resolver::iterator &, boost::asio::io_service &);

@@ -1,43 +1,52 @@
-//
-// Created by Enrico Clemente on 26/10/2020.
-//
-
-#ifndef TCPCLIENT_OUTPUTQUEUE_H
-#define TCPCLIENT_OUTPUTQUEUE_H
-
-#include "FileWatcher.h"
-
 #include <iostream>
 #include <optional>
-#include <queue>
+#include <list>
 #include <mutex>
 #include <condition_variable>
 
+enum class FileCommand {
+    UPLOAD = 1,
+    REMOVE = 3,
+    RENAME = 4,
+};
 
-struct file_operation {
+class FileOperation {
+private:
     std::string path;
-    std::uint32_t checksum;
-    FileStatus command;
+    FileCommand command;
+    std::time_t last_write_time;
     int id;
     bool processing;
+    std::mutex processing_m;
+    bool abort;
+    std::mutex abort_m;
+
+public:
+    FileOperation(std::string path, FileCommand command, std::time_t last_write_time, int id);
+    std::string get_path() const;
+    FileCommand get_command() const;
+    std::time_t get_last_write_time() const;
+    int get_id() const;
+    void set_processing(bool flag);
+    bool get_processing() const;
+    void set_abort(bool flag);
+    bool get_abort() const;
 };
 
 class OutputQueue {
-    std::list<file_operation> queue;
+private:
+    std::list<std::shared_ptr<FileOperation>> queue;
     int dim;
     int free;
+    int id_counter;
     std::mutex m;
     std::condition_variable cv;
 
 public:
-    void push(const file_operation& element);
-
-    std::optional<file_operation> get();
-
-    void pop(int id);
-
+    OutputQueue();
+    void add_file_operation(const std::string& path, FileCommand command, std::time_t last_write_time);
+    std::shared_ptr<FileOperation> get_file_operation();
+    void remove_file_operation(int id);
     int size();
 };
 
-
-#endif //TCPCLIENT_OUTPUTQUEUE_H

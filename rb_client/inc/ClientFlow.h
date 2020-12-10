@@ -3,20 +3,22 @@
 //
 #include "Client.h"
 #include "OutputQueue.h"
-#include "CRC.h"
 
-#define MAXFILESEGMENT 1000000
 
 class ClientFlow {
 private:
-    Client client;
+    std::shared_ptr<Client> client;
 
 public:
-    ClientFlow(Client client);
-    std::string authenticate(const std::string& username, const std::string& password);
-    RBResponse get_server_status();
-    void upload_file(const std::shared_ptr<FileOperation>& file_operation, const std::string& root_path);
-    void remove_file(const std::shared_ptr<FileOperation>& file_operation, const std::string& root_path);
+    ClientFlow(const std::string& ip, const std::string& port);
+
+    std::string authenticate(const std::string &username, const std::string &password);
+
+    std::unordered_map<std::string, file_metadata> get_server_files();
+
+    void upload_file(const std::shared_ptr<FileOperation> &file_operation, const std::string &root_path);
+
+    void remove_file(const std::shared_ptr<FileOperation> &file_operation, const std::string &root_path);
 
 };
 

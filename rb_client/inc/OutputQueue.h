@@ -1,3 +1,5 @@
+#include "FileManager.h"
+
 #include <iostream>
 #include <optional>
 #include <list>
@@ -14,7 +16,7 @@ class FileOperation {
 private:
     std::string path;
     FileCommand command;
-    std::time_t last_write_time;
+    file_metadata metadata;
     int id;
     bool processing;
     std::mutex processing_m;
@@ -22,16 +24,17 @@ private:
     std::mutex abort_m;
 
 public:
-    FileOperation(std::string path, FileCommand command, std::time_t last_write_time, int id);
+    FileOperation(std::string path, file_metadata metadata, FileCommand command, int id);
     std::string get_path() const;
     FileCommand get_command() const;
-    std::time_t get_last_write_time() const;
+    file_metadata get_metadata() const;
     int get_id() const;
     void set_processing(bool flag);
     bool get_processing() const;
     void set_abort(bool flag);
     bool get_abort() const;
 };
+
 
 class OutputQueue {
 private:
@@ -44,9 +47,9 @@ private:
 
 public:
     OutputQueue();
-    void add_file_operation(const std::string& path, FileCommand command, std::time_t last_write_time);
+    void add_file_operation(const std::string &path, file_metadata metadata, FileCommand command);
     std::shared_ptr<FileOperation> get_file_operation();
-    void remove_file_operation(int id);
+    bool remove_file_operation(int id);
     int size();
 };
 

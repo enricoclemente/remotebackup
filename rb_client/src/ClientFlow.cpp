@@ -1,110 +1,124 @@
-//
-// Created by Enrico Clemente on 05/12/2020.
-//
-
 #include "ClientFlow.h"
 
-#include <boost/filesystem.hpp>
-
-
-std::string string_remove_pref(const std::string& pref, const std::string& input) {
-    std::string output = input;
-    output.erase(0,pref.size()+1);
-    return output;
+ClientFlow::ClientFlow(const std::string & ip, const std::string & port) {
+    this->client = std::make_shared<Client>(ip, port);
 }
 
 std::string ClientFlow::authenticate(const std::string &username, const std::string &password) {
     return std::string();
 }
 
-void ClientFlow::upload_file(const std::shared_ptr<FileOperation>& file_operation, const std::string &root_path) {
 
-    if(file_operation->get_command() != FileCommand::UPLOAD)
+
+void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operation, const std::string &root_path) {
+
+    if (file_operation->get_command() != FileCommand::UPLOAD)
         throw std::logic_error("Wrong type of FileOperation command");
 
-    std::ifstream fl(file_operation->get_path());
-    if(fl.fail())   throw std::runtime_error("Error opening file");
+    filesystem::path file_path{file_operation->get_path()+root_path};
+    file_metadata metadata = file_operation->get_metadata();
 
-    fl.seekg( 0, fl.end );
-    std::size_t file_len = fl.tellg();
-    fl.seekg(0, fl.beg);
+    std::ifstream fl(file_path.string());
+    if (fl.fail()) {
+        if(filesystem::exists(file_path) && filesystem::is_regular_file(file_path))
+            throw std::runtime_error("Error opening file");
+        else
+            return;
+    }
 
+    int file_size = filesystem::file_size(file_path);
+    if(file_size != metadata.size ||
+        filesystem::last_write_time(file_path) != metadata.last_write_time)
+        return;
 
-    int num_segments = file_len / MAXFILESEGMENT +1;
+    int num_segments = file_size / MAXFILESEGMENT + 1;
     int chunck_size = 2048;
     std::vector<char> chunck(chunck_size, 0);
+    crc_32_type crc;
     std::uint32_t checksum;
 
-    std::string file_path = string_remove_pref(root_path,file_operation->get_path());
-
     // Fragment files larger than 1MB
-    for(int i=0; i<num_segments; i++) {
+    for (int i = 0; i < num_segments; i++) {
         RBRequest file_upload_request;
         file_upload_request.set_type(RBMsgType::UPLOAD);
 
         auto *file_segment = new RBFileSegment();
-        file_segment->set_path(file_path);
-        file_segment->set_size(file_len);
+        file_segment->set_path(file_operation->get_path());
+        file_segment->set_size(file_size);
         file_segment->set_totsegments(num_segments);
         file_segment->set_segmentid(i);
 
         // File chuncks read
         size_t segment_len = MAXFILESEGMENT;
-        if(num_segments == 1) {
-            segment_len = file_len;
-        } else if((num_segments - i) == 1) {
-            segment_len = file_len - ((i+1)*MAXFILESEGMENT);
+        if (num_segments == 1) {
+            segment_len = file_size;
+        } else if ((num_segments - i) == 1) {
+            segment_len = file_size - ((i + 1) * MAXFILESEGMENT);
         }
 
         size_t tot_read = 0;
         size_t current_read = 0;
-        while(tot_read < segment_len) {
+        while (tot_read < segment_len) {
             // check every time is something has changed for the file operation
-            if(file_operation->get_abort())     throw std::runtime_error("FileOperation aborted");// error or better return a code?
-            if(segment_len - tot_read >= chunck_size) {
+            if (file_operation->get_abort())    return;
+            if (segment_len - tot_read >= chunck_size) {
                 fl.read(&chunck[0], chunck_size);
-                checksum = CRC::Calculate(&chunck[0], chunck_size, CRC::CRC_32(),checksum);
             } else {
-                fl.read(&chunck[0],segment_len-tot_read);
-                checksum = CRC::Calculate(&chunck[0], segment_len-tot_read, CRC::CRC_32(),checksum);
+                fl.read(&chunck[0], segment_len - tot_read);
             }
 
-            if(!fl)    throw std::runtime_error("Error reading file chunck");
+            if (!fl)    throw std::runtime_error("Error reading file chunck");
 
             file_segment->add_data(&chunck[0], current_read);
 
             current_read = fl.gcount();
+            crc.process_bytes(&chunck[0], current_read);
             tot_read += current_read;
         }
 
-        if(i==num_segments-1) {
-            file_segment->set_checksum(checksum);
+        if (i == num_segments - 1) {
+            if(crc.checksum() != metadata.checksum)
+                return;
+
+            file_segment->set_checksum(crc.checksum());
         }
         file_upload_request.set_allocated_filesegment(file_segment);
 
-        auto res = this->client.run(file_upload_request);
-        if(!res.error().empty())    throw std::runtime_error(res.error());
+        auto res = this->client->run(file_upload_request);
+        if (!res.error().empty())   throw RBException(res.error());
     }
 
     fl.close();
 }
 
-void ClientFlow::remove_file(const std::shared_ptr<FileOperation>& file_operation, const std::string &root_path) {
-    if(file_operation->get_command() != FileCommand::REMOVE)
+void ClientFlow::remove_file(const std::shared_ptr<FileOperation> &file_operation, const std::string &root_path) {
+    if (file_operation->get_command() != FileCommand::REMOVE)
         throw std::logic_error("Wrong type of FileOperation command");
 
-    RBRequest file_upload_request;
-    file_upload_request.set_type(RBMsgType::REMOVE);
-
-    std::string file_path = string_remove_pref(root_path,file_operation->get_path());
+    RBRequest file_remove_request;
+    file_remove_request.set_type(RBMsgType::REMOVE);
     auto *file_segment = new RBFileSegment();
-    file_segment->set_path(file_path);
+    file_segment->set_path(file_operation->get_path());
+    file_remove_request.set_allocated_filesegment(file_segment);
 
-    file_upload_request.set_allocated_filesegment(file_segment);
-
-    auto res = this->client.run(file_upload_request);
-    if(!res.error().empty())    throw std::runtime_error(res.error());
+    auto res = this->client->run(file_remove_request);
+    if (!res.error().empty())   throw RBException(res.error());
 }
+
+std::unordered_map<std::string, file_metadata> ClientFlow::get_server_files() {
+
+    RBRequest probe_all_request;
+    probe_all_request.set_type(RBMsgType::PROBE);
+
+    auto res = this->client->run(probe_all_request);
+    if (!res.error().empty())   throw RBException(res.error());
+
+    res.proberesponse();
+
+    return std::unordered_map<std::string, file_metadata>();
+}
+
+
 
 
 

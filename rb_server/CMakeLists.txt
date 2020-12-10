@@ -8,5 +8,5 @@ include_directories(${remotebackup_SOURCE_DIR}/rb_server/inc)
 
 add_executable(server ${rb_server_SRC})
 
-target_link_libraries(server rb_lib ${Boost_LIBRARIES}  ${Protobuf_LIBRARIES})
+target_link_libraries(server rb_lib)
 link_directories(${remotebackup_SOURCE_DIR}/rb_lib/src)

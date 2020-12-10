@@ -9,15 +9,36 @@ Client::Client(const std::string &ip, const std::string &port) {
     endpoints = resolver.resolve(query);
 }
 
-RBResponse Client::run(const RBRequest &req) {
+void Client::authenticate(std::string username, std::string password) {
+    RBRequest req;
+    auto authReq = std::make_unique<RBAuthRequest>();
+
+    authReq->set_user(username);
+    authReq->set_pass(password);
+
+    req.set_protover(1);
+    req.set_type(RBMsgType::AUTH);
+    req.set_allocated_auth_request(authReq.release());
+    req.set_final(true);
+
+    RBResponse res = run(req);
+
+    validateRBProto(res, RBMsgType::AUTH, 1);
+    if (!res.has_auth_response())
+        throw RBProtoTypeException("missing auth response");
+    token = res.auth_response().token();
+}
+
+RBResponse Client::run(RBRequest &req) {
 
     if (!req.final()) throw RBException("notFinalClientRun");
 
-    ProtoChannel chan = openChannel();
+    ProtoChannel chan = open_channel();
     return chan.run(req);
 }
 
-RBResponse ProtoChannel::run(const RBRequest &req) {
+RBResponse ProtoChannel::run(RBRequest &req) {
+    req.set_token(token);
 
     std::lock_guard<std::mutex> lock(mutex);
 
@@ -40,18 +61,20 @@ RBResponse ProtoChannel::run(const RBRequest &req) {
 }
 
 ProtoChannel::ProtoChannel(
-        tcp::resolver::iterator &endpoints,
-        boost::asio::io_service &io_service)
-        : socket(io_service),
-          ais(socket),
-          cis_adp(&ais),
-          aos(socket),
-          cos_adp(&aos) {
+    tcp::resolver::iterator &endpoints,
+    boost::asio::io_service &io_service,
+    std::string & token)
+    : socket(io_service),
+      ais(socket),
+      cis_adp(&ais),
+      aos(socket),
+      cos_adp(&aos),
+      token(token) {
     boost::asio::connect(socket, endpoints);
 }
 
-ProtoChannel Client::openChannel() {
-    return ProtoChannel(endpoints, io_service);
+ProtoChannel Client::open_channel() {
+    return ProtoChannel(endpoints, io_service, token);
 }
 
 ProtoChannel::~ProtoChannel() {

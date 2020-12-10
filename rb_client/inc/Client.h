@@ -16,14 +16,16 @@ class Client {
 public:
     Client(const std::string &, const std::string &);
 
-    RBResponse run(const RBRequest &);
+    RBResponse run(RBRequest &);
 
-    ProtoChannel openChannel();
+    ProtoChannel open_channel();
+    void authenticate(std::string, std::string);
 
 private:
     boost::asio::ip::tcp::resolver::iterator endpoints;
     boost::system::error_code ec;
     boost::asio::io_service io_service;
+    std::string token;
 };
 
 using boost::asio::ip::tcp;
@@ -36,12 +38,12 @@ public:
 
     ~ProtoChannel();
 
-    RBResponse run(const RBRequest &);
+    RBResponse run(RBRequest &);
 
 private:
-    ProtoChannel(tcp::resolver::iterator &, boost::asio::io_service &);
+    ProtoChannel(tcp::resolver::iterator &, boost::asio::io_service &, std::string &);
 
-    friend ProtoChannel Client::openChannel();
+    friend ProtoChannel Client::open_channel();
 
     tcp::socket socket;
 
@@ -50,4 +52,5 @@ private:
     AsioOutputStream<tcp::socket> aos;
     CopyingOutputStreamAdaptor cos_adp;
     std::mutex mutex;
+    std::string & token;
 };

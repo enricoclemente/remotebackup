@@ -31,7 +31,7 @@ void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
         filesystem::last_write_time(file_path) != metadata.last_write_time)
         return;
 
-    int num_segments = file_size / MAXFILESEGMENT + 1;
+    int num_segments = count_segments(file_size);
     int chunck_size = 2048;
     std::vector<char> chunck(chunck_size, 0);
     crc_32_type crc;
@@ -42,18 +42,17 @@ void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
         RBRequest file_upload_request;
         file_upload_request.set_type(RBMsgType::UPLOAD);
 
-        auto *file_segment = new RBFileSegment();
+        auto file_segment = std::make_unique<RBFileSegment>();
         file_segment->set_path(file_operation->get_path());
         file_segment->set_size(file_size);
-        file_segment->set_totsegments(num_segments);
         file_segment->set_segmentid(i);
 
         // File chuncks read
-        size_t segment_len = MAXFILESEGMENT;
+        size_t segment_len = RB_MAX_SEGMENT_SIZE;
         if (num_segments == 1) {
             segment_len = file_size;
         } else if ((num_segments - i) == 1) {
-            segment_len = file_size - ((i + 1) * MAXFILESEGMENT);
+            segment_len = file_size % RB_MAX_SEGMENT_SIZE;
         }
 
         size_t tot_read = 0;
@@ -82,7 +81,7 @@ void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
 
             file_segment->set_checksum(crc.checksum());
         }
-        file_upload_request.set_allocated_filesegment(file_segment);
+        file_upload_request.set_allocated_file_segment(file_segment.release());
 
         auto res = this->client->run(file_upload_request);
         if (!res.error().empty())   throw RBException(res.error());
@@ -97,9 +96,9 @@ void ClientFlow::remove_file(const std::shared_ptr<FileOperation> &file_operatio
 
     RBRequest file_remove_request;
     file_remove_request.set_type(RBMsgType::REMOVE);
-    auto *file_segment = new RBFileSegment();
+    auto file_segment = std::make_unique<RBFileSegment>();
     file_segment->set_path(file_operation->get_path());
-    file_remove_request.set_allocated_filesegment(file_segment);
+    file_remove_request.set_allocated_file_segment(file_segment.release());
 
     auto res = this->client->run(file_remove_request);
     if (!res.error().empty())   throw RBException(res.error());
@@ -113,7 +112,7 @@ std::unordered_map<std::string, file_metadata> ClientFlow::get_server_files() {
     auto res = this->client->run(probe_all_request);
     if (!res.error().empty())   throw RBException(res.error());
 
-    res.proberesponse();
+    res.probe_response();
 
     return std::unordered_map<std::string, file_metadata>();
 }

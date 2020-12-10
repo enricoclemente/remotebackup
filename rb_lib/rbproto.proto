@@ -7,6 +7,12 @@ enum RBMsgType {
   PROBE = 3;
 }
 
+message RBFileStatus {
+  uint32 hash = 1;
+  uint64 size = 2;
+  int32 segments = 3;
+}
+
 // RESPONSES
 
 // Shipped with Response->type: auth
@@ -16,7 +22,7 @@ message RBAuthResponse {
 
 // Shipped with Response->type: probe
 message RBProbeResponse {
-  repeated bytes schema = 1;
+  map<string, RBFileStatus> schema = 1;
 }
 
 // Main response wrapper, sent by server
@@ -25,8 +31,10 @@ message RBResponse {
   RBMsgType type = 10;
   bool success = 20;
   string error = 21;
-  RBAuthResponse authResponse = 30;
-  RBProbeResponse probeResponse = 40;
+  oneof response {
+    RBAuthResponse auth_response = 30;
+    RBProbeResponse probe_response = 40;
+  }
 }
 
 
@@ -54,6 +62,8 @@ message RBRequest {
   bool final = 2;
   RBMsgType type = 10;
   string token = 20;
-  RBAuthRequest authRequest = 30;
-  RBFileSegment fileSegment = 40;
+  oneof request {
+    RBAuthRequest auth_request = 30;
+    RBFileSegment file_segment = 40;
+  }
 }

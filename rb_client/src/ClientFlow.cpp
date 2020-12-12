@@ -1,7 +1,7 @@
 #include "ClientFlow.h"
 
-ClientFlow::ClientFlow(const std::string & ip, const std::string & port) {
-    this->client = std::make_shared<Client>(ip, port);
+ClientFlow::ClientFlow(const std::string & ip, const std::string & port) :client(ip, port) {
+    // TODO start authentication
 }
 
 std::string ClientFlow::authenticate(const std::string &username, const std::string &password) {
@@ -26,9 +26,9 @@ void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
             return;
     }
 
-    int file_size = filesystem::file_size(file_path);
-    if(file_size != metadata.size ||
-        filesystem::last_write_time(file_path) != metadata.last_write_time)
+    size_t file_size = filesystem::file_size(file_path);
+    time_t last_write_time = filesystem::last_write_time(file_path);
+    if(file_size != metadata.size || last_write_time != metadata.last_write_time)
         return;
 
     int num_segments = count_segments(file_size);
@@ -40,12 +40,15 @@ void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
     // Fragment files larger than 1MB
     for (int i = 0; i < num_segments; i++) {
         RBRequest file_upload_request;
+        file_upload_request.set_protover(3);
         file_upload_request.set_type(RBMsgType::UPLOAD);
 
         auto file_segment = std::make_unique<RBFileSegment>();
+        auto file_metadata = std::make_unique<RBFileMetadata>();
         file_segment->set_path(file_operation->get_path());
-        file_segment->set_size(file_size);
         file_segment->set_segmentid(i);
+        file_metadata->set_size(file_size);
+        file_metadata->set_last_write_time(last_write_time);
 
         // File chuncks read
         size_t segment_len = RB_MAX_SEGMENT_SIZE;
@@ -78,43 +81,63 @@ void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
         if (i == num_segments - 1) {
             if(crc.checksum() != metadata.checksum)
                 return;
-
-            file_segment->set_checksum(crc.checksum());
+            file_upload_request.set_final(true);
+            file_metadata->set_checksum(crc.checksum());
         }
+
+        file_segment->set_allocated_file_metadata(file_metadata.release());
         file_upload_request.set_allocated_file_segment(file_segment.release());
 
-        auto res = this->client->run(file_upload_request);
-        if (!res.error().empty())   throw RBException(res.error());
+        auto res = this->client.run(file_upload_request);
+        validateRBProto(res, RBMsgType::UPLOAD, 3);
+        if (!res.error().empty())
+            throw RBException(res.error());
     }
 
     fl.close();
 }
+
 
 void ClientFlow::remove_file(const std::shared_ptr<FileOperation> &file_operation, const std::string &root_path) {
     if (file_operation->get_command() != FileCommand::REMOVE)
         throw std::logic_error("Wrong type of FileOperation command");
 
     RBRequest file_remove_request;
+    file_remove_request.set_protover(3);
     file_remove_request.set_type(RBMsgType::REMOVE);
+    file_remove_request.set_final(true);
     auto file_segment = std::make_unique<RBFileSegment>();
     file_segment->set_path(file_operation->get_path());
     file_remove_request.set_allocated_file_segment(file_segment.release());
 
-    auto res = this->client->run(file_remove_request);
+    auto res = this->client.run(file_remove_request);
+    validateRBProto(res, RBMsgType::REMOVE, 3);
     if (!res.error().empty())   throw RBException(res.error());
 }
 
 std::unordered_map<std::string, file_metadata> ClientFlow::get_server_files() {
-
     RBRequest probe_all_request;
+    probe_all_request.set_protover(3);
+    probe_all_request.set_final(true);
     probe_all_request.set_type(RBMsgType::PROBE);
 
-    auto res = this->client->run(probe_all_request);
-    if (!res.error().empty())   throw RBException(res.error());
+    auto res = this->client.run(probe_all_request);
+    validateRBProto(res, RBMsgType::PROBE, 3);
+    if (!res.error().empty())
+        throw RBException(res.error());
+    if(!res.has_probe_response())
+        throw RBException("missing probe response");
 
-    res.probe_response();
+    auto server_files = res.probe_response().files();
+    std::unordered_map<std::string, file_metadata> map;
 
-    return std::unordered_map<std::string, file_metadata>();
+    auto it = server_files.begin();
+    while(it != server_files.end()) {
+        map[it->first] = file_metadata{it->second.checksum(), it->second.size(), it->second.last_write_time()};
+        it++;
+    }
+
+    return map;
 }
 
 

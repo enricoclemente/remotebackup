@@ -7,10 +7,10 @@ enum RBMsgType {
   PROBE = 3;
 }
 
-message RBFileStatus {
-  uint32 hash = 1;
+message RBFileMetadata {
+  uint32 checksum = 1;
   uint64 size = 2;
-  int32 segments = 3;
+  int64 last_write_time = 3;
 }
 
 // RESPONSES
@@ -22,7 +22,7 @@ message RBAuthResponse {
 
 // Shipped with Response->type: probe
 message RBProbeResponse {
-  map<string, RBFileStatus> schema = 1;
+  map<string, RBFileMetadata> files = 1;
 }
 
 // Main response wrapper, sent by server
@@ -44,10 +44,9 @@ message RBResponse {
 // Shipped with Request->type: upload, remove
 message RBFileSegment {
   string path = 1;
-  int64 size = 2;
-  int64 checksum = 3;
-  int64 segmentID = 4;
-  repeated bytes data = 5;
+  int64 segmentID = 3;
+  repeated bytes data = 4;
+  RBFileMetadata file_metadata = 2;
 }
 
 // Shipped with Request->type: auth

@@ -6,44 +6,47 @@
 #include <memory>
 #include <thread>
 #include <functional>
+
 #include "RBHelpers.h"
 #include "rbproto.pb.h"
-
 #include "AsioAdapting.h"
 #include "ProtobufHelpers.h"
 
 using namespace boost;
 
-class Service {
- public:
-  static Service* serve(sockPtr_t sock, std::function<void(sockPtr_t)>&);
-  ~Service() {
+class Service
+{
+public:
+  ~Service()
+  {
     RBLog("~Service()");
   }
- private:
-  Service(sockPtr_t sock,std::function<void(sockPtr_t)>&);
-  void startHandle();
+
+  static void serve(sockPtr_t sock, std::function<RBResponse(RBRequest)> callback);
+
+private:
+  Service(sockPtr_t sock, std::function<RBResponse(RBRequest)> callback);
+
   void handleClient();
 
   sockPtr_t sock;
-  std::function<void(sockPtr_t)> & acceptor;
+  std::function<void(sockPtr_t)> handler;
 };
 
-class Server {
- public:
-  Server(unsigned short port_num, std::function<void(sockPtr_t)>);
+class Server
+{
+public:
   Server(unsigned short port_num, std::function<RBResponse(RBRequest)>);
 
   void start();
-
   void stop();
 
- private:
+private:
   void run();
 
-  std::unique_ptr<std::thread> m_thread;
-  std::atomic<bool> m_stop;
-  asio::io_service m_ios;
+  std::unique_ptr<std::thread> thread_ptr;
+  std::atomic<bool> running;
+  asio::io_service ios;
   asio::ip::tcp::acceptor tcp_acceptor;
-  std::function<void(sockPtr_t)> acceptor;
+  std::function<RBResponse(RBRequest)> callback;
 };

@@ -1,15 +1,18 @@
-#include "ProtobufHelpers.h"
-#include "AsioAdapting.h"
-#include "rbproto.pb.h"
-#include "packet.pb.h"
-#include "CRC.h"
-
 #include <iostream>
 #include <boost/asio.hpp>
 #include <fstream>
-#include <Server.h>
+
+#include "ProtobufHelpers.h"
+#include "AsioAdapting.h"
+#include "rbproto.pb.h"
+#include "Server.h"
+#include "Database.h"
 
 int main() {
+    auto& db = Database::get_instance();
+    db.open();
+    db.close();
+
     Server srv(8888, [](RBRequest req) {
 
         RBResponse res;

@@ -16,16 +16,16 @@ void Client::authenticate(std::string username, std::string password) {
     authReq->set_user(username);
     authReq->set_pass(password);
 
-    req.set_protover(1);
+    req.set_protover(3);
     req.set_type(RBMsgType::AUTH);
     req.set_allocated_auth_request(authReq.release());
     req.set_final(true);
 
     RBResponse res = run(req);
 
-    validateRBProto(res, RBMsgType::AUTH, 1);
+    validateRBProto(res, RBMsgType::AUTH, 3);
     if (!res.has_auth_response())
-        throw RBProtoTypeException("missing auth response");
+        throw RBException("missing auth response");
     token = res.auth_response().token();
 }
 

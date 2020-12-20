@@ -29,8 +29,7 @@ int main() {
     std::thread system([&file_manager, &oq]() {
         file_manager->set_file_watcher("/Users/enricoclemente/Downloads", std::chrono::milliseconds(5000));
 
-        file_manager->start_monitoring([&oq]
-                                               (const std::string &relative_file_path, file_metadata metadata,
+        file_manager->start_monitoring([&oq] (const std::string &relative_file_path, file_metadata metadata,
                                                 FileStatus status) -> void {
             if (!filesystem::is_regular_file(relative_file_path) && status != FileStatus::REMOVED) {
                 return;

@@ -7,7 +7,7 @@
 
 class ClientFlow {
 private:
-    std::shared_ptr<Client> client;
+    Client client;
 
 public:
     ClientFlow(const std::string& ip, const std::string& port);

@@ -18,9 +18,9 @@ enum class FileStatus {
 };
 
 struct file_metadata {
-    std::time_t last_write_time;
-    std::size_t size;
-    std::uint32_t checksum;
+    uint32_t checksum;
+    size_t size;
+    time_t last_write_time;
 };
 
 class FileManager {

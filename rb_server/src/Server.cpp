@@ -2,11 +2,11 @@
 
 using namespace boost;
 
-Service::Service(sockPtr_t sock, std::function<RBResponse(RBRequest)> callback)
+Service::Service(sockPtr_t sock, std::function<RBResponse(RBRequest&)> callback)
     : sock(sock),
       handler([callback](sockPtr_t sock) {
-          AsioInputStream<boost::asio::ip::tcp::socket> ais(*sock.get());
-          AsioOutputStream<boost::asio::ip::tcp::socket> aos(*sock.get());
+          AsioInputStream<boost::asio::ip::tcp::socket> ais(sock);
+          AsioOutputStream<boost::asio::ip::tcp::socket> aos(sock);
           CopyingInputStreamAdaptor cis_adp(&ais);
           CopyingOutputStreamAdaptor cos_adp(&aos);
 
@@ -32,7 +32,7 @@ Service::Service(sockPtr_t sock, std::function<RBResponse(RBRequest)> callback)
     RBLog("Service()");
 }
 
-void Service::serve(sockPtr_t sock, std::function<RBResponse(RBRequest)> callback)
+void Service::serve(sockPtr_t sock, std::function<RBResponse(RBRequest&)> callback)
 {
     auto svc_ptr = std::shared_ptr<Service>(new Service(sock, callback));
 
@@ -60,7 +60,7 @@ void Service::handleClient()
 
 using asio::ip::tcp;
 
-Server::Server(unsigned short port_num, std::function<RBResponse(RBRequest)> callback)
+Server::Server(unsigned short port_num, std::function<RBResponse(RBRequest&)> callback)
     : running(true),
       tcp_acceptor(ios, tcp::endpoint(tcp::v4(), port_num)),
       callback(callback) {}

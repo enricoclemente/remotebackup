@@ -22,10 +22,10 @@ public:
     RBLog("~Service()");
   }
 
-  static void serve(sockPtr_t sock, std::function<RBResponse(RBRequest)> callback);
+  static void serve(sockPtr_t sock, std::function<RBResponse(RBRequest&)> callback);
 
 private:
-  Service(sockPtr_t sock, std::function<RBResponse(RBRequest)> callback);
+  Service(sockPtr_t sock, std::function<RBResponse(RBRequest&)> callback);
 
   void handleClient();
 
@@ -36,7 +36,7 @@ private:
 class Server
 {
 public:
-  Server(unsigned short port_num, std::function<RBResponse(RBRequest)>);
+  Server(unsigned short port_num, std::function<RBResponse(RBRequest&)>);
 
   void start();
   void stop();
@@ -48,5 +48,5 @@ private:
   std::atomic<bool> running;
   asio::io_service ios;
   asio::ip::tcp::acceptor tcp_acceptor;
-  std::function<RBResponse(RBRequest)> callback;
+  std::function<RBResponse(RBRequest&)> callback;
 };

@@ -3,4 +3,4 @@
 ### Dev setup
 
 (assuming ubuntu)
-```sudo apt install libboost-all-dev libsqlite3-dev```
+```sudo apt install libboost-all-dev libsqlite3-dev libssl-dev```

@@ -14,7 +14,11 @@ class ProtoChannel;
 
 class Client {
 public:
-    Client(const std::string &, const std::string &);
+    Client(
+        const std::string & ip,
+        const std::string & port,
+        int timeout
+    );
 
     RBResponse run(RBRequest &);
 
@@ -26,6 +30,7 @@ private:
     boost::system::error_code ec;
     boost::asio::io_service io_service;
     std::string token;
+    int timeout;
 };
 
 using boost::asio::ip::tcp;
@@ -53,4 +58,5 @@ private:
     CopyingOutputStreamAdaptor cos_adp;
     std::mutex mutex;
     std::string & token;
+    int timeout;
 };

@@ -83,6 +83,17 @@ int OutputQueue::size() {
     return queue.size();
 }
 
+// TODO for @enrico: check method validity 
+void OutputQueue::reinsert_file_operation(std::shared_ptr<FileOperation> fo) {
+    if (fo->get_abort()) return;
+
+    std::unique_lock ul(m);
+    queue.push_back(fo);
+    dim++;
+    free++;
+
+    cv.notify_one();
+}
 
 // File Operation Class implementations
 FileOperation::FileOperation(std::string path, file_metadata metadata, FileCommand command, int id) :

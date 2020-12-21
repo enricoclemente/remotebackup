@@ -2,7 +2,8 @@
 
 using boost::asio::ip::tcp;
 
-Client::Client(const std::string &ip, const std::string &port) {
+Client::Client(const std::string &ip, const std::string &port, int timeout)
+    :timeout(timeout) {
     if (ec.value()) throw ec;
     tcp::resolver resolver(io_service);
     tcp::resolver::query query(ip, port);
@@ -60,6 +61,8 @@ RBResponse ProtoChannel::run(RBRequest &req) {
     return res;
 }
 
+typedef boost::asio::detail::socket_option::integer<SOL_SOCKET, SO_RCVTIMEO> asio_socket_timeout_option;
+
 ProtoChannel::ProtoChannel(
     tcp::resolver::iterator &endpoints,
     boost::asio::io_service &io_service,
@@ -70,7 +73,9 @@ ProtoChannel::ProtoChannel(
       aos(socket),
       cos_adp(&aos),
       token(token) {
+
     boost::asio::connect(socket, endpoints);
+    socket.set_option(asio_socket_timeout_option(timeout));
 }
 
 ProtoChannel Client::open_channel() {

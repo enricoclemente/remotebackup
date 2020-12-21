@@ -1,89 +1,121 @@
-#include "ClientFlow.h"
+#include <signal.h>
 
 #include <iostream>
-#include <thread>
 #include <mutex>
-
+#include <sstream>
+#include <thread>
 #include <utility>
+
+#include "ConfigMap.hpp"
+#include "ClientFlow.h"
 
 using namespace boost;
 
-// Concurrent console printing
-std::mutex pm;
+char CONFIG_FILE_PATH[] = "./rbclient.conf";
 
-void myprint(const std::string &output) {
-    std::lock_guard lg(pm);
-    std::cout << output << std::endl;
+std::mutex waiter;
+std::atomic<bool> keep_going = true;
+void stop_client(int n) {
+    keep_going = false;
+    std::cout << "Stopping client..." << std::endl;
+    waiter.unlock();
 }
 
+int main(int argc, char **argv) {
+    ConfigMap config;
 
-int main() {
+    config["root_folder"] = "./data";
+    config["port"] = "8888";
+    config["host"] = "localhost";
+    config["username"] = "";
+    config["password"] = "";
+    config["connection_timeout"] = "5000";
+    config["watcher_interval"] = "3000";
 
-    // Client pippo("192.168.1.3", "8888");
-    auto file_manager = std::make_shared<FileManager>();
+    std::cout << "Reading config..." << std::endl;
 
-    OutputQueue oq;
-    bool running = true;
+    config.load(CONFIG_FILE_PATH);
+    config.store(CONFIG_FILE_PATH);
 
-    // Thread to monitor the file system watcher every 5s
-    std::thread system([&file_manager, &oq]() {
-        file_manager->set_file_watcher("/Users/enricoclemente/Downloads", std::chrono::milliseconds(5000));
+    boost::filesystem::path root_folder(config["root_folder"]);
+    // directory is created only if not already present
+    boost::filesystem::create_directory(root_folder);
 
-        file_manager->start_monitoring([&oq] (const std::string &relative_file_path, file_metadata metadata,
-                                                FileStatus status) -> void {
-            if (!filesystem::is_regular_file(relative_file_path) && status != FileStatus::REMOVED) {
-                return;
+    ClientFlow client_logic(
+        config["host"], config["port"], config["root_folder"],
+        config.getNumeric("connection_timeout")
+    );
+    FileManager file_manager(
+        root_folder, 
+        std::chrono::milliseconds(config.getNumeric("watcher_interval"))
+    );
+    OutputQueue out_queue;
+
+    std::cout << "Authenticating..." << std::endl;
+    client_logic.authenticate(config["username"], config["password"]);
+
+    std::cout << "Starting file watcher..." << std::endl;
+    std::thread system([&]() {
+        file_manager.start_monitoring([&](std::string &path, const file_metadata &meta, FileStatus status) {
+            try {
+                if (!filesystem::is_regular_file(path) && status != FileStatus::REMOVED)
+                    return;
+
+                FileCommand command = FileCommand::UPLOAD;
+                if (status == FileStatus::REMOVED)
+                    command = FileCommand::REMOVE;
+                out_queue.add_file_operation(path, meta, command);
+            } catch (RBException &e) {
+                RBLog("RBException:" + e.getMsg());
+            } catch (std::exception &e) {
+                RBLog("exception:" + std::string(e.what()));
             }
-            myprint("File " + relative_file_path + " event " + std::to_string(static_cast<int>(status)));
-            oq.add_file_operation(relative_file_path, metadata, static_cast<FileCommand>(status));
         });
     });
 
-
-    // Thread for sending files to the server
-    std::thread sender([&oq, &file_manager, running](){
-        bool net_op = false;
-        while(running) {
-            auto file_operation = oq.get_file_operation();
-            myprint("System modified: " + file_operation->get_path());
-
-            if(file_operation->get_abort()) {
-                // Loggo che è stato abortito
-            } else {
-
-
+    std::cout << "Starting RBProto client..." << std::endl;
+    std::thread sender([&]() {
+        while (true) {
+            std::cout << "Processing\n";
+            auto op = out_queue.get_file_operation();
+            if (!keep_going) break;
+            try {
+                switch (op->get_command()) {
+                case FileCommand::UPLOAD:
+                    client_logic.upload_file(op);
+                    break;
+                case FileCommand::REMOVE:
+                    client_logic.remove_file(op);
+                    break;
+                default:
+                    break;
+                }
+                std::cout << "OK\n";
+            } catch (RBException &e) {
+                RBLog("RBException:" + e.getMsg());
+                out_queue.reinsert_file_operation(op);
+            } catch (std::exception &e) {
+                RBLog("exception:" + std::string(e.what()));
+                out_queue.reinsert_file_operation(op);
             }
         }
     });
 
-    sender.join();
+    signal(SIGINT, stop_client);
+    waiter.lock();
 
+    std::cout << "Client started!" << std::endl;
+    waiter.lock();
+
+    std::cout << "Stopping..." << std::endl;
+    file_manager.stop_monitoring();
+
+    std::cout << "Waiting for watcher thread to finish..." << std::endl;
     system.join();
 
+    std::cout << "Waiting for RBProto thread to finish..." << std::endl;
+    sender.join();
+
+    std::cout << "Client stopped!" << std::endl;
     return 0;
-}
-
-int main_test() {
-    Client pippo("127.0.0.1", "8888");
-
-    RBRequest test;
-
-    test.set_type(RBMsgType::AUTH);
-    test.set_final(true);
-
-    std::cout << "Running test request" << std::endl;
-
-    try {
-        RBResponse res = pippo.run(test);
-        std::cout << "RES: " << res.type() << std::endl;
-        if (res.error().size()) {
-            RBLog(res.error());
-        }
-    } catch (RBException &e) {
-        excHandler(e);
-    }
-
-
-    return 0;
-
 }

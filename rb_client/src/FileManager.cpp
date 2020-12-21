@@ -1,5 +1,10 @@
 #include "FileManager.h"
 
+FileManager::FileManager(
+    const filesystem::path &path,
+    std::chrono::duration<int, std::milli> delay)
+    : path_to_watch(path), update_interval(delay) {}
+
 // Utils function
 std::string string_remove_pref(const std::string &pref, const std::string &input) {
     std::string output = input;
@@ -7,11 +12,16 @@ std::string string_remove_pref(const std::string &pref, const std::string &input
     return output;
 }
 
+void FileManager::stop_monitoring() {
+    running = false;
+    files["^NIL^"] = file_metadata();
+}
+
 // Description: Set file watcher parameters
 // Errors: It can throw a runtime error because of metadata calculation
-void FileManager::set_file_watcher(const std::string &path, std::chrono::duration<int, std::milli> delay) {
-    this->path_to_watch = filesystem::path(path);
-    this->update_interval = delay;
+// Description: Start the monitoring of the setted path to watch
+// Errors: It can throw a runtime error because of checksum calculation
+void FileManager::start_monitoring(const std::function<void(std::string&, const file_metadata&, FileStatus)> &action) {
 
     for (auto &file : filesystem::recursive_directory_iterator(path_to_watch)) {
         if(filesystem::is_regular_file(file.path())){
@@ -23,12 +33,9 @@ void FileManager::set_file_watcher(const std::string &path, std::chrono::duratio
             files[file.path().string()] = current_file_metadata;
         }
     }
-    std::cout<<"File watcher setted"<<std::endl;
-}
+    std::cout<<"File watcher set"<<std::endl;
 
-// Description: Start the monitoring of the setted path to watch
-// Errors: It can throw a runtime error because of checksum calculation
-void FileManager::start_monitoring(const std::function<void(std::string, file_metadata, FileStatus)> &action) {
+
     while (running) {
         std::this_thread::sleep_for(update_interval);
         std::string relative_path;

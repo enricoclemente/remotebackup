@@ -1,6 +1,11 @@
 #include "ClientFlow.h"
 
-ClientFlow::ClientFlow(const std::string & ip, const std::string & port) :client(ip, port) {
+ClientFlow::ClientFlow(
+    const std::string & ip,
+    const std::string & port,
+    const std::string & root_path,
+    int socket_timeout)
+    : client(ip, port, socket_timeout), root_path(root_path) {
     // TODO start authentication
 }
 
@@ -10,12 +15,13 @@ std::string ClientFlow::authenticate(const std::string &username, const std::str
 
 
 
-void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operation, const std::string &root_path) {
+void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operation) {
 
     if (file_operation->get_command() != FileCommand::UPLOAD)
         throw std::logic_error("Wrong type of FileOperation command");
 
-    filesystem::path file_path{file_operation->get_path()+root_path};
+    filesystem::path file_path{root_path};
+    file_path.append(file_operation->get_path());
     file_metadata metadata = file_operation->get_metadata();
 
     std::ifstream fl(file_path.string());
@@ -98,7 +104,7 @@ void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
 }
 
 
-void ClientFlow::remove_file(const std::shared_ptr<FileOperation> &file_operation, const std::string &root_path) {
+void ClientFlow::remove_file(const std::shared_ptr<FileOperation> &file_operation) {
     if (file_operation->get_command() != FileCommand::REMOVE)
         throw std::logic_error("Wrong type of FileOperation command");
 

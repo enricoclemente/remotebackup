@@ -27,7 +27,7 @@ class FileManager {
     filesystem::path path_to_watch;
     std::chrono::duration<int, std::milli> update_interval;
     std::unordered_map<std::string, file_metadata> files;
-    bool running = true;
+    std::atomic<bool> running = true;
 
     template<typename Map>
     bool contains(const Map& map, const std::string &key) {
@@ -36,8 +36,9 @@ class FileManager {
     }
 
 public:
-    void set_file_watcher(const std::string &path, std::chrono::duration<int, std::milli> delay);
-    void start_monitoring(const std::function<void(std::string, file_metadata, FileStatus)> &action);
+    FileManager(const filesystem::path &path, std::chrono::duration<int, std::milli> delay);
+    void start_monitoring(const std::function<void(std::string&, const file_metadata&, FileStatus)> &action);
+    void stop_monitoring();
     static std::uint32_t calculate_checksum(const filesystem::path &file_path);
 
     template<typename Map>

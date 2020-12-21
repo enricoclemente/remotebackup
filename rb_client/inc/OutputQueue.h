@@ -49,6 +49,7 @@ public:
     OutputQueue();
     void add_file_operation(const std::string &path, file_metadata metadata, FileCommand command);
     std::shared_ptr<FileOperation> get_file_operation();
+    void reinsert_file_operation(std::shared_ptr<FileOperation>);
     bool remove_file_operation(int id);
     int size();
 };

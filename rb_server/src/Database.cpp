@@ -62,3 +62,41 @@ void Database::exec(std::string sql) {
 
     RBLog(std::string("Executed: ") + sql);
 }
+
+std::vector<std::string> Database::query(std::string sql, std::initializer_list<std::string> params) {
+    std::vector<std::string> results;
+    sqlite3_stmt *stmt;
+
+    int res = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
+    if (res != SQLITE_OK) {
+        RBLog(std::string("Prepare error: ") + sqlite3_errmsg(db));
+        return results;
+    }
+
+    int i = 1;
+    for (auto param : params) {
+        res = sqlite3_bind_text(stmt, i, param.c_str(), param.length(), SQLITE_TRANSIENT);
+        if (res != SQLITE_OK) {
+            RBLog(std::string("Bind error: ") + sqlite3_errmsg(db));
+            sqlite3_finalize(stmt);
+            return results;
+        }
+        i++;
+    }
+
+    while ((res = sqlite3_step(stmt)) == SQLITE_ROW) { // While there are rows in the result set
+        for (int i = 0; i < sqlite3_column_count(stmt); i++) { // Iterate over the row's columns
+            auto result = sqlite3_column_text(stmt, i);
+            results.push_back(std::string(reinterpret_cast<const char*>(result)));
+        }
+    }
+    if (res != SQLITE_DONE) {
+        RBLog(std::string("Step error: ") + sqlite3_errmsg(db));
+    } else {
+        RBLog(std::string("Executed: ") + sql);
+    }
+
+    sqlite3_finalize(stmt);
+
+    return results;
+}

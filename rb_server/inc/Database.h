@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <sqlite3.h>
+#include <vector>
 
 #include "RBHelpers.h"
 
@@ -20,7 +21,8 @@ public:
 
     void open();
     void close();
-    void exec(std::string);
+    void exec(std::string); // For statements without parameters, no returned results
+    std::vector<std::string> query(std::string, std::initializer_list<std::string>); // For statements with parameters, with returned results
 
 private:
     Database();

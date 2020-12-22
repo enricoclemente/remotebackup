@@ -1,32 +1,26 @@
-#include <openssl/sha.h>
-
 #include "AuthController.h"
 
 AuthController::AuthController() {
     RBLog("AuthController()");
 }
 
-bool AuthController::authenticate(std::string username, std::string password) {
+bool AuthController::auth_by_credentials(std::string username, std::string password) {
     auto& db = Database::get_instance();
 
     std::string hash = sha256(password);
+    std::string sql = "SELECT COUNT(*) FROM users WHERE username = ? AND password = ?;";
+    auto count = std::stoi(db.query(sql, {username, hash}).at(0));
 
-    std::string stmt = std::string("SELECT COUNT(*) FROM USERS WHERE username = '") + username +
-                       std::string("' AND password = '") + hash + "';"; // Vulnerable to SQL injection attacks
-
-    db.query(stmt);
-
-    return false;
+    return count == 1;
 }
 
-bool AuthController::authenticate(std::string token) {
+bool AuthController::auth_by_token(std::string token) {
     auto& db = Database::get_instance();
 
-    std::string stmt = std::string("SELECT COUNT(*) FROM USERS WHERE token = '") + token + "';"; // Vulnerable to SQL injection attacks
+    std::string sql = "SELECT COUNT(*) FROM users WHERE token = ?;";
+    auto count = std::stoi(db.query(sql, {token}).at(0));
 
-    db.query(stmt);
-
-    return false;
+    return count == 1;
 }
 
 std::string AuthController::sha256(const std::string str)

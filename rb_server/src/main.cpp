@@ -7,11 +7,11 @@
 #include "rbproto.pb.h"
 #include "Server.h"
 #include "Database.h"
+#include "AuthController.h"
 
 int main() {
     auto& db = Database::get_instance();
     db.open();
-    db.close();
 
     Server srv(8888, [](RBRequest req) {
 
@@ -41,5 +41,7 @@ int main() {
     srv.start();
     std::this_thread::sleep_for(std::chrono::seconds(60));
     srv.stop();
+
+    db.close();
 }
 

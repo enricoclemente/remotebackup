@@ -2,23 +2,18 @@
 
 #include "Database.h"
 
-/*
-int callback(void *, int, char **, char **);
-
-int callback(void* unused, int num_cols, char** row_fields, char** col_names)
+int print_results(void* unused, int num_cols, char** row_fields, char** col_names)
 {
     unused = 0;
 
-    for (int i = 0; i < num_cols; i++)
-    {
-        printf("%s: %s | ", col_names[i], row_fields[i] ? row_fields[i] : "NULL");
+    for (int i = 0; i < num_cols; i++) {
+        printf("%s: %s, ", col_names[i], row_fields[i] ? row_fields[i] : "NULL");
     }
 
     printf("\n");
 
     return 0;
 }
-*/
 
 Database::Database()
 {
@@ -28,8 +23,8 @@ Database::Database()
 void Database::init()
 {
     // query("SELECT name FROM sqlite_master WHERE type='table' AND name='<table_name>';") // Another way to check for the existance of tables
-    query("CREATE TABLE IF NOT EXISTS USERS(id INT PRIMARY KEY NOT NULL, username TEXT NOT NULL, password TEXT NOT NULL, TOKEN TEXT);");
-    query("CREATE TABLE IF NOT EXISTS FS(id INT PRIMARY KEY NOT NULL, filename TEXT NOT NULL, path TEXT NOT NULL, tmp_chunks INT);");
+    exec("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL, token TEXT);");
+    exec("CREATE TABLE IF NOT EXISTS fs (id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, path TEXT NOT NULL, filename TEXT NOT NULL, hash TEXT NOT NULL, size TEXT NOT NULL, tmp_chunks TEXT);");
 }
 
 void Database::open()
@@ -37,8 +32,7 @@ void Database::open()
     RBLog(std::string("SQLite version: ") + sqlite3_libversion());
 
     int res = sqlite3_open("test.db", &db);
-    if (res != SQLITE_OK)
-    {
+    if (res != SQLITE_OK) {
         RBLog(std::string("Cannot open database: ") + sqlite3_errmsg(db));
         return close();
     }
@@ -51,18 +45,16 @@ void Database::open()
 void Database::close()
 {
     int res = sqlite3_close(db);
-    if (res != SQLITE_OK)
-    {
+    if (res != SQLITE_OK) {
         RBLog(std::string("Cannot close database: ") + sqlite3_errmsg(db));
     }
 }
 
-void Database::query(std::string sql)
-{
+void Database::exec(std::string sql) {
     char *errmsg = 0;
-    int res = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errmsg);
-    if (res != SQLITE_OK)
-    {
+
+    int res = sqlite3_exec(db, sql.c_str(), print_results, nullptr, &errmsg); // Synchronous callback 'print_results'
+    if (res != SQLITE_OK) {
         RBLog(std::string("Cannot execute statement: ") + errmsg);
         sqlite3_free(errmsg);
         return close();

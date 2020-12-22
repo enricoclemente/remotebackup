@@ -18,13 +18,14 @@ public:
     Database(Database const &) = delete;
     void operator=(Database const &) = delete;
 
-    void init();
     void open();
     void close();
-    void query(std::string);
+    void exec(std::string);
 
 private:
     Database();
+
+    void init(); // Prepare database
 
     sqlite3 *db;
 };

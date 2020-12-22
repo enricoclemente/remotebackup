@@ -29,9 +29,8 @@ public:
     bool auth_by_credentials(std::string, std::string);
     bool auth_by_token(std::string);
     std::string generate_token(std::string);
+    std::string sha256(const std::string);
 
 private:
     AuthController();
-
-    std::string sha256(const std::string);
 };

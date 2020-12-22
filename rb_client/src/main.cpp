@@ -43,11 +43,11 @@ int main(int argc, char **argv) {
 
     ClientFlow client_logic(
         config["host"], config["port"], config["root_folder"],
-        config.getNumeric("connection_timeout")
+        config.get_numeric("connection_timeout")
     );
     FileManager file_manager(
         root_folder, 
-        std::chrono::milliseconds(config.getNumeric("watcher_interval"))
+        std::chrono::milliseconds(config.get_numeric("watcher_interval"))
     );
     OutputQueue out_queue;
 
@@ -93,11 +93,13 @@ int main(int argc, char **argv) {
                 std::cout << "OK\n";
             } catch (RBException &e) {
                 RBLog("RBException:" + e.getMsg());
-                out_queue.reinsert_file_operation(op);
+                op->set_processing(false);
             } catch (std::exception &e) {
                 RBLog("exception:" + std::string(e.what()));
-                out_queue.reinsert_file_operation(op);
+                op->set_processing(false);
             }
+            if (op->get_processing())
+                out_queue.remove_file_operation(op->get_id());
         }
     });
 

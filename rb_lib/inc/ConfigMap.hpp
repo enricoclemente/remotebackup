@@ -21,7 +21,7 @@ public:
         return map::operator[](key);
     }
 
-    int getNumeric(string key) {
+    int get_numeric(string key) {
         try {
             string::size_type sz;
             string & val = (*this)[key];

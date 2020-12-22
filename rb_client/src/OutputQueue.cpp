@@ -1,7 +1,7 @@
 #include "OutputQueue.h"
 
 // Output Queue Class implementations
-OutputQueue::OutputQueue() : dim(0), free(0), id_counter(0) {};
+OutputQueue::OutputQueue() : id_counter(0) {};
 
 void OutputQueue::add_file_operation(const std::string &path, file_metadata metadata, FileCommand command) {
     std::lock_guard lg(m);
@@ -10,31 +10,25 @@ void OutputQueue::add_file_operation(const std::string &path, file_metadata meta
 
     // if there are old operations on the same file, overwrite them with the new one if they are not in process
     // otherwise set abort flag true in order to interrupt the operation
-    auto it = queue.begin();
-    while (it != queue.end()) {
+    for (auto it = queue.begin(); it != queue.end(); it++) {
         if (it->get()->get_path() == path) {
             if (it->get()->get_processing()) {
                 it->get()->set_abort(true);
             } else {
                 queue.erase(it);
-                dim--;
-                free--;
             }
         }
-        it++;
     }
 
     queue.push_back(fo);
     id_counter++;
-    dim++;
-    free++;
 
     cv.notify_one();
 }
 
 std::shared_ptr<FileOperation> OutputQueue::get_file_operation() {
     std::unique_lock ul(m);
-    cv.wait(ul, [this]() { return free > 0; });
+    cv.wait(ul, [this]() { return free() > 0; });
 
     bool valid = true;
 
@@ -49,7 +43,6 @@ std::shared_ptr<FileOperation> OutputQueue::get_file_operation() {
             }
             if (valid) {
                 i->set_processing(true);
-                free--;
                 return i;
             }
             valid = true;
@@ -62,19 +55,14 @@ std::shared_ptr<FileOperation> OutputQueue::get_file_operation() {
 bool OutputQueue::remove_file_operation(int id) {
     // TODO remove if
     std::unique_lock ul(m);
-    cv.wait(ul, [this]() { return dim > 0; });
+    cv.wait(ul, [this]() { return size() > 0; });
 
-    auto it = queue.begin();
-    while (it != queue.end()) {
+    for (auto it = queue.begin(); it != queue.end(); it++) {
         if (it->get()->get_id() == id) {
             queue.erase(it);
-            dim--;
-            free--;
             return true;
         }
-        it++;
     }
-
     return false;
 }
 
@@ -83,16 +71,12 @@ int OutputQueue::size() {
     return queue.size();
 }
 
-// TODO for @enrico: check method validity 
-void OutputQueue::reinsert_file_operation(std::shared_ptr<FileOperation> fo) {
-    if (fo->get_abort()) return;
-
-    std::unique_lock ul(m);
-    queue.push_back(fo);
-    dim++;
-    free++;
-
-    cv.notify_one();
+int OutputQueue::free() {
+    int sum(0);
+    for (auto val : queue) {
+        if (!(val->get_processing())) sum++;
+    }
+    return sum;
 }
 
 // File Operation Class implementations

@@ -23,6 +23,21 @@ bool AuthController::auth_by_token(std::string token) {
     return count == 1;
 }
 
+std::string AuthController::generate_token(std::string username) {
+    auto& db = Database::get_instance();
+
+    std::string sql = "SELECT password FROM users WHERE username = ?;";
+    std::string password = db.query(sql, {username}).at(0);
+
+    auto now = std::chrono::system_clock::now();
+    auto time = std::chrono::system_clock::to_time_t(now);
+    std::string token = sha256(username + password + ctime(&time));
+    sql = "UPDATE users SET token = ? WHERE username = ?;";
+    db.query(sql, {token, username});
+
+    return token;
+}
+
 std::string AuthController::sha256(const std::string str)
 {
     unsigned char hash[SHA256_DIGEST_LENGTH];

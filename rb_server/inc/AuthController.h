@@ -5,6 +5,8 @@
 #include <string>
 #include <sstream>
 #include <openssl/sha.h>
+#include <chrono>
+#include <ctime>
 
 #include "AsioAdapting.h"
 #include "ProtobufHelpers.h"
@@ -26,6 +28,7 @@ public:
 
     bool auth_by_credentials(std::string, std::string);
     bool auth_by_token(std::string);
+    std::string generate_token(std::string);
 
 private:
     AuthController();

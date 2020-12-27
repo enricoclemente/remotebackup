@@ -56,7 +56,8 @@ int main(int argc, char **argv) {
 
     std::cout << "Starting file watcher..." << std::endl;
     std::thread system([&]() {
-        file_manager.start_monitoring([&](std::string &path, const file_metadata &meta, FileStatus status) {
+        // lambda function to handle file system changes and file system compare
+        auto update_handler = [&](std::string &path, const file_metadata &meta, FileStatus status) {
             try {
                 if (!filesystem::is_regular_file(path) && status != FileStatus::REMOVED)
                     return;
@@ -64,13 +65,18 @@ int main(int argc, char **argv) {
                 FileCommand command = FileCommand::UPLOAD;
                 if (status == FileStatus::REMOVED)
                     command = FileCommand::REMOVE;
+
                 out_queue.add_file_operation(path, meta, command);
             } catch (RBException &e) {
                 RBLog("RBException:" + e.getMsg());
             } catch (std::exception &e) {
                 RBLog("exception:" + std::string(e.what()));
             }
-        });
+        };
+
+        std::unordered_map server_files = client_logic.get_server_files();
+        file_manager.file_system_compare(server_files, update_handler);
+        file_manager.start_monitoring(update_handler);
     });
 
     std::cout << "Starting RBProto client..." << std::endl;
@@ -91,15 +97,14 @@ int main(int argc, char **argv) {
                     break;
                 }
                 std::cout << "OK\n";
+                out_queue.remove_file_operation(op->get_id());
             } catch (RBException &e) {
                 RBLog("RBException:" + e.getMsg());
-                op->set_processing(false);
+                out_queue.free_file_operation(op->get_id());
             } catch (std::exception &e) {
                 RBLog("exception:" + std::string(e.what()));
-                op->set_processing(false);
+                out_queue.free_file_operation(op->get_id());
             }
-            if (op->get_processing())
-                out_queue.remove_file_operation(op->get_id());
         }
     });
 

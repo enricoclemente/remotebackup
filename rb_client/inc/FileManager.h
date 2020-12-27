@@ -40,10 +40,8 @@ public:
     void start_monitoring(const std::function<void(std::string&, const file_metadata&, FileStatus)> &action);
     void stop_monitoring();
     static std::uint32_t calculate_checksum(const filesystem::path &file_path);
-
-    template<typename Map>
-    void file_system_compare(const Map& map,
-            const std::function<void(std::string, file_metadata, FileStatus)> &action);
+    void file_system_compare(const std::unordered_map<std::string, file_metadata>& map,
+            const std::function<void(std::string&, const file_metadata&, FileStatus)> &action);
 };
 
 

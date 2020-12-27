@@ -3,7 +3,21 @@
 FileManager::FileManager(
     const filesystem::path &path,
     std::chrono::duration<int, std::milli> delay)
-    : path_to_watch(path), update_interval(delay) {}
+    : path_to_watch(path), update_interval(delay) {
+
+    for (auto &file : filesystem::recursive_directory_iterator(path_to_watch)) {
+        if(filesystem::is_regular_file(file.path())){
+            file_metadata current_file_metadata{};
+            current_file_metadata.last_write_time = last_write_time(file.path());
+            current_file_metadata.size = filesystem::file_size(file.path());
+            current_file_metadata.checksum = calculate_checksum(file.path());
+
+            files[file.path().string()] = current_file_metadata;
+        }
+    }
+
+    std::cout<<"File watcher set"<<std::endl;
+}
 
 // Utils function
 std::string string_remove_pref(const std::string &pref, const std::string &input) {
@@ -22,20 +36,6 @@ void FileManager::stop_monitoring() {
 // Description: Start the monitoring of the setted path to watch
 // Errors: It can throw a runtime error because of checksum calculation
 void FileManager::start_monitoring(const std::function<void(std::string&, const file_metadata&, FileStatus)> &action) {
-
-    for (auto &file : filesystem::recursive_directory_iterator(path_to_watch)) {
-        if(filesystem::is_regular_file(file.path())){
-            file_metadata current_file_metadata{};
-            current_file_metadata.last_write_time = last_write_time(file.path());
-            current_file_metadata.size = filesystem::file_size(file.path());
-            current_file_metadata.checksum = calculate_checksum(file.path());
-
-            files[file.path().string()] = current_file_metadata;
-        }
-    }
-    std::cout<<"File watcher set"<<std::endl;
-
-
     while (running) {
         std::this_thread::sleep_for(update_interval);
         std::string relative_path;
@@ -119,9 +119,8 @@ std::uint32_t FileManager::calculate_checksum(const filesystem::path &file_path)
 // Description: compare a map containing a file system with the actual and make an action for the differences
 // Input parameters: map <string(relative path), file_metadata>
 //                   action function
-template<typename Map>
-void FileManager::file_system_compare(const Map& map,
-                                      const std::function<void(std::string, file_metadata, FileStatus)> &action) {
+void FileManager::file_system_compare(const std::unordered_map<std::string, file_metadata>& map,
+                                      const std::function<void(std::string&, const file_metadata&, FileStatus)> &action) {
     if(path_to_watch.empty())
         throw std::logic_error("Function file_system_compare can be used only after setting the file watcher");
 

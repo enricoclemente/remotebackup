@@ -52,8 +52,21 @@ std::shared_ptr<FileOperation> OutputQueue::get_file_operation() {
     return nullptr;
 }
 
+bool OutputQueue::free_file_operation(int id) {
+    std::unique_lock ul(m);
+    cv.wait(ul, [this]() { return size() > 0; });
+
+    for (const auto& val : queue) {
+        if (val->get_id() == id) {
+            val->set_processing(false);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool OutputQueue::remove_file_operation(int id) {
-    // TODO remove if
     std::unique_lock ul(m);
     cv.wait(ul, [this]() { return size() > 0; });
 
@@ -66,6 +79,8 @@ bool OutputQueue::remove_file_operation(int id) {
     return false;
 }
 
+
+
 int OutputQueue::size() {
     std::lock_guard lg(m);
     return queue.size();
@@ -73,7 +88,7 @@ int OutputQueue::size() {
 
 int OutputQueue::free() {
     int sum(0);
-    for (auto val : queue) {
+    for (const auto& val : queue) {
         if (!(val->get_processing())) sum++;
     }
     return sum;
@@ -103,23 +118,19 @@ int FileOperation::get_id() const {
 }
 
 void FileOperation::set_processing(bool flag) {
-    std::lock_guard lg(processing_m);
-
     processing = flag;
 }
 
 void FileOperation::set_abort(bool flag) {
-    std::lock_guard lg(abort_m);
-
     abort = flag;
 }
 
 bool FileOperation::get_processing() const {
-    return processing;
+    return processing.load();
 }
 
 bool FileOperation::get_abort() const {
-    return abort;
+    return abort.load();
 }
 
 

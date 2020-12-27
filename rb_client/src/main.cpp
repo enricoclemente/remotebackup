@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
     std::cout << "Starting file watcher..." << std::endl;
     std::thread system([&]() {
         // lambda function to handle file system changes and file system compare
-        auto update_handler = [&](std::string &path, const file_metadata &meta, FileStatus status) {
+        auto update_handler = [&](const std::string &path, const file_metadata &meta, FileStatus status) {
             try {
                 if (!filesystem::is_regular_file(path) && status != FileStatus::REMOVED)
                     return;

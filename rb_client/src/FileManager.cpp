@@ -35,7 +35,7 @@ void FileManager::stop_monitoring() {
 // Errors: It can throw a runtime error because of metadata calculation
 // Description: Start the monitoring of the setted path to watch
 // Errors: It can throw a runtime error because of checksum calculation
-void FileManager::start_monitoring(const std::function<void(std::string&, const file_metadata&, FileStatus)> &action) {
+void FileManager::start_monitoring(const std::function<void(const std::string&, const file_metadata&, FileStatus)> &action) {
     while (running) {
         std::this_thread::sleep_for(update_interval);
         std::string relative_path;
@@ -120,7 +120,7 @@ std::uint32_t FileManager::calculate_checksum(const filesystem::path &file_path)
 // Input parameters: map <string(relative path), file_metadata>
 //                   action function
 void FileManager::file_system_compare(const std::unordered_map<std::string, file_metadata>& map,
-                                      const std::function<void(std::string&, const file_metadata&, FileStatus)> &action) {
+                                      const std::function<void(const std::string&, const file_metadata&, FileStatus)> &action) {
     if(path_to_watch.empty())
         throw std::logic_error("Function file_system_compare can be used only after setting the file watcher");
 

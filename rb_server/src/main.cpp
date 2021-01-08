@@ -1,6 +1,7 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <fstream>
+#include <filesystem>
 
 #include "ProtobufHelpers.h"
 #include "AsioAdapting.h"
@@ -8,6 +9,9 @@
 #include "Server.h"
 #include "Database.h"
 #include "AuthController.h"
+#include "FileSystemManager.h"
+
+namespace fs = std::filesystem;
 
 void test_db_and_auth() {
     auto& db = Database::get_instance();
@@ -17,6 +21,7 @@ void test_db_and_auth() {
     db.query("INSERT INTO users (username, password) VALUES ('test-user', ?);", {hash});
 
     db.exec("SELECT * FROM users;");
+    db.exec("SELECT * FROM fs;");
     
     std::string token;
     RBAuthRequest auth_request;
@@ -33,11 +38,34 @@ void test_db_and_auth() {
         RBLog("User authenticated successfully by token");
 }
 
+void add_user_u1() {
+    auto& db = Database::get_instance();
+    
+    std::string hash = AuthController::get_instance().sha256("u1");
+    db.query("INSERT INTO users (username, password) VALUES ('u1', ?);", {hash});
+
+    db.exec("SELECT * FROM users;");
+}
+
+void test_fsmanager() {
+    FileSystemManager fs;
+
+    bool res = fs.write_file("u1", fs::path("./u1/ciao.txt"), "This is the first file");
+    std::cout << "File written: " << res << std::endl;
+
+    res = fs.find_file("u1", fs::path("./u1/ciao.txt"));
+    std::cout << "File found: " << res << std::endl;
+}
+
 int main() {
     auto& db = Database::get_instance();
     db.open();
+    
+    add_user_u1();
+    test_fsmanager();
 
     test_db_and_auth();
+
 
     Server srv(8888, [](RBRequest req) {
 

@@ -2,9 +2,9 @@
 
 using namespace boost;
 
-Service::Service(sockPtr_t sock, std::function<RBResponse(RBRequest&)> callback)
+Service::Service(sockPtr_t sock, RBSrvCallback callback)
     : sock(sock),
-      handler([callback](sockPtr_t sock) {
+      handler([callback, this](sockPtr_t sock) {
           AsioInputStream<boost::asio::ip::tcp::socket> ais(sock);
           AsioOutputStream<boost::asio::ip::tcp::socket> aos(sock);
           CopyingInputStreamAdaptor cis_adp(&ais);
@@ -20,7 +20,7 @@ Service::Service(sockPtr_t sock, std::function<RBResponse(RBRequest&)> callback)
               if (!op)
                   throw RBException("reqRecv");
 
-              RBResponse res = callback(req);
+              RBResponse res = callback(req, shared_from_this());
 
               op = google::protobuf::io::writeDelimitedTo(res, &cos_adp);
               cos_adp.Flush();
@@ -32,8 +32,7 @@ Service::Service(sockPtr_t sock, std::function<RBResponse(RBRequest&)> callback)
     RBLog("Service()");
 }
 
-void Service::serve(sockPtr_t sock, std::function<RBResponse(RBRequest&)> callback)
-{
+void Service::serve(sockPtr_t sock, RBSrvCallback callback) {
     auto svc_ptr = std::shared_ptr<Service>(new Service(sock, callback));
 
     std::thread th(([svc_ptr]() { svc_ptr->handleClient(); }));
@@ -60,7 +59,7 @@ void Service::handleClient()
 
 using asio::ip::tcp;
 
-Server::Server(unsigned short port_num, std::function<RBResponse(RBRequest&)> callback)
+Server::Server(unsigned short port_num, RBSrvCallback callback)
     : running(true),
       tcp_acceptor(ios, tcp::endpoint(tcp::v4(), port_num)),
       callback(callback) {}

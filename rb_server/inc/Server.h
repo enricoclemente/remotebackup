@@ -14,18 +14,23 @@
 
 using namespace boost;
 
-class Service
-{
+class Service;
+
+typedef
+  std::function<RBResponse(RBRequest&, std::shared_ptr<Service>)>
+  RBSrvCallback;
+
+class Service : std::enable_shared_from_this<Service> {
 public:
   ~Service()
   {
     RBLog("~Service()");
   }
 
-  static void serve(sockPtr_t sock, std::function<RBResponse(RBRequest&)> callback);
+  static void serve(sockPtr_t sock, RBSrvCallback);
 
 private:
-  Service(sockPtr_t sock, std::function<RBResponse(RBRequest&)> callback);
+  Service(sockPtr_t sock, RBSrvCallback);
 
   void handleClient();
 
@@ -36,7 +41,7 @@ private:
 class Server
 {
 public:
-  Server(unsigned short port_num, std::function<RBResponse(RBRequest&)>);
+  Server(unsigned short port_num, RBSrvCallback);
 
   void start();
   void stop();
@@ -48,5 +53,5 @@ private:
   std::atomic<bool> running;
   asio::io_service ios;
   asio::ip::tcp::acceptor tcp_acceptor;
-  std::function<RBResponse(RBRequest&)> callback;
+  RBSrvCallback callback;
 };

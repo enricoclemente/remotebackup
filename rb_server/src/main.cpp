@@ -10,6 +10,7 @@
 #include "Database.h"
 #include "AuthController.h"
 #include "FileSystemManager.h"
+#include "AtomicMap.hpp"
 
 namespace fs = std::filesystem;
 
@@ -66,10 +67,19 @@ int main() {
 
     test_db_and_auth();
 
+    AtomicMap<std::string, std::shared_ptr<Service>> svc_map(8);
+    
 
-    Server srv(8888, [](RBRequest req) {
+    Server srv(8888, [&svc_map](RBRequest req, std::shared_ptr<Service> worker) {
 
         RBResponse res;
+
+        if (svc_map.has("testString")) {
+            res.set_success(false);
+            res.set_error("already_served");
+        } else {
+            svc_map.add("testString", worker);
+        }
 
         if (req.type() == RBMsgType::AUTH) {
             res.set_error("unimplemented:AUTH");
@@ -86,6 +96,8 @@ int main() {
         } else {
             throw RBException("unknownReqType:"+req.type());
         }
+
+        svc_map.remove("testString");
 
         res.set_type(req.type());
 

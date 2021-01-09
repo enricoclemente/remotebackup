@@ -1,7 +1,8 @@
 #include "FileSystemManager.h"
-#include <iomanip>
 
-bool FileSystemManager::find_file(std::string username, fs::path path) {
+#include <utility>
+
+bool FileSystemManager::find_file(std::string username, const fs::path& path) {
     if (!fs::exists(path)) {
         RBLog("The path provided doesn't correspond to an existing file");
         return false;
@@ -14,8 +15,8 @@ bool FileSystemManager::find_file(std::string username, fs::path path) {
 
     auto& db = Database::get_instance();
 
-    std::string parent_path = path.parent_path();
-    std::string filename = path.filename();
+    std::string parent_path = path.relative_path().string();
+    std::string filename = path.filename().string();
 
     std::string sql = "SELECT COUNT(*) FROM fs WHERE username = ? AND path = ? AND filename = ?;";
     auto count = std::stoi(db.query(sql, {username, parent_path, filename}).at(0));
@@ -28,7 +29,7 @@ bool FileSystemManager::find_file(std::string username, fs::path path) {
     return true;
 }
 
-bool FileSystemManager::write_file(std::string username, fs::path path, std::string content) {
+bool FileSystemManager::write_file(std::string username, const fs::path& path, const std::string& content, std::time_t last_write_time) {
     if (path.filename().empty()) {
         RBLog("The path provided doesn't correspond to a file");
         return false;
@@ -37,7 +38,7 @@ bool FileSystemManager::write_file(std::string username, fs::path path, std::str
     // if (!fs::exists(path)) {
     auto cpath = fs::weakly_canonical(path);      // Normalize path (even if it doesn't exist)
     fs::create_directories(cpath.parent_path());  // Create directory if it doesn't exist
-    std::string path_str = cpath.string();        // Get path string
+    const std::string& path_str = cpath.string(); // Get path string
     std::ofstream ofs(path_str);                  // Create file
     if (ofs.is_open()) {
         ofs << content;
@@ -46,7 +47,6 @@ bool FileSystemManager::write_file(std::string username, fs::path path, std::str
         RBLog("Cannot open file");
         return false;
     }
-    // }
 
     std::uintmax_t file_size = fs::file_size(path);
     if (file_size == static_cast<std::uintmax_t>(-1)) {
@@ -57,8 +57,8 @@ bool FileSystemManager::write_file(std::string username, fs::path path, std::str
     ss << file_size;
     std::string size = ss.str();
 
-    std::string parent_path = path.parent_path();
-    std::string filename = path.filename();
+    std::string parent_path = path.relative_path().string();
+    std::string filename = path.filename().string();
 
     auto& db = Database::get_instance();
     std::string sql = "SELECT COUNT(*) FROM fs WHERE username = ? AND path = ? AND filename = ?;";
@@ -86,30 +86,22 @@ bool FileSystemManager::write_file(std::string username, fs::path path, std::str
     // std::string last_write_time = (std::stringstream() << cftime).str();
     //
 
-    fs::file_time_type file_time = fs::last_write_time(path);
-    auto time_point = ch::time_point_cast<ch::system_clock::duration>(file_time - fs::file_time_type::clock::now() + ch::system_clock::now());
-    std::time_t time = ch::system_clock::to_time_t(time_point);
-
-    ss.str(std::string());
-    ss.clear();
-
-    ss << time;
-    std::string last_write_time = ss.str();
+    ss << last_write_time;
+    std::string last_write_time_string = ss.str();
 
     if (count == 0) {  // INSERT
         sql = "INSERT INTO fs (username, path, filename, hash, size, last_write_time) VALUES (?, ?, ?, ?, ?, ?);";
-        db.query(sql, {username, parent_path, filename, hash, size, last_write_time});
+        db.query(sql, {username, parent_path, filename, hash, size, last_write_time_string});
     } else {  // UPDATE
         sql = "UPDATE fs SET hash = ?, size = ?, last_write_time = ? WHERE username = ? AND path = ? AND filename = ?;";
-        db.query(sql, {hash, size, last_write_time, username, parent_path, filename});
+        db.query(sql, {hash, size, last_write_time_string, username, parent_path, filename});
     }
 
     return true;
 }
 
 bool FileSystemManager::remove_file(std::string username, fs::path path) {
-    std::error_code error_code;
-    bool ok = fs::remove(path, error_code);
+    bool ok = fs::remove(path);
     return ok;
 }
 
@@ -117,7 +109,7 @@ std::string FileSystemManager::md5(fs::path path) {
     MD5_CTX md5_ctx;
     MD5_Init(&md5_ctx);
 
-    std::ifstream ifs(path.filename(), std::ios::binary);
+    std::ifstream ifs(path.filename().string(), std::ios::binary);
 
     char buffer[4096];
     while (ifs.read(buffer, sizeof(buffer)) || ifs.gcount())
@@ -141,33 +133,33 @@ std::string FileSystemManager::to_string(unsigned char* md) {
     return ss.str();
 }
 
-std::string FileSystemManager::get_hash(std::string username, fs::path path) {
+std::string FileSystemManager::get_hash(std::string username, const fs::path& path) {
     auto& db = Database::get_instance();
 
-    std::string parent_path = path.parent_path();
-    std::string filename = path.filename();
+    std::string parent_path = path.parent_path().string();
+    std::string filename = path.filename().string();
     std::string sql = "SELECT hash FROM fs WHERE username = ? AND path = ? AND filename = ?;";
     auto hash = db.query(sql, {username, parent_path, filename}).at(0);
 
     return hash;
 }
 
-std::string FileSystemManager::get_size(std::string username, fs::path path) {
+std::string FileSystemManager::get_size(std::string username, const fs::path& path) {
     auto& db = Database::get_instance();
 
-    std::string parent_path = path.parent_path();
-    std::string filename = path.filename();
+    std::string parent_path = path.parent_path().string();
+    std::string filename = path.filename().string();
     std::string sql = "SELECT size FROM fs WHERE username = ? AND path = ? AND filename = ?;";
     auto size = db.query(sql, {username, parent_path, filename}).at(0);
 
     return size;
 }
 
-std::string FileSystemManager::get_last_write_time(std::string username, fs::path path) {
+std::string FileSystemManager::get_last_write_time(std::string username, const fs::path& path) {
     auto& db = Database::get_instance();
 
-    std::string parent_path = path.parent_path();
-    std::string filename = path.filename();
+    std::string parent_path = path.parent_path().string();
+    std::string filename = path.filename().string();
     std::string sql = "SELECT last_write_time FROM fs WHERE username = ? AND path = ? AND filename = ?;";
     auto last_write_time = db.query(sql, {username, parent_path, filename}).at(0);
 

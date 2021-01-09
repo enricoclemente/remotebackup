@@ -1,7 +1,7 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <fstream>
-#include <filesystem>
+#include <boost/filesystem.hpp>
 
 #include "ProtobufHelpers.h"
 #include "AsioAdapting.h"
@@ -12,7 +12,7 @@
 #include "FileSystemManager.h"
 #include "AtomicMap.hpp"
 
-namespace fs = std::filesystem;
+namespace fs = boost::filesystem;
 
 void test_db_and_auth() {
     auto& db = Database::get_instance();
@@ -51,7 +51,7 @@ void add_user_u1() {
 void test_fsmanager() {
     FileSystemManager fs;
 
-    bool res = fs.write_file("u1", fs::path("./u1/ciao.txt"), "This is the first file");
+    bool res = fs.write_file("u1", fs::path("./u1/ciao.txt"), "This is the first file",0);
     std::cout << "File written: " << res << std::endl;
 
     res = fs.find_file("u1", fs::path("./u1/ciao.txt"));
@@ -94,7 +94,7 @@ int main() {
             res.set_error("unimplemented:PROBE");
             RBLog("Probe request!");
         } else {
-            throw RBException("unknownReqType:"+req.type());
+            throw RBException("unknownReqType:"+ std::to_string(req.type()));
         }
 
         svc_map.remove("testString");

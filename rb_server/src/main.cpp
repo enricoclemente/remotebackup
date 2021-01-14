@@ -67,18 +67,21 @@ int main() {
 
     test_db_and_auth();
 
-    AtomicMap<std::string, std::shared_ptr<Service>> svc_map(8);
-    
+    atomic_map<std::string, std::shared_ptr<Service>> svc_map(8);
 
     Server srv(8888, [&svc_map](RBRequest req, std::shared_ptr<Service> worker) {
 
         RBResponse res;
 
-        if (svc_map.has("testString")) {
+        try {
+            std::string chk = "testString";
+            atomic_map_guard<std::string, std::shared_ptr<Service>> amg(svc_map, chk, worker);
+
+            // save stuff
+        } catch (exception& e) {
             res.set_success(false);
-            res.set_error("already_served");
-        } else {
-            svc_map.add("testString", worker);
+            res.set_error("upload_refused");
+            return res;
         }
 
         if (req.type() == RBMsgType::AUTH) {

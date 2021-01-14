@@ -2,10 +2,10 @@
 
 #include <openssl/md5.h>
 
-#include <chrono>
 #include <boost/filesystem.hpp>
-#include <iomanip>
+#include <chrono>
 #include <fstream>
+#include <iomanip>
 #include <sstream>
 #include <string>
 
@@ -18,7 +18,8 @@ namespace ch = std::chrono;
 class FileSystemManager {
 public:
     bool find_file(std::string, const fs::path&);
-    bool write_file(std::string, const fs::path&, const std::string&, std::time_t);
+    bool write_file(std::string, const fs::path&, const std::string&,
+                    const std::string&, const std::string&, const std::string&);
     bool remove_file(std::string, fs::path);
     std::string md5(fs::path);
     std::string get_hash(std::string, const fs::path&);

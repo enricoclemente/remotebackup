@@ -29,17 +29,17 @@ bool FileSystemManager::find_file(std::string username, const fs::path& path) {
     return true;
 }
 
-bool FileSystemManager::write_file(std::string username, const fs::path& path, const std::string& content, std::time_t last_write_time) {
+bool FileSystemManager::write_file(std::string username, const fs::path& path, const std::string& content,
+                                   const std::string& hash, const std::string& last_write_time, const std::string& size) {
     if (path.filename().empty()) {
         RBLog("The path provided doesn't correspond to a file");
         return false;
     }
 
-    // if (!fs::exists(path)) {
-    auto cpath = fs::weakly_canonical(path);      // Normalize path (even if it doesn't exist)
-    fs::create_directories(cpath.parent_path());  // Create directory if it doesn't exist
-    const std::string& path_str = cpath.string(); // Get path string
-    std::ofstream ofs(path_str);                  // Create file
+    auto cpath = fs::weakly_canonical(path);       // Normalize path (even if it doesn't exist)
+    fs::create_directories(cpath.parent_path());   // Create directory if it doesn't exist
+    const std::string& path_str = cpath.string();  // Get path string
+    std::ofstream ofs(path_str);                   // Create file
     if (ofs.is_open()) {
         ofs << content;
         ofs.close();
@@ -48,6 +48,7 @@ bool FileSystemManager::write_file(std::string username, const fs::path& path, c
         return false;
     }
 
+    /*
     std::uintmax_t file_size = fs::file_size(path);
     if (file_size == static_cast<std::uintmax_t>(-1)) {
         RBLog("Couldn't compute file size");
@@ -56,45 +57,22 @@ bool FileSystemManager::write_file(std::string username, const fs::path& path, c
     std::stringstream ss;
     ss << file_size;
     std::string size = ss.str();
+    */
 
     std::string parent_path = path.relative_path().string();
     std::string filename = path.filename().string();
 
+    // Check if the file is already present in db
     auto& db = Database::get_instance();
     std::string sql = "SELECT COUNT(*) FROM fs WHERE username = ? AND path = ? AND filename = ?;";
     auto count = std::stoi(db.query(sql, {username, parent_path, filename}).at(0));
 
-    std::string hash = md5(path);
-
-    //
-    // C++20
-    // std::time_t time(1207609200);
-    // auto file_time = fs::last_write_time(path);
-    // auto last_write_time = std::chrono::clock_cast<fs::file_time_type>(std::chrono::system_clock::from_time_t(time)) < file_time;
-    //
-
-    //
-    // Other attempts that don't work
-    // fs::last_write_time(path, std::filesystem::file_time_type::clock::now());
-    //
-    // auto ftime = fs::last_write_time(path);
-    // std::time_t cftime = std::chrono::system_clock::to_time_t(ftime);
-    //
-    // std::time_t cftime = decltype(ftime)::clock::to_time_t(ftime);
-    // std::time_t seconds = std::chrono::system_clock::to_time_t(&time_type);
-    //
-    // std::string last_write_time = (std::stringstream() << cftime).str();
-    //
-
-    ss << last_write_time;
-    std::string last_write_time_string = ss.str();
-
-    if (count == 0) {  // INSERT
-        sql = "INSERT INTO fs (username, path, filename, hash, size, last_write_time) VALUES (?, ?, ?, ?, ?, ?);";
-        db.query(sql, {username, parent_path, filename, hash, size, last_write_time_string});
-    } else {  // UPDATE
-        sql = "UPDATE fs SET hash = ?, size = ?, last_write_time = ? WHERE username = ? AND path = ? AND filename = ?;";
-        db.query(sql, {hash, size, last_write_time_string, username, parent_path, filename});
+    if (count == 0) {  // Insert entry if file is not already in db
+        sql = "INSERT INTO fs (username, path, filename, hash, last_write_time, size) VALUES (?, ?, ?, ?, ?, ?);";
+        db.query(sql, {username, parent_path, filename, hash, last_write_time, size});
+    } else {  // Update entry if file is already in db
+        sql = "UPDATE fs SET hash = ?, last_write_time = ?, size = ? WHERE username = ? AND path = ? AND filename = ?;";
+        db.query(sql, {hash, last_write_time, size, username, parent_path, filename});
     }
 
     return true;

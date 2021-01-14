@@ -24,7 +24,7 @@ void Database::init()
 {
     // query("SELECT name FROM sqlite_master WHERE type='table' AND name='<table_name>';") // Another way to check for the existance of tables
     exec("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL, token TEXT);");
-    exec("CREATE TABLE IF NOT EXISTS fs (id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, path TEXT NOT NULL, filename TEXT NOT NULL, hash TEXT NOT NULL, last_write_time TEXT NOT NULL, size TEXT NOT NULL, tmp_chunks TEXT);");
+    exec("CREATE TABLE IF NOT EXISTS fs (id INTEGER PRIMARY KEY, username TEXT NOT NULL, path TEXT NOT NULL, filename TEXT NOT NULL, hash TEXT NOT NULL, last_write_time TEXT NOT NULL, size TEXT NOT NULL, tmp_chunks TEXT);");
 }
 
 void Database::open()

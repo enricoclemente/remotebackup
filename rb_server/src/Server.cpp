@@ -57,6 +57,28 @@ void Service::handleClient()
     }
 }
 
+void Service::accumulate_data(const RBRequest& req) {
+    std::stringstream ss;
+    auto data = req.file_segment().data();
+    for(const std::string& datum : data)
+        ss << datum;
+    
+    auto segment_id = req.file_segment().segmentid();
+    map[segment_id] = ss.str();
+}
+
+const std::string& Service::get_data() {
+    std::stringstream ss;
+    std::map<uint64_t, std::string>::iterator it;
+    for (it = map.begin(); it != map.end(); it++) {
+        ss << it->second;
+    }
+
+    map.clear(); // Erase all the map's kvp
+    
+    return ss.str();
+}
+
 using asio::ip::tcp;
 
 Server::Server(unsigned short port_num, RBSrvCallback callback)

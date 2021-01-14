@@ -51,7 +51,7 @@ void add_user_u1() {
 void test_fsmanager() {
     FileSystemManager fs;
 
-    bool res = fs.write_file("u1", fs::path("./u1/ciao.txt"), "This is the first file",0);
+    bool res = fs.write_file("u1", fs::path("./u1/ciao.txt"), "This is the first file", "0", "0", "0");
     std::cout << "File written: " << res << std::endl;
 
     res = fs.find_file("u1", fs::path("./u1/ciao.txt"));
@@ -85,8 +85,51 @@ int main() {
             res.set_error("unimplemented:AUTH");
             RBLog("Auth request!");
         } else if (req.type() == RBMsgType::UPLOAD) {
-            res.set_error("unimplemented:UPLOAD");
             RBLog("Upload request!");
+
+            // Authenticate the request
+            auto& auth_controller = AuthController::get_instance();
+            auto username = auth_controller.auth_get_user_by_token(req.token());
+            if (username.empty()) {
+                RBLog("401 Unauthorized");
+                res.set_error("401 Unauthorized");
+            }
+
+            worker->accumulate_data(req);
+
+            if (req.final()) {
+                auto req_path = req.file_segment().path();
+                auto req_checksum = req.file_segment().file_metadata().checksum();
+                auto req_last_write_time = req.file_segment().file_metadata().last_write_time();
+                auto req_file_size = req.file_segment().file_metadata().size();
+
+                fs::path path(req_path);
+
+                std::string content = worker->get_data();
+
+                std::stringstream ss;
+                ss << req_file_size;
+                std::string file_size = ss.str();
+
+                ss.str(std::string());
+                ss.clear();
+
+                ss << req_last_write_time;
+                std::string last_write_time = ss.str();
+
+                ss.str(std::string());
+                ss.clear();
+
+                ss << req_last_write_time;
+                std::string checksum = ss.str();
+
+                ss.str(std::string());
+                ss.clear();
+
+                FileSystemManager fs;
+                fs.write_file(username, path, content, checksum, last_write_time, file_size);
+            }
+
         } else if (req.type() == RBMsgType::REMOVE) {
             res.set_error("unimplemented:REMOVE");
             RBLog("Remove request!");

@@ -23,6 +23,15 @@ bool AuthController::auth_by_token(std::string token) {
     return count == 1;
 }
 
+std::string AuthController::auth_get_user_by_token(const std::string& token) {
+    auto& db = Database::get_instance();
+
+    std::string sql = "SELECT username FROM users WHERE token = ?;";
+    auto username = db.query(sql, {token}).at(0);
+
+    return username;
+}
+
 std::string AuthController::generate_token(std::string username) {
     auto& db = Database::get_instance();
 
@@ -38,8 +47,7 @@ std::string AuthController::generate_token(std::string username) {
     return token;
 }
 
-std::string AuthController::sha256(const std::string str)
-{
+std::string AuthController::sha256(const std::string str) {
     unsigned char hash[SHA256_DIGEST_LENGTH];
     SHA256_CTX sha256;
     SHA256_Init(&sha256);
@@ -47,8 +55,8 @@ std::string AuthController::sha256(const std::string str)
     SHA256_Final(hash, &sha256);
 
     std::stringstream ss;
-    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)    
-        ss << std::hex << (int) hash[i];
+    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+        ss << std::hex << (int)hash[i];
 
     return ss.str();
 }

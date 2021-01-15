@@ -85,8 +85,24 @@ int main() {
         }
 
         if (req.type() == RBMsgType::AUTH) {
-            res.set_error("unimplemented:AUTH");
             RBLog("Auth request!");
+
+            std::string username = req.auth_request().user();
+            std::string password = req.auth_request().pass();
+            auto& auth_controller = AuthController::get_instance();
+            if (!auth_controller.auth_by_credentials(username, password)) {
+                RBLog("401 Unauthorized");
+                res.set_error("401 Unauthorized");
+            }
+
+            std::string token = auth_controller.generate_token(username);
+            
+            auto auth_response = std::make_unique<RBAuthResponse>();
+            auth_response->set_token(token);
+
+            res.set_protover(3);
+            res.set_allocated_auth_response(auth_response.release());
+            res.set_success(true);
         } else if (req.type() == RBMsgType::UPLOAD) {
             RBLog("Upload request!");
 

@@ -18,7 +18,7 @@ public:
         int socket_timeout
     );
 
-    std::string authenticate(const std::string &username, const std::string &password);
+    void authenticate(const std::string &username, const std::string &password);
 
     std::unordered_map<std::string, file_metadata> get_server_files();
 

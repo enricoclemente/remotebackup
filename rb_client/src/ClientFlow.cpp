@@ -9,8 +9,8 @@ ClientFlow::ClientFlow(
     // TODO start authentication
 }
 
-std::string ClientFlow::authenticate(const std::string &username, const std::string &password) {
-    return std::string();
+void ClientFlow::authenticate(const std::string &username, const std::string &password) {
+    client.authenticate(username, password);
 }
 
 void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operation) {

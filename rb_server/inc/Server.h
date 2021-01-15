@@ -29,8 +29,8 @@ public:
 
   static void serve(sockPtr_t sock, RBSrvCallback);
 
-  void accumulate_data(const RBRequest&);
-  const std::string& get_data();
+  bool accumulate_data(const RBRequest&);
+  std::string get_data();
 
 private:
   Service(sockPtr_t sock, RBSrvCallback);
@@ -39,7 +39,12 @@ private:
 
   sockPtr_t sock;
   std::function<void(sockPtr_t)> handler;
-  std::map<uint64_t, std::string> map;
+
+  struct FileData {
+    std::map<uint64_t, std::string> segment_map;
+    uint64_t size = 0;
+    uint64_t last_write_time = 0;
+  } file_data;
 };
 
 class Server

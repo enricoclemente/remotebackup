@@ -108,45 +108,48 @@ int main() {
             auto& auth_controller = AuthController::get_instance();
             auto username = auth_controller.auth_get_user_by_token(req.token());
             if (!username.empty()) {
-                worker->accumulate_data(req);
-                
-                if (req.final()) {
-                    auto req_path = req.file_segment().path();
-                    auto req_checksum = req.file_segment().file_metadata().checksum();
-                    auto req_last_write_time = req.file_segment().file_metadata().last_write_time();
-                    auto req_file_size = req.file_segment().file_metadata().size();
+                bool ok = worker->accumulate_data(req);
+                if (ok) {
+                    if (req.final()) {
+                        auto req_path = req.file_segment().path();
+                        auto req_checksum = req.file_segment().file_metadata().checksum();
+                        auto req_last_write_time = req.file_segment().file_metadata().last_write_time();
+                        auto req_file_size = req.file_segment().file_metadata().size();
 
-                    fs::path path(req_path);
+                        fs::path path(req_path);
 
-                    std::string content = worker->get_data();
+                        std::string content = worker->get_data();
 
-                    std::stringstream ss;
-                    ss << req_file_size;
-                    std::string file_size = ss.str();
+                        std::stringstream ss;
+                        ss << req_file_size;
+                        std::string file_size = ss.str();
 
-                    ss.str(std::string());
-                    ss.clear();
+                        ss.str(std::string());
+                        ss.clear();
 
-                    ss << req_last_write_time;
-                    std::string last_write_time = ss.str();
+                        ss << req_last_write_time;
+                        std::string last_write_time = ss.str();
 
-                    ss.str(std::string());
-                    ss.clear();
+                        ss.str(std::string());
+                        ss.clear();
 
-                    ss << req_last_write_time;
-                    std::string checksum = ss.str();
+                        ss << req_last_write_time;
+                        std::string checksum = ss.str();
 
-                    ss.str(std::string());
-                    ss.clear();
+                        ss.str(std::string());
+                        ss.clear();
 
-                    FileSystemManager fs;
-                    fs.write_file(username, path, content, checksum, last_write_time, file_size);
+                        FileSystemManager fs;
+                        fs.write_file(username, path, content, checksum, last_write_time, file_size);
+                    }
+                } else {
+                    RBLog("400 Bad Request");
+                    res.set_error("400 Bad Request");
                 }
             } else {
                 RBLog("401 Unauthorized");
                 res.set_error("401 Unauthorized");
             }
-
         } else if (req.type() == RBMsgType::REMOVE) {
             res.set_error("unimplemented:REMOVE");
             RBLog("Remove request!");

@@ -99,10 +99,7 @@ int main() {
             
             auto auth_response = std::make_unique<RBAuthResponse>();
             auth_response->set_token(token);
-
-            res.set_protover(3);
             res.set_allocated_auth_response(auth_response.release());
-            res.set_success(true);
         } else if (req.type() == RBMsgType::UPLOAD) {
             RBLog("Upload request!");
 
@@ -161,7 +158,9 @@ int main() {
 
         svc_map.remove("testString");
 
+        res.set_protover(3);
         res.set_type(req.type());
+        if (res.error().empty()) res.set_success(true);
 
         return res;
     });

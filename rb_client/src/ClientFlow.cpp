@@ -13,16 +13,12 @@ std::string ClientFlow::authenticate(const std::string &username, const std::str
     return std::string();
 }
 
-
-
 void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operation) {
-
     if (file_operation->get_command() != FileCommand::UPLOAD)
         throw std::logic_error("Wrong type of FileOperation command");
 
     filesystem::path file_path{root_path};
     file_path.append(file_operation->get_path());
-    file_metadata metadata = file_operation->get_metadata();
 
     std::ifstream fl(file_path.string());
     if (fl.fail()) {
@@ -32,18 +28,19 @@ void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
             return;
     }
 
+    file_metadata metadata = file_operation->get_metadata();
     size_t file_size = filesystem::file_size(file_path);
     time_t last_write_time = filesystem::last_write_time(file_path);
-    if(file_size != metadata.size || last_write_time != metadata.last_write_time)
+    if(file_size != metadata.size || last_write_time != metadata.last_write_time) // Check if metadata match
         return;
 
     int num_segments = count_segments(file_size);
-    int chunck_size = 2048;
-    std::vector<char> chunck(chunck_size, 0);
+    int chunk_size = 2048;
+    std::vector<char> chunk(chunk_size, 0); // Buffer to hold 2048 characters
     crc_32_type crc;
     std::uint32_t checksum;
 
-    // Fragment files larger than 1MB
+    // Fragment files that are larger than RB_MAX_SEGMENT_SIZE (1MiB)
     for (int i = 0; i < num_segments; i++) {
         RBRequest file_upload_request;
         file_upload_request.set_protover(3);
@@ -56,36 +53,32 @@ void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
         file_metadata->set_size(file_size);
         file_metadata->set_last_write_time(last_write_time);
 
-        // File chuncks read
-        size_t segment_len = RB_MAX_SEGMENT_SIZE;
-        if (num_segments == 1) {
-            segment_len = file_size;
-        } else if ((num_segments - i) == 1) {
-            segment_len = file_size % RB_MAX_SEGMENT_SIZE;
-        }
+        // Length of current file segment
+        size_t segment_len = ((num_segments - i) == 1) 
+            ? file_size % RB_MAX_SEGMENT_SIZE 
+            : RB_MAX_SEGMENT_SIZE;
 
         size_t tot_read = 0;
         size_t current_read = 0;
         while (tot_read < segment_len) {
-            // check every time is something has changed for the file operation
-            if (file_operation->get_abort())    return;
-            if (segment_len - tot_read >= chunck_size) {
-                fl.read(&chunck[0], chunck_size);
-            } else {
-                fl.read(&chunck[0], segment_len - tot_read);
-            }
+            // Check every time if something has changed for the file operation
+            if (file_operation->get_abort()) return;
 
-            if (!fl)    throw std::runtime_error("Error reading file chunck");
+            if (segment_len - tot_read >= chunk_size)
+                fl.read(&chunk[0], chunk_size);
+            else
+                fl.read(&chunk[0], segment_len - tot_read);
 
-            file_segment->add_data(&chunck[0], current_read);
+            if (!fl) throw std::runtime_error("Error reading file chunk");
 
-            current_read = fl.gcount();
-            crc.process_bytes(&chunck[0], current_read);
+            current_read = fl.gcount(); // Get the number of characters that have been read (always 2048, except the last time)
+            file_segment->add_data(&chunk[0], current_read); // Push characters that have been read into data
+            crc.process_bytes(&chunk[0], current_read);
             tot_read += current_read;
         }
 
-        if (i == num_segments - 1) {
-            if(crc.checksum() != metadata.checksum)
+        if (i == num_segments - 1) { // Final file segment
+            if(crc.checksum() != metadata.checksum) // Check if checksums match
                 return;
             file_upload_request.set_final(true);
             file_metadata->set_checksum(crc.checksum());

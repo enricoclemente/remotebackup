@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/asio.hpp>
+
 #include <functional>
 #include <mutex>
 #include <string>
@@ -26,9 +27,8 @@ public:
     void authenticate(std::string, std::string);
 
 private:
-    boost::asio::ip::tcp::resolver::iterator endpoints;
-    boost::system::error_code ec;
-    boost::asio::io_service io_service;
+    std::string ip;
+    std::string port;
     std::string token;
     int timeout;
 };
@@ -46,11 +46,11 @@ public:
     RBResponse run(RBRequest &);
 
 private:
-    ProtoChannel(tcp::resolver::iterator &, boost::asio::io_service &, std::string &);
+    ProtoChannel(std::string & ip, std::string & port, std::string & token);
 
     friend ProtoChannel Client::open_channel();
 
-    tcp::socket socket;
+    tcp::iostream stream;
 
     AsioInputStream<tcp::socket> ais;
     CopyingInputStreamAdaptor cis_adp;

@@ -3,12 +3,7 @@
 using boost::asio::ip::tcp;
 
 Client::Client(const std::string &ip, const std::string &port, int timeout)
-    :timeout(timeout) {
-    if (ec.value()) throw ec;
-    tcp::resolver resolver(io_service);
-    tcp::resolver::query query(ip, port);
-    endpoints = resolver.resolve(query);
-}
+    :timeout(timeout), ip(ip), port(port) {}
 
 void Client::authenticate(std::string username, std::string password) {
     RBRequest req;
@@ -43,7 +38,9 @@ RBResponse ProtoChannel::run(RBRequest &req) {
 
     std::lock_guard<std::mutex> lock(mutex);
 
-    if (!socket.is_open()) throw RBException("socketClosed");
+    if (!stream.socket().is_open()) throw RBException("socketClosed");
+
+    stream.expires_after(std::chrono::milliseconds(timeout));
 
     bool net_op = google::protobuf::io::writeDelimitedTo(req, &cos_adp);
     cos_adp.Flush();
@@ -56,7 +53,7 @@ RBResponse ProtoChannel::run(RBRequest &req) {
 
     if (!net_op) throw RBException("resRecv");
 
-    if (req.final()) socket.close();
+    if (req.final()) stream.close();
 
     return res;
 }
@@ -64,24 +61,21 @@ RBResponse ProtoChannel::run(RBRequest &req) {
 typedef boost::asio::detail::socket_option::integer<SOL_SOCKET, SO_RCVTIMEO> asio_socket_timeout_option;
 
 ProtoChannel::ProtoChannel(
-    tcp::resolver::iterator &endpoints,
-    boost::asio::io_service &io_service,
+    std::string &ip,
+    std::string &port,
     std::string & token)
-    : socket(io_service),
-      ais(socket),
+    : stream(ip, port),
+      ais(static_cast<boost::asio::ip::tcp::socket &>(stream.socket())),
       cis_adp(&ais),
-      aos(socket),
+      aos(static_cast<boost::asio::ip::tcp::socket &>(stream.socket())),
       cos_adp(&aos),
       token(token) {
-
-    boost::asio::connect(socket, endpoints);
-    socket.set_option(asio_socket_timeout_option(timeout));
 }
 
 ProtoChannel Client::open_channel() {
-    return ProtoChannel(endpoints, io_service, token);
+    return ProtoChannel(ip, port, token);
 }
 
 ProtoChannel::~ProtoChannel() {
-    if (socket.is_open()) socket.close();
+    if (stream.socket().is_open()) stream.close();
 }

@@ -98,8 +98,8 @@ int main() {
                 auth_response->set_token(token);
                 res.set_allocated_auth_response(auth_response.release());   
             } else {
-                RBLog("401 Unauthorized");
-                res.set_error("401 Unauthorized");
+                RBLog("Invalid authentication");
+                res.set_error("Invalid authentication");
             }
         } else if (req.type() == RBMsgType::UPLOAD) {
             RBLog("Upload request!");
@@ -143,12 +143,12 @@ int main() {
                         fs.write_file(username, path, content, checksum, last_write_time, file_size);
                     }
                 } else {
-                    RBLog("400 Bad Request");
-                    res.set_error("400 Bad Request");
+                    RBLog("Invalid request data");
+                    res.set_error("Invalid request data");
                 }
             } else {
-                RBLog("401 Unauthorized");
-                res.set_error("401 Unauthorized");
+                RBLog("Invalid authentication");
+                res.set_error("Invalid authentication");
             }
         } else if (req.type() == RBMsgType::REMOVE) {
             res.set_error("unimplemented:REMOVE");

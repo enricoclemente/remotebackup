@@ -84,80 +84,78 @@ int main() {
             return res;
         }
 
-        if (req.type() == RBMsgType::AUTH) {
-            RBLog("Auth request!");
+        try {
+            if (req.type() == RBMsgType::AUTH) {
+                RBLog("Auth request!");
 
-            std::string username = req.auth_request().user();
-            std::string password = req.auth_request().pass();
+                std::string username = req.auth_request().user();
+                std::string password = req.auth_request().pass();
 
-            auto& auth_controller = AuthController::get_instance();
-            if (auth_controller.auth_by_credentials(username, password)) {
+                auto& auth_controller = AuthController::get_instance();
+                if (!auth_controller.auth_by_credentials(username, password))
+                    throw RBException("Invalid authentication");
+                
                 std::string token = auth_controller.generate_token(username);
-
                 auto auth_response = std::make_unique<RBAuthResponse>();
                 auth_response->set_token(token);
-                res.set_allocated_auth_response(auth_response.release());   
-            } else {
-                RBLog("Invalid authentication");
-                res.set_error("Invalid authentication");
-            }
-        } else if (req.type() == RBMsgType::UPLOAD) {
-            RBLog("Upload request!");
+                res.set_allocated_auth_response(auth_response.release());
+            } else if (req.type() == RBMsgType::UPLOAD) {
+                RBLog("Upload request!");
 
-            // Authenticate the request
-            auto& auth_controller = AuthController::get_instance();
-            auto username = auth_controller.auth_get_user_by_token(req.token());
-            if (!username.empty()) {
+                // Authenticate the request
+                auto& auth_controller = AuthController::get_instance();
+                auto username = auth_controller.auth_get_user_by_token(req.token());
+                if (username.empty())
+                    throw RBException("Invalid authentication");
+                
                 bool ok = worker->accumulate_data(req);
-                if (ok) {
-                    if (req.final()) {
-                        auto req_path = req.file_segment().path();
-                        auto req_checksum = req.file_segment().file_metadata().checksum();
-                        auto req_last_write_time = req.file_segment().file_metadata().last_write_time();
-                        auto req_file_size = req.file_segment().file_metadata().size();
+                if (!ok)
+                    throw RBException("Invalid request data");
+                
+                if (req.final()) {
+                    auto req_path = req.file_segment().path();
+                    auto req_checksum = req.file_segment().file_metadata().checksum();
+                    auto req_last_write_time = req.file_segment().file_metadata().last_write_time();
+                    auto req_file_size = req.file_segment().file_metadata().size();
 
-                        fs::path path(req_path);
+                    fs::path path(req_path);
 
-                        std::string content = worker->get_data();
+                    std::string content = worker->get_data();
 
-                        std::stringstream ss;
-                        ss << req_file_size;
-                        std::string file_size = ss.str();
+                    std::stringstream ss;
+                    ss << req_file_size;
+                    std::string file_size = ss.str();
 
-                        ss.str(std::string());
-                        ss.clear();
+                    ss.str(std::string());
+                    ss.clear();
 
-                        ss << req_last_write_time;
-                        std::string last_write_time = ss.str();
+                    ss << req_last_write_time;
+                    std::string last_write_time = ss.str();
 
-                        ss.str(std::string());
-                        ss.clear();
+                    ss.str(std::string());
+                    ss.clear();
 
-                        ss << req_last_write_time;
-                        std::string checksum = ss.str();
+                    ss << req_last_write_time;
+                    std::string checksum = ss.str();
 
-                        ss.str(std::string());
-                        ss.clear();
+                    ss.str(std::string());
+                    ss.clear();
 
-                        FileSystemManager fs;
-                        fs.write_file(username, path, content, checksum, last_write_time, file_size);
-                    }
-                } else {
-                    RBLog("Invalid request data");
-                    res.set_error("Invalid request data");
+                    FileSystemManager fs;
+                    fs.write_file(username, path, content, checksum, last_write_time, file_size);
                 }
+            } else if (req.type() == RBMsgType::REMOVE) {
+                res.set_error("unimplemented:REMOVE");
+                RBLog("Remove request!");
+            } else if (req.type() == RBMsgType::PROBE) {
+                res.set_error("unimplemented:PROBE");
+                RBLog("Probe request!");
             } else {
-                RBLog("Invalid authentication");
-                res.set_error("Invalid authentication");
+                throw RBException("unknownReqType:"+ std::to_string(req.type()));
             }
-        } else if (req.type() == RBMsgType::REMOVE) {
-            res.set_error("unimplemented:REMOVE");
-            RBLog("Remove request!");
-        } else if (req.type() == RBMsgType::PROBE) {
-            res.set_error("unimplemented:PROBE");
-            RBLog("Probe request!");
-        } else {
-            throw RBException("unknownReqType:"+ std::to_string(req.type()));
+        } catch (RBException& e) {
+            RBLog(e.getMsg());
+            res.set_error(e.getMsg());
         }
 
         svc_map.remove("testString");

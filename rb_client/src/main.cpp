@@ -27,8 +27,8 @@ int main(int argc, char **argv) {
     config["root_folder"] = "./data";
     config["port"] = "8888";
     config["host"] = "localhost";
-    config["username"] = "";
-    config["password"] = "";
+    config["username"] = "test-user";
+    config["password"] = "test-pw";
     config["connection_timeout"] = "5000";
     config["watcher_interval"] = "3000";
 
@@ -59,13 +59,15 @@ int main(int argc, char **argv) {
         // lambda function to handle file system changes and file system compare
         auto update_handler = [&](const std::string &path, const file_metadata &meta, FileStatus status) {
             try {
-                if (!filesystem::is_regular_file(path) && status != FileStatus::REMOVED)
+                if (!filesystem::is_regular_file(root_folder.string() + '/' + path) && status != FileStatus::REMOVED)
                     return;
 
                 FileCommand command = FileCommand::UPLOAD;
                 if (status == FileStatus::REMOVED)
                     command = FileCommand::REMOVE;
 
+                std::cout << "Added file operation for " << path << " status: " << std::to_string(
+                        static_cast<int>(status)) << std::endl;
                 out_queue.add_file_operation(path, meta, command);
             } catch (RBException &e) {
                 RBLog("RBException:" + e.getMsg());
@@ -74,20 +76,24 @@ int main(int argc, char **argv) {
             }
         };
 
-        std::unordered_map server_files = client_logic.get_server_files();
-        file_manager.file_system_compare(server_files, update_handler);
+        // std::unordered_map server_files = client_logic.get_server_files();
+        // file_manager.file_system_compare(server_files, update_handler);
         file_manager.start_monitoring(update_handler);
     });
+
 
     std::cout << "Starting RBProto client..." << std::endl;
     std::thread sender([&]() {
         while (true) {
-            std::cout << "Processing\n";
+            std::cout << "Processing"<< std::endl;
             auto op = out_queue.get_file_operation();
+            std::cout << op->get_path() << " " << std::to_string(static_cast<int>(op->get_command()))<< std::endl;
+
             if (!keep_going) break;
             try {
                 switch (op->get_command()) {
                 case FileCommand::UPLOAD:
+
                     client_logic.upload_file(op);
                     break;
                 case FileCommand::REMOVE:
@@ -96,7 +102,7 @@ int main(int argc, char **argv) {
                 default:
                     break;
                 }
-                std::cout << "OK\n";
+                std::cout << "OK"<< std::endl;
                 out_queue.remove_file_operation(op->get_id());
             } catch (RBException &e) {
                 RBLog("RBException:" + e.getMsg());

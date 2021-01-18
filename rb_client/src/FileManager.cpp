@@ -62,7 +62,7 @@ void FileManager::start_monitoring(const std::function<void(const std::string&, 
                     current_file_metadata.checksum = calculate_checksum(file.path());
 
                     files[file.path().string()] = current_file_metadata;
-                    relative_path = string_remove_pref(path_to_watch.string(), it->first);
+                    relative_path = string_remove_pref(path_to_watch.string(), file.path().string());
                     action(relative_path, files[file.path().string()], FileStatus::CREATED);
                 } else {
                     // File modification
@@ -74,7 +74,7 @@ void FileManager::start_monitoring(const std::function<void(const std::string&, 
                         if (files[file.path().string()].checksum != current_file_metadata.checksum) {
 
                             files[file.path().string()] = current_file_metadata;
-                            relative_path = string_remove_pref(path_to_watch.string(), it->first);
+                            relative_path = string_remove_pref(path_to_watch.string(), file.path().string());
                             action(relative_path, files[file.path().string()], FileStatus::MODIFIED);
                         }
                     }

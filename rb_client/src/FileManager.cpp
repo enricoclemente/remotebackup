@@ -126,7 +126,9 @@ void FileManager::file_system_compare(const std::unordered_map<std::string, file
 
     auto it = map.begin();
     while(it != map.end()) {
-        std::string file_path = path_to_watch.string() + it->first;
+        filesystem::path p{path_to_watch.string()};
+        p /= it->first;
+        std::string file_path = p.string();
         if(!contains(files, file_path)) {
             action(it->first, {}, FileStatus::REMOVED);
         } else {

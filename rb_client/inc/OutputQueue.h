@@ -42,6 +42,7 @@ private:
     int id_counter;
     std::mutex m;
     std::condition_variable cv;
+    int free();
 
 public:
     OutputQueue();
@@ -50,5 +51,4 @@ public:
     bool free_file_operation(int id);
     bool remove_file_operation(int id);
     int size();
-    int free();
 };

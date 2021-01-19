@@ -23,7 +23,7 @@ void OutputQueue::add_file_operation(const std::string &path, file_metadata meta
     queue.push_back(fo);
     id_counter++;
 
-    cv.notify_one();
+    cv.notify_all();
 }
 
 std::shared_ptr<FileOperation> OutputQueue::get_file_operation() {
@@ -49,12 +49,12 @@ std::shared_ptr<FileOperation> OutputQueue::get_file_operation() {
         }
     }
 
-    return nullptr;
+    throw std::logic_error("invalid_file_operation");
 }
 
 bool OutputQueue::free_file_operation(int id) {
     std::unique_lock ul(m);
-    cv.wait(ul, [this]() { return size() > 0; });
+    cv.wait(ul, [this]() { return queue.size() > 0; });
 
     for (const auto& val : queue) {
         if (val->get_id() == id) {
@@ -68,7 +68,7 @@ bool OutputQueue::free_file_operation(int id) {
 
 bool OutputQueue::remove_file_operation(int id) {
     std::unique_lock ul(m);
-    cv.wait(ul, [this]() { return size() > 0; });
+    cv.wait(ul, [this]() { return queue.size() > 0; });
 
     for (auto it = queue.begin(); it != queue.end(); it++) {
         if (it->get()->get_id() == id) {

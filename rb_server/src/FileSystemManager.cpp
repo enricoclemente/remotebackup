@@ -17,10 +17,15 @@ bool FileSystemManager::find_file(std::string username, const fs::path& path) {
 
     std::string parent_path = path.relative_path().string();
     std::string filename = path.filename().string();
-
     std::string sql = "SELECT COUNT(*) FROM fs WHERE username = ? AND path = ? AND filename = ?;";
-    auto count = std::stoi(db.query(sql, {username, parent_path, filename}).at(0));
 
+    auto results = db.query(sql, {username, parent_path, filename});
+    if (results.empty() || results[0].empty()) {
+        RBLog("Error executing the statement");
+        return false;
+    }
+
+    auto count = std::stoi(results[0].at(0));
     if (count == 0) {
         RBLog("The file provided exists but is not present in the db");
         return false;
@@ -65,8 +70,14 @@ bool FileSystemManager::write_file(std::string username, const fs::path& path, c
     // Check if the file is already present in db
     auto& db = Database::get_instance();
     std::string sql = "SELECT COUNT(*) FROM fs WHERE username = ? AND path = ? AND filename = ?;";
-    auto count = std::stoi(db.query(sql, {username, parent_path, filename}).at(0));
 
+    auto results = db.query(sql, {username, parent_path, filename});
+    if (results.empty() || results[0].empty()) {
+        RBLog("Error executing the statement");
+        return false;
+    }
+
+    auto count = std::stoi(results[0].at(0));
     if (count == 0) {  // Insert entry if file is not already in db
         sql = "INSERT INTO fs (username, path, filename, hash, last_write_time, size) VALUES (?, ?, ?, ?, ?, ?);";
         db.query(sql, {username, parent_path, filename, hash, last_write_time, size});
@@ -117,7 +128,14 @@ std::string FileSystemManager::get_hash(std::string username, const fs::path& pa
     std::string parent_path = path.parent_path().string();
     std::string filename = path.filename().string();
     std::string sql = "SELECT hash FROM fs WHERE username = ? AND path = ? AND filename = ?;";
-    auto hash = db.query(sql, {username, parent_path, filename}).at(0);
+
+    auto results = db.query(sql, {username, parent_path, filename});
+    if (results.empty() || results[0].empty()) {
+        RBLog("Error executing the statement");
+        return "";
+    }
+
+    auto hash = results[0].at(0);
 
     return hash;
 }
@@ -128,7 +146,14 @@ std::string FileSystemManager::get_size(std::string username, const fs::path& pa
     std::string parent_path = path.parent_path().string();
     std::string filename = path.filename().string();
     std::string sql = "SELECT size FROM fs WHERE username = ? AND path = ? AND filename = ?;";
-    auto size = db.query(sql, {username, parent_path, filename}).at(0);
+
+    auto results = db.query(sql, {username, parent_path, filename});
+    if (results.empty() || results[0].empty()) {
+        RBLog("Error executing the statement");
+        return "";
+    }
+
+    auto size = results[0].at(0);
 
     return size;
 }
@@ -139,7 +164,14 @@ std::string FileSystemManager::get_last_write_time(std::string username, const f
     std::string parent_path = path.parent_path().string();
     std::string filename = path.filename().string();
     std::string sql = "SELECT last_write_time FROM fs WHERE username = ? AND path = ? AND filename = ?;";
-    auto last_write_time = db.query(sql, {username, parent_path, filename}).at(0);
+
+    auto results = db.query(sql, {username, parent_path, filename});
+    if (results.empty() || results[0].empty()) {
+        RBLog("Error executing the statement");
+        return "";
+    }
+
+    auto last_write_time = results[0].at(0);
 
     return last_write_time;
 }

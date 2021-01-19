@@ -63,8 +63,8 @@ void Database::exec(std::string sql) {
     RBLog(std::string("Executed: ") + sql);
 }
 
-std::vector<std::string> Database::query(std::string sql, std::initializer_list<std::string> params) {
-    std::vector<std::string> results;
+std::unordered_map<int, std::vector<std::string>> Database::query(std::string sql, std::initializer_list<std::string> params) {
+    std::unordered_map<int, std::vector<std::string>> results; // Default initialization to { {0, {}}}
     sqlite3_stmt *stmt;
 
     int res = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
@@ -84,11 +84,14 @@ std::vector<std::string> Database::query(std::string sql, std::initializer_list<
         i++;
     }
 
+    // Populate map<row, vector of columns> with db results
+    int row = 0;
     while ((res = sqlite3_step(stmt)) == SQLITE_ROW) { // While there are rows in the result set
-        for (int i = 0; i < sqlite3_column_count(stmt); i++) { // Iterate over the row's columns
-            auto result = sqlite3_column_text(stmt, i);
-            results.push_back(std::string(reinterpret_cast<const char*>(result)));
+        for (int col = 0; col < sqlite3_column_count(stmt); col++) { // Iterate over the row's columns
+            auto result = sqlite3_column_text(stmt, col);
+            results[row].push_back(std::string(reinterpret_cast<const char*>(result)));
         }
+        row++;
     }
     if (res != SQLITE_DONE) {
         RBLog(std::string("Step error: ") + sqlite3_errmsg(db));

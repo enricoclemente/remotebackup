@@ -22,7 +22,7 @@ public:
     void open();
     void close();
     void exec(std::string); // For statements without parameters, no returned results
-    std::vector<std::string> query(std::string, std::initializer_list<std::string>); // For statements with parameters, with returned results
+    std::unordered_map<int, std::vector<std::string>> query(std::string, std::initializer_list<std::string>); // For statements with parameters, with returned results
 
 private:
     Database();

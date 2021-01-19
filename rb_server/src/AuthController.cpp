@@ -9,7 +9,14 @@ bool AuthController::auth_by_credentials(std::string username, std::string passw
 
     std::string hash = sha256(password);
     std::string sql = "SELECT COUNT(*) FROM users WHERE username = ? AND password = ?;";
-    auto count = std::stoi(db.query(sql, {username, hash}).at(0));
+
+    auto results = db.query(sql, {username, hash});
+    if (results.empty() || results[0].empty()) {
+        RBLog("Error executing the statement");
+        return false;
+    }
+
+    auto count = std::stoi(results[0].at(0));
 
     return count == 1;
 }
@@ -18,7 +25,14 @@ bool AuthController::auth_by_token(std::string token) {
     auto& db = Database::get_instance();
 
     std::string sql = "SELECT COUNT(*) FROM users WHERE token = ?;";
-    auto count = std::stoi(db.query(sql, {token}).at(0));
+    
+    auto results = db.query(sql, {token});
+    if (results.empty() || results[0].empty()) {
+        RBLog("Error executing the statement");
+        return false;
+    }
+
+    auto count = std::stoi(results[0].at(0));
 
     return count == 1;
 }
@@ -27,7 +41,14 @@ std::string AuthController::auth_get_user_by_token(const std::string& token) {
     auto& db = Database::get_instance();
 
     std::string sql = "SELECT username FROM users WHERE token = ?;";
-    auto username = db.query(sql, {token}).at(0);
+
+    auto results = db.query(sql, {token});
+    if (results.empty() || results[0].empty()) {
+        RBLog("Error executing the statement");
+        return "";
+    }
+
+    auto username = results[0].at(0);
 
     return username;
 }
@@ -36,7 +57,14 @@ std::string AuthController::generate_token(std::string username) {
     auto& db = Database::get_instance();
 
     std::string sql = "SELECT password FROM users WHERE username = ?;";
-    std::string password = db.query(sql, {username}).at(0);
+    
+    auto results = db.query(sql, {username});
+    if (results.empty() || results[0].empty()) {
+        RBLog("Error executing the statement");
+        return "";
+    }
+
+    auto password = results[0].at(0);
 
     auto now = std::chrono::system_clock::now();
     auto time = std::chrono::system_clock::to_time_t(now);

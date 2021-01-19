@@ -63,9 +63,9 @@ int main() {
     db.open();
     
     add_user_u1();
-    test_fsmanager();
+    // test_fsmanager();
 
-    test_db_and_auth();
+    // test_db_and_auth();
 
     atomic_map<std::string, std::shared_ptr<Service>> svc_map(8);
 
@@ -148,8 +148,22 @@ int main() {
                 res.set_error("unimplemented:REMOVE");
                 RBLog("Remove request!");
             } else if (req.type() == RBMsgType::PROBE) {
-                res.set_error("unimplemented:PROBE");
                 RBLog("Probe request!");
+
+                // Authenticate the request
+                auto& auth_controller = AuthController::get_instance();
+                auto username = auth_controller.auth_get_user_by_token(req.token());
+                if (username.empty())
+                    throw RBException("Invalid authentication");
+
+                FileSystemManager fs;
+                auto files = fs.get_files(username);
+
+                auto probe_res = std::make_unique<RBProbeResponse>();
+                auto mutable_files = probe_res->mutable_files();
+                mutable_files->insert(files.begin(), files.end());
+
+                res.set_allocated_probe_response(probe_res.release());
             } else {
                 throw RBException("unknownReqType:"+ std::to_string(req.type()));
             }

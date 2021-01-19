@@ -17,6 +17,7 @@ namespace ch = std::chrono;
 
 class FileSystemManager {
 public:
+    std::unordered_map<std::string, RBFileMetadata> get_files(const std::string&);
     bool find_file(std::string, const fs::path&);
     bool write_file(std::string, const fs::path&, const std::string&,
                     const std::string&, const std::string&, const std::string&);

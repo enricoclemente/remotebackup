@@ -2,6 +2,31 @@
 
 #include <utility>
 
+std::unordered_map<std::string, RBFileMetadata> FileSystemManager::get_files(const std::string& username) {
+    auto& db = Database::get_instance();
+    std::string sql = "SELECT path, filename, hash, last_write_time, size FROM fs WHERE username = ?;";
+    auto results = db.query(sql, {username});
+
+    std::unordered_map<std::string, RBFileMetadata> files;
+    for (auto & [key, value] : results) {
+        // Print
+        std::cout << "[row " << key << "] ";
+        for (auto & col : value) {
+            std::cout << col << ", ";
+        }
+        std::cout << std::endl;
+
+        // Add metadata
+        RBFileMetadata meta;
+        meta.set_checksum(std::stoul(value[2]));
+        meta.set_last_write_time(std::stoll(value[3]));
+        meta.set_size(std::stoull(value[4]));
+        files[value[1]] = meta;
+    }
+
+    return files;
+}
+
 bool FileSystemManager::find_file(std::string username, const fs::path& path) {
     if (!fs::exists(path)) {
         RBLog("The path provided doesn't correspond to an existing file");

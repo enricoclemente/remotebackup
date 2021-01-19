@@ -62,9 +62,9 @@ int main(int argc, char **argv) {
                 if (!filesystem::is_regular_file(root_folder.string() + '/' + path) && status != FileStatus::REMOVED)
                     return;
 
-                FileCommand command = FileCommand::UPLOAD;
-                if (status == FileStatus::REMOVED)
-                    command = FileCommand::REMOVE;
+                FileCommand command = status == FileStatus::REMOVED 
+                    ? FileCommand::REMOVE 
+                    : FileCommand::UPLOAD;
 
                 std::cout << "Added file operation for " << path << " status: " << std::to_string(
                         static_cast<int>(status)) << std::endl;

@@ -84,38 +84,6 @@ void FileManager::start_monitoring(const std::function<void(const std::string&, 
     }
 }
 
-// Description: calculate file checksum
-// Errors: It can throw a runtime error because of file errors
-std::uint32_t FileManager::calculate_checksum(const filesystem::path &file_path) {
-    std::ifstream fl(file_path.string());
-    if (fl.fail()) throw std::runtime_error("Error opening file");
-
-    std::size_t file_len = filesystem::file_size(file_path);
-
-    int chunck_size = 1000000;
-    std::vector<char> chunck(chunck_size, 0);
-    crc_32_type crc;
-
-    size_t tot_read = 0;
-    size_t current_read;
-    while (tot_read < file_len) {
-        if (file_len - tot_read >= chunck_size) {
-            fl.read(&chunck[0], chunck_size);
-        } else {
-            fl.read(&chunck[0], file_len - tot_read);
-        }
-
-        if (!fl) throw std::runtime_error("Error reading file chunck");
-
-        current_read = fl.gcount();
-        crc.process_bytes(&chunck[0], current_read);
-
-        tot_read += current_read;
-    }
-
-    return crc.checksum();
-}
-
 // Description: compare a map containing a file system with the actual and make an action for the differences
 // Input parameters: map <string(relative path), file_metadata>
 //                   action function

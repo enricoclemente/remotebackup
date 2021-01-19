@@ -1,14 +1,18 @@
 #pragma once
 
+#include <boost/crc.hpp>
 #include <boost/asio.hpp>
+#include <boost/filesystem.hpp>
 #include <exception>
 #include <memory>
 #include <string>
+#include <vector>
+
 #include "rbproto.pb.h"
 
-#define RB_MAX_SEGMENT_SIZE 1048576  // 1MiB
+namespace fs = boost::filesystem;
 
-int count_segments(uint64_t size);
+#define RB_MAX_SEGMENT_SIZE 1048576  // 1MiB
 
 typedef std::shared_ptr<boost::asio::ip::tcp::socket> sockPtr_t;
 
@@ -36,6 +40,9 @@ public:
     const char *what() { return "RBProtoVerException: "; }
 };
 
+int count_segments(uint64_t size);
+// It can throw a runtime error because of file errors
+std::uint32_t calculate_checksum(const fs::path &file_path);
 
 void validateRBProto(RBRequest &, RBMsgType, int ver, bool exactVer = false);
 void validateRBProto(RBResponse &, RBMsgType, int ver, bool exactVer = false);

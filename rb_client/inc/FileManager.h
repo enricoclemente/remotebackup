@@ -9,6 +9,8 @@
 #include <string>
 #include <functional>
 
+#include "RBHelpers.h"
+
 using namespace boost;
 
 enum class FileStatus {
@@ -39,7 +41,6 @@ public:
     FileManager(const filesystem::path &path, std::chrono::duration<int, std::milli> delay);
     void start_monitoring(const std::function<void(const std::string&, const file_metadata&, FileStatus)> &action);
     void stop_monitoring();
-    static std::uint32_t calculate_checksum(const filesystem::path &file_path);
     void file_system_compare(const std::unordered_map<std::string, file_metadata>& map,
             const std::function<void(const std::string&, const file_metadata&, FileStatus)> &action);
 };

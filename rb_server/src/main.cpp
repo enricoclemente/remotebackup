@@ -67,6 +67,19 @@ void test_fsmanager() {
     */
 }
 
+typedef atomic_map<std::string, std::shared_ptr<Service>> svc_atomic_map_t;
+typedef atomic_map_guard<std::string, std::shared_ptr<Service>> svc_atomic_map_guard;
+
+svc_atomic_map_t svc_map(8);
+svc_atomic_map_guard protect_file_concurrency(const std::string & username, const std::string & path, std::shared_ptr<Service> worker) {
+    try {
+        std::string file_token = username + ">" + path;
+        return svc_atomic_map_guard(svc_map, file_token, worker);
+    } catch (svc_atomic_map_t::key_already_present  &e) {
+        throw RBException("concurrent_write");
+    }
+}
+
 int main() {
     auto& db = Database::get_instance();
     db.open();
@@ -76,29 +89,16 @@ int main() {
 
     // test_db_and_auth();
 
-    atomic_map<std::string, std::shared_ptr<Service>> svc_map(8);
+    svc_atomic_map_t svc_map(8);
 
     Server srv(8888, [&svc_map](RBRequest req, std::shared_ptr<Service> worker) {
 
         RBResponse res;
 
         try {
-            std::string chk = "testString";
-            atomic_map_guard<std::string, std::shared_ptr<Service>> amg(svc_map, chk, worker);
-
-            // save stuff
-        } catch (exception& e) {
-            res.set_success(false);
-            res.set_error("upload_refused");
-            return res;
-        }
-
-        try {
             if (req.type() == RBMsgType::AUTH) {
+                validateRBProto(req, RBMsgType::AUTH, 3);
                 RBLog("Auth request!");
-
-                if (!req.has_auth_request())
-                    throw RBException("invalid_request");
 
                 std::string username = req.auth_request().user();
                 std::string password = req.auth_request().pass();
@@ -112,28 +112,29 @@ int main() {
                 res.set_allocated_auth_response(auth_response.release());
                 res.set_success(true);
             } else if (req.type() == RBMsgType::UPLOAD) {
-
-                if (!req.has_file_segment())
-                    throw RBException("invalid_request");
-
+                validateRBProto(req, RBMsgType::UPLOAD, 3);
                 RBLog("Upload request!");
 
                 // Authenticate the request
                 auto username = 
                     AuthController::get_instance()
                     .auth_get_user_by_token(req.token());
+
+                auto am_guard = protect_file_concurrency(username, req.file_segment().path(), worker);
                 
                 FileSystemManager fs;
                 fs.write_file(username, req);
                 res.set_success(true);
 
             } else if (req.type() == RBMsgType::REMOVE) {
-                if (!req.has_file_segment())
-                    throw RBException("invalid_request");
+                validateRBProto(req, RBMsgType::UPLOAD, 3);
+                RBLog("Remove request [unimplemented]!");
 
                 auto username = 
                     AuthController::get_instance()
                     .auth_get_user_by_token(req.token());
+
+                auto am_guard = protect_file_concurrency(username, req.file_segment().path(), worker);
 
                 throw RBException("unimplemented:REMOVE");
             } else if (req.type() == RBMsgType::PROBE) {

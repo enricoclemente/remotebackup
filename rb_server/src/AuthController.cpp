@@ -1,3 +1,7 @@
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
 #include "AuthController.h"
 
 AuthController::AuthController() {
@@ -6,6 +10,8 @@ AuthController::AuthController() {
 
 void AuthController::auth_by_credentials(std::string username, std::string password) {
     auto& db = Database::get_instance();
+
+    if (username.empty() || password.empty()) throw RBException("login_failed");
 
     std::string hash = sha256(password);
     std::string sql = "SELECT COUNT(*) FROM users WHERE username = ? AND password = ?;";
@@ -61,21 +67,18 @@ std::string AuthController::auth_get_user_by_token(const std::string& token) {
 std::string AuthController::generate_token(std::string username) {
     auto& db = Database::get_instance();
 
-    std::string sql = "SELECT password FROM users WHERE username = ?;";
-    
-    auto results = db.query(sql, {username});
-    if (results.empty() || results[0].empty()) {
-        RBLog("Error executing the statement");
-        return "";
-    }
+    using namespace std::chrono;
+    auto time = system_clock::to_time_t(system_clock::now());
 
-    auto password = results[0].at(0);
-
-    auto now = std::chrono::system_clock::now();
-    auto time = std::chrono::system_clock::to_time_t(now);
-    std::string token = sha256(username + password + ctime(&time));
-    sql = "UPDATE users SET token = ? WHERE username = ?;";
-    db.query(sql, {token, username});
+    boost::mt19937 ran;
+    ran.seed(time);
+    boost::uuids::basic_random_generator<boost::mt19937> gen(&ran);
+    boost::uuids::uuid u = gen();
+    std::string token = boost::lexical_cast<std::string>(u);
+    db.query(
+        "UPDATE users SET token = ? WHERE username = ?;",
+        {token, username}
+    );
 
     return token;
 }

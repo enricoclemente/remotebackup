@@ -52,7 +52,12 @@ int main(int argc, char **argv) {
     OutputQueue out_queue;
 
     std::cout << "Authenticating..." << std::endl;
-    client_logic.authenticate(config["username"], config["password"]);
+    try {
+        client_logic.authenticate(config["username"], config["password"]);
+    } catch (RBException &e) {
+        RBLog("Authentication failed: " + e.getMsg());
+        exit(-1);
+    }
 
     std::cout << "Starting file watcher..." << std::endl;
     std::thread system([&]() {

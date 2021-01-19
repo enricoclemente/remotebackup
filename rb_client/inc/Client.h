@@ -45,6 +45,8 @@ public:
 
     RBResponse run(RBRequest &);
 
+    void close();
+
 private:
     ProtoChannel(std::string & ip, std::string & port, std::string & token);
 

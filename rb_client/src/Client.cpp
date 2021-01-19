@@ -30,7 +30,10 @@ RBResponse Client::run(RBRequest &req) {
     if (!req.final()) throw RBException("notFinalClientRun");
 
     ProtoChannel chan = open_channel();
-    return chan.run(req);
+    auto res = chan.run(req);
+    chan.close();
+
+    return std::move(res);
 }
 
 RBResponse ProtoChannel::run(RBRequest &req) {
@@ -45,13 +48,13 @@ RBResponse ProtoChannel::run(RBRequest &req) {
     bool net_op = google::protobuf::io::writeDelimitedTo(req, &cos_adp);
     cos_adp.Flush();
 
-    if (!net_op) throw RBException("reqSend");
+    if (!net_op) throw RBException("request_send_fail");
 
     RBResponse res;
 
     net_op = google::protobuf::io::readDelimitedFrom(&res, &cis_adp);
 
-    if (!net_op) throw RBException("resRecv");
+    if (!net_op) throw RBException("response_receive_fail");
 
     if (req.final()) stream.close();
 
@@ -70,6 +73,7 @@ ProtoChannel::ProtoChannel(
       aos(static_cast<boost::asio::ip::tcp::socket &>(stream.socket())),
       cos_adp(&aos),
       token(token) {
+    if (!stream.socket().is_open()) throw RBException("connection_failed");
 }
 
 ProtoChannel Client::open_channel() {
@@ -77,5 +81,12 @@ ProtoChannel Client::open_channel() {
 }
 
 ProtoChannel::~ProtoChannel() {
+    if (stream.socket().is_open()) {
+        close();
+        RBLog("ProtoChannel closed unexpectedly");
+    }
+}
+
+void ProtoChannel::close() {
     if (stream.socket().is_open()) stream.close();
 }

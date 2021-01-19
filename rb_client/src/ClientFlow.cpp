@@ -40,6 +40,8 @@ void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
     crc_32_type crc;
     std::uint32_t checksum;
 
+    auto upload_channel = client.open_channel();
+
     // Fragment files that are larger than RB_MAX_SEGMENT_SIZE (1MiB)
     for (int i = 0; i < num_segments; i++) {
         RBRequest file_upload_request;
@@ -79,7 +81,7 @@ void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
 
         if (i == num_segments - 1) { // Final file segment
             if(crc.checksum() != metadata.checksum) // Check if checksums match
-                return;
+                return; // TODO: what happened? should we ask the server to remove the file?
             file_upload_request.set_final(true);
             file_metadata->set_checksum(crc.checksum());
         }
@@ -87,11 +89,13 @@ void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
         file_segment->set_allocated_file_metadata(file_metadata.release());
         file_upload_request.set_allocated_file_segment(file_segment.release());
 
-        auto res = this->client.run(file_upload_request);
+        auto res = upload_channel.run(file_upload_request);
         validateRBProto(res, RBMsgType::UPLOAD, 3);
         if (!res.error().empty())
             throw RBException(res.error());
     }
+
+    upload_channel.close();
 
     fl.close();
 }
@@ -109,7 +113,7 @@ void ClientFlow::remove_file(const std::shared_ptr<FileOperation> &file_operatio
     file_segment->set_path(file_operation->get_path());
     file_remove_request.set_allocated_file_segment(file_segment.release());
 
-    auto res = this->client.run(file_remove_request);
+    auto res = client.run(file_remove_request);
     validateRBProto(res, RBMsgType::REMOVE, 3);
     if (!res.error().empty())   throw RBException(res.error());
 }
@@ -120,7 +124,7 @@ std::unordered_map<std::string, file_metadata> ClientFlow::get_server_files() {
     probe_all_request.set_final(true);
     probe_all_request.set_type(RBMsgType::PROBE);
 
-    auto res = this->client.run(probe_all_request);
+    auto res = client.run(probe_all_request);
     validateRBProto(res, RBMsgType::PROBE, 3);
     if (!res.error().empty())
         throw RBException(res.error());

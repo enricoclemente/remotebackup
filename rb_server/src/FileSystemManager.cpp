@@ -103,8 +103,8 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
 
     // Create or overwrite file if it's the first segment (segment_id == 0), otherwise append to file
     std::ofstream ofs = segment_id == 0
-        ? std::ofstream(path)
-        : std::ofstream(path, std::ios::app);
+        ? std::ofstream(path.string())
+        : std::ofstream(path.string(), std::ios::app);
 
     if (ofs.is_open()) {
         ofs << file_segment.data().data();

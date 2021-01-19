@@ -2,6 +2,8 @@
 
 #include "Database.h"
 
+// TODO: make queries throw exception in case of errors
+
 int print_results(void* unused, int num_cols, char** row_fields, char** col_names)
 {
     unused = 0;
@@ -24,6 +26,7 @@ void Database::init()
 {
     // query("SELECT name FROM sqlite_master WHERE type='table' AND name='<table_name>';") // Another way to check for the existance of tables
     exec("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL, token TEXT);");
+    // TODO: merge 'path' and 'filename' fields in 'fs' table
     exec("CREATE TABLE IF NOT EXISTS fs (id INTEGER PRIMARY KEY, username TEXT NOT NULL, path TEXT NOT NULL, filename TEXT NOT NULL, hash TEXT NOT NULL, last_write_time TEXT NOT NULL, size TEXT NOT NULL, tmp_chunks TEXT);");
 }
 

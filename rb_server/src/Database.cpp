@@ -63,7 +63,7 @@ void Database::exec(std::string sql) {
     RBLog(std::string("Executed: ") + sql);
 }
 
-std::unordered_map<int, std::vector<std::string>> Database::query(std::string sql, std::initializer_list<std::string> params) {
+std::unordered_map<int, std::vector<std::string>> Database::query(const std::string & sql, const std::initializer_list<std::string> & params) {
     std::unordered_map<int, std::vector<std::string>> results; // Default initialization to { {0, {}}}
     sqlite3_stmt *stmt;
 

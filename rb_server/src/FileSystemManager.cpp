@@ -59,24 +59,46 @@ bool FileSystemManager::find_file(std::string username, const fs::path& path) {
     return true;
 }
 
-bool FileSystemManager::write_file(std::string username, const fs::path& path, const std::string& content,
-                                   const std::string& hash, const std::string& last_write_time, const std::string& size) {
-    if (path.filename().empty()) {
-        RBLog("The path provided doesn't correspond to a file");
-        return false;
+void FileSystemManager::write_file(
+    const std::string& username,
+    const RBRequest& req) {
+    auto& file_segment = req.file_segment();
+
+    const std::string& req_path = file_segment.path();
+
+    if (req_path.find("..") != std::string::npos) {
+        throw RBException("forbidden_path");
     }
 
-    auto cpath = fs::weakly_canonical(path);       // Normalize path (even if it doesn't exist)
-    fs::create_directories(cpath.parent_path());   // Create directory if it doesn't exist
-    const std::string& path_str = cpath.string();  // Get path string
-    std::ofstream ofs(path_str);                   // Create file
+    auto path = root / username / fs::weakly_canonical(req_path);
+
+    if (path.filename().empty()) {
+        RBLog("The path provided doesn't correspond to a file");
+        throw RBException("malformed_path");
+    }
+
+    auto segment_id = file_segment.segmentid();
+
+    // TODO: check correct segment number from db before copying
+    if (segment_id != 0 && segment_id == 118) {
+        RBLog("The current segment is wrong");
+        throw RBException("wrong_segment");
+    }
+
+    RBLog("Creating dirs:" + path.string());
+    fs::create_directories(path.parent_path());
+
+    std::ofstream ofs = segment_id != 0 ? std::ofstream(path, std::ios::app) : std::ofstream(path);
+
     if (ofs.is_open()) {
-        ofs << content;
+        ofs << file_segment.data().data();
         ofs.close();
     } else {
         RBLog("Cannot open file");
-        return false;
+        throw RBException("internal_server_error");
     }
+
+    // TODO: calculate final checksum if it's the last segment
 
     /*
     std::uintmax_t file_size = fs::file_size(path);
@@ -99,19 +121,37 @@ bool FileSystemManager::write_file(std::string username, const fs::path& path, c
     auto results = db.query(sql, {username, parent_path, filename});
     if (results.empty() || results[0].empty()) {
         RBLog("Error executing the statement");
-        return false;
+        throw RBException("internal_server_error");
+    }
+
+    std::string hash = "<incomplete_upload>";
+    // slightly weak way to see if it's the final chunk
+    if (file_segment.data().size() < RB_MAX_SEGMENT_SIZE) {
+        // TODO: calculate and verify hash
+        uint32_t checksum = 118;
+        hash = "<calculate hash from written file>";
+        if (checksum == file_segment.file_metadata().checksum())  {
+            hash = std::to_string(checksum);
+        } else {
+            // TODO: cleanup DB & remove file?
+            throw RBException("upload_corrupted");
+        }
     }
 
     auto count = std::stoi(results[0].at(0));
+    std::initializer_list<std::string> params{};
+
+    auto lwt_s = std::to_string(file_segment.file_metadata().last_write_time());
+    auto size_s = std::to_string(file_segment.data().size());
+
     if (count == 0) {  // Insert entry if file is not already in db
         sql = "INSERT INTO fs (username, path, filename, hash, last_write_time, size) VALUES (?, ?, ?, ?, ?, ?);";
-        db.query(sql, {username, parent_path, filename, hash, last_write_time, size});
+        params = {username, parent_path, filename, hash, lwt_s, size_s};
     } else {  // Update entry if file is already in db
         sql = "UPDATE fs SET hash = ?, last_write_time = ?, size = ? WHERE username = ? AND path = ? AND filename = ?;";
-        db.query(sql, {hash, last_write_time, size, username, parent_path, filename});
+        params = {hash, lwt_s, size_s, username, parent_path, filename};
     }
-
-    return true;
+    db.query(sql, params);
 }
 
 bool FileSystemManager::remove_file(std::string username, fs::path path) {

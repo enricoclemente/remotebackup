@@ -48,7 +48,7 @@ void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
 
         auto file_segment = std::make_unique<RBFileSegment>();
         auto file_metadata = std::make_unique<RBFileMetadata>();
-        file_segment->set_path("./" + file_operation->get_path());
+        file_segment->set_path(file_operation->get_path());
         file_segment->set_segmentid(i);
         file_metadata->set_size(file_size);
         file_metadata->set_last_write_time(last_write_time);
@@ -106,7 +106,7 @@ void ClientFlow::remove_file(const std::shared_ptr<FileOperation> &file_operatio
     file_remove_request.set_type(RBMsgType::REMOVE);
     file_remove_request.set_final(true);
     auto file_segment = std::make_unique<RBFileSegment>();
-    file_segment->set_path("./" + file_operation->get_path());
+    file_segment->set_path(file_operation->get_path());
     file_remove_request.set_allocated_file_segment(file_segment.release());
 
     auto res = this->client.run(file_remove_request);

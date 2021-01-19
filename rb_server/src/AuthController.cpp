@@ -4,7 +4,7 @@ AuthController::AuthController() {
     RBLog("AuthController()");
 }
 
-bool AuthController::auth_by_credentials(std::string username, std::string password) {
+void AuthController::auth_by_credentials(std::string username, std::string password) {
     auto& db = Database::get_instance();
 
     std::string hash = sha256(password);
@@ -12,16 +12,17 @@ bool AuthController::auth_by_credentials(std::string username, std::string passw
 
     auto results = db.query(sql, {username, hash});
     if (results.empty() || results[0].empty()) {
-        RBLog("Error executing the statement");
-        return false;
+        throw RBException("login_failed");
     }
 
     auto count = std::stoi(results[0].at(0));
 
-    return count == 1;
+    if (!count) throw RBException("login_failed");
+
+    if (count > 1) RBLog("WARNING: DUPLICATED USER");
 }
 
-bool AuthController::auth_by_token(std::string token) {
+void AuthController::auth_by_token(std::string token) {
     auto& db = Database::get_instance();
 
     std::string sql = "SELECT COUNT(*) FROM users WHERE token = ?;";
@@ -29,23 +30,27 @@ bool AuthController::auth_by_token(std::string token) {
     auto results = db.query(sql, {token});
     if (results.empty() || results[0].empty()) {
         RBLog("Error executing the statement");
-        return false;
+        throw RBException("login_failed");
     }
 
     auto count = std::stoi(results[0].at(0));
 
-    return count == 1;
+    if (!count) throw RBException("login_failed");
+
+    if (count > 1) RBLog("WARNING: DUPLICATED USER");
 }
 
 std::string AuthController::auth_get_user_by_token(const std::string& token) {
     auto& db = Database::get_instance();
+
+    if (token.empty()) throw RBException("unauthenticated");
 
     std::string sql = "SELECT username FROM users WHERE token = ?;";
 
     auto results = db.query(sql, {token});
     if (results.empty() || results[0].empty()) {
         RBLog("Error executing the statement");
-        return "";
+        throw RBException("unauthenticated");
     }
 
     auto username = results[0].at(0);

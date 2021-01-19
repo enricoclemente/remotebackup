@@ -19,8 +19,7 @@ class FileSystemManager {
 public:
     std::unordered_map<std::string, RBFileMetadata> get_files(const std::string&);
     bool find_file(std::string, const fs::path&);
-    bool write_file(std::string, const fs::path&, const std::string&,
-                    const std::string&, const std::string&, const std::string&);
+    void write_file(const std::string & username, const RBRequest & req);
     bool remove_file(std::string, fs::path);
     std::string md5(fs::path);
     std::string get_hash(std::string, const fs::path&);
@@ -29,4 +28,5 @@ public:
 
 private:
     std::string to_string(unsigned char*);
+    fs::path root = "./rbserver_data";
 };

@@ -26,8 +26,8 @@ public:
     AuthController(AuthController const &) = delete;
     void operator=(AuthController const &) = delete;
 
-    bool auth_by_credentials(std::string, std::string);
-    bool auth_by_token(std::string);
+    void auth_by_credentials(std::string, std::string);
+    void auth_by_token(std::string);
     std::string auth_get_user_by_token(const std::string&);
     std::string generate_token(std::string);
     std::string sha256(const std::string);

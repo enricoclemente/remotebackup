@@ -115,6 +115,7 @@ void FileManager::file_system_compare(const std::unordered_map<std::string, file
         if(!contains(map, relative_path)) {
             action(relative_path, it->second, FileStatus::CREATED);
         }
+        it++;
     }
 }
 

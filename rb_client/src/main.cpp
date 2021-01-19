@@ -17,7 +17,7 @@ std::mutex waiter;
 std::atomic<bool> keep_going = true;
 void stop_client(int n) {
     keep_going = false;
-    std::cout << "Stopping client..." << std::endl;
+    RBLog("Stopping client...");
     waiter.unlock();
 }
 
@@ -71,8 +71,7 @@ int main(int argc, char **argv) {
                     ? FileCommand::REMOVE 
                     : FileCommand::UPLOAD;
 
-                std::cout << "Added file operation for " << path << " status: " << std::to_string(
-                        static_cast<int>(status)) << std::endl;
+                RBLog("Added file operation for " + path + " status: " + std::to_string(static_cast<int>(status)));
                 out_queue.add_file_operation(path, meta, command);
             } catch (RBException &e) {
                 RBLog("RBException:" + e.getMsg());
@@ -81,18 +80,27 @@ int main(int argc, char **argv) {
             }
         };
 
-        // std::unordered_map server_files = client_logic.get_server_files();
-        // file_manager.file_system_compare(server_files, update_handler);
+        std::unordered_map server_files = client_logic.get_server_files();
+        file_manager.file_system_compare(server_files, update_handler);
         file_manager.start_monitoring(update_handler);
     });
 
 
-    std::cout << "Starting RBProto client..." << std::endl;
+    RBLog("Starting RBProto client...");
+    int attempt_count = 0;
+    int max_attempts = 3;
     std::thread sender([&]() {
         while (true) {
-            std::cout << "Processing"<< std::endl;
+            if(attempt_count == max_attempts) {
+                RBLog("Reached max attempts number. Terminating client");
+                stop_client(0);
+                break;
+            }
+
+            RBLog("Processing");
             auto op = out_queue.get_file_operation();
-            std::cout << op->get_path() << " " << std::to_string(static_cast<int>(op->get_command()))<< std::endl;
+            RBLog("Got operation for: " + op->get_path() + " command: " +
+                std::to_string(static_cast<int>(op->get_command())));
 
             if (!keep_going) break;
             try {
@@ -107,12 +115,18 @@ int main(int argc, char **argv) {
                 default:
                     break;
                 }
-                std::cout << "OK"<< std::endl;
+
+                RBLog("Operation for: " + op->get_path() + " command: " +
+                      std::to_string(static_cast<int>(op->get_command())) + " correctly ended");
+
+                attempt_count = 0;
                 out_queue.remove_file_operation(op->get_id());
             } catch (RBException &e) {
+                attempt_count++;
                 RBLog("RBException:" + e.getMsg());
                 out_queue.free_file_operation(op->get_id());
             } catch (std::exception &e) {
+                attempt_count++;
                 RBLog("exception:" + std::string(e.what()));
                 out_queue.free_file_operation(op->get_id());
             }
@@ -122,18 +136,18 @@ int main(int argc, char **argv) {
     signal(SIGINT, stop_client);
     waiter.lock();
 
-    std::cout << "Client started!" << std::endl;
+    RBLog("Client started!");
     waiter.lock();
 
-    std::cout << "Stopping..." << std::endl;
+    RBLog("Stopping monitoring...");
     file_manager.stop_monitoring();
 
-    std::cout << "Waiting for watcher thread to finish..." << std::endl;
+    RBLog("Waiting for watcher thread to finish...");
     system.join();
 
-    std::cout << "Waiting for RBProto thread to finish..." << std::endl;
+    RBLog("Waiting for RBProto thread to finish...");
     sender.join();
 
-    std::cout << "Client stopped!" << std::endl;
+    RBLog("Client stopped!");
     return 0;
 }

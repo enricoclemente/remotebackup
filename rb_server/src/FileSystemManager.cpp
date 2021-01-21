@@ -27,7 +27,7 @@ std::unordered_map<std::string, RBFileMetadata> FileSystemManager::get_files(con
     return files;
 }
 
-bool FileSystemManager::find_file(std::string username, const fs::path& path) {
+bool FileSystemManager::file_exits(std::string username, const fs::path& path) {
     if (!fs::exists(path)) {
         RBLog("The path provided doesn't correspond to an existing file");
         return false;
@@ -85,16 +85,10 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
     std::string sql = "SELECT tmp_chunks FROM fs WHERE username = ? AND path = ? AND filename = ?;";
     
     auto results = db.query(sql, {username, parent_path, filename});
-    if (results.empty() || results[0].empty()) {
-        RBLog("Error executing the statement");
-        throw RBException("internal_server_error");
-    }
-
-    // Skip this check if segment_id == 0 to allow starting over at any time
-    auto next_segment_id = std::stoi(results[0].at(0));
-    if (segment_id != 0 && segment_id != next_segment_id) {
-        RBLog("The current segment is wrong");
-        throw RBException("wrong_segment");
+    if (!results.empty() && !results[0].empty()) {
+        auto next_segment_id = std::stoi(results[0].at(0));
+        if (segment_id != 0 && segment_id != next_segment_id)
+            throw RBException("wrong_segment");
     }
 
     // Create directories containing the file
@@ -107,7 +101,8 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
         : std::ofstream(path.string(), std::ios::app);
 
     if (ofs.is_open()) {
-        ofs << file_segment.data().data();
+        for(const std::string& datum : file_segment.data())
+            ofs << datum;
         ofs.close();
     } else {
         RBLog("Cannot open file");
@@ -148,9 +143,9 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
     db.query(sql, {hash, lwt_str, size_str, username, parent_path, filename});
 }
 
-bool FileSystemManager::remove_file(std::string username, fs::path path) {
-    bool ok = fs::remove(path);
-    return ok;
+void FileSystemManager::remove_file(const std::string& username, const RBRequest& req) {
+    throw RBException("unimplemented:REMOVE");
+    //fs::remove(path);
 }
 
 std::string FileSystemManager::md5(fs::path path) {

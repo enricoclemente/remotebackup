@@ -8,6 +8,24 @@
 template <typename K, typename V>
 class atomic_map {
 public:
+
+    class guard {
+    public:
+        guard(atomic_map<K,V> &m, K &key, V &value)
+            : m(m), key(key) {
+            if (m.has(key)) throw typename atomic_map<K, V>::key_already_present();
+            m.add(key, value);
+        }
+
+        ~guard() {
+            m.remove(key);
+        }
+
+    private:
+        K &key;
+        atomic_map<K,V> &m;
+    };
+    
     atomic_map<K, V>(size_t limit) : limit(limit){};
 
     void add(K key, V value) {
@@ -50,22 +68,4 @@ private:
     std::map<K, V> map;
     std::shared_mutex m;
     std::condition_variable_any cv;
-};
-
-template <typename K, typename V>
-class atomic_map_guard {
-public:
-    atomic_map_guard<K, V>(atomic_map<K, V> &m, K &key, V &value)
-        : m(m), key(key) {
-        if (m.has(key)) throw typename atomic_map<K, V>::key_already_present();
-        m.add(key, value);
-    }
-
-    ~atomic_map_guard<K, V>() {
-        m.remove(key);
-    }
-
-private:
-    atomic_map<K, V> &m;
-    K &key;
 };

@@ -57,28 +57,17 @@ void add_user_u1() {
 
 void test_fsmanager() {
     std::cout << "Skipping test_fsmanager";
-    /*FileSystemManager fs;
+    /*FileSystemManager fs("./rbserver_data");
 
     bool res = fs.write_file("u1", fs::path("./u1/ciao.txt"), "This is the first file", "0", "0", "0");
     std::cout << "File written: " << res << std::endl;
 
-    res = fs.find_file("u1", fs::path("./u1/ciao.txt"));
+    res = fs.file_exits("u1", fs::path("./u1/ciao.txt"));
     std::cout << "File found: " << res << std::endl;
     */
 }
 
 typedef atomic_map<std::string, std::shared_ptr<Service>> svc_atomic_map_t;
-typedef atomic_map_guard<std::string, std::shared_ptr<Service>> svc_atomic_map_guard;
-
-svc_atomic_map_t svc_map(8);
-svc_atomic_map_guard protect_file_concurrency(const std::string & username, const std::string & path, std::shared_ptr<Service> worker) {
-    try {
-        std::string file_token = username + ">" + path;
-        return svc_atomic_map_guard(svc_map, file_token, worker);
-    } catch (svc_atomic_map_t::key_already_present  &e) {
-        throw RBException("concurrent_write");
-    }
-}
 
 int main() {
     auto& db = Database::get_instance();
@@ -89,9 +78,11 @@ int main() {
 
     // test_db_and_auth();
 
+    FileSystemManager fsm("./rbserver_data");
     svc_atomic_map_t svc_map(8);
 
-    Server srv(8888, [&svc_map](RBRequest req, std::shared_ptr<Service> worker) {
+    Server srv(8888, [&svc_map, &fsm]
+        (RBRequest req, std::shared_ptr<Service> worker) {
 
         RBResponse res;
 
@@ -120,24 +111,38 @@ int main() {
                     AuthController::get_instance()
                     .auth_get_user_by_token(req.token());
 
-                auto am_guard = protect_file_concurrency(username, req.file_segment().path(), worker);
-                
-                FileSystemManager fs;
-                fs.write_file(username, req);
-                res.set_success(true);
+                try {
+                    std::string file_token = 
+                        username + ">" + req.file_segment().path();
+                    svc_atomic_map_t::guard sv_grd(svc_map, file_token, worker);
+
+                    fsm.write_file(username, req);
+                    res.set_success(true);
+                } catch (svc_atomic_map_t::key_already_present  &e) {
+                    throw RBException("concurrent_write");
+                }
 
             } else if (req.type() == RBMsgType::REMOVE) {
-                validateRBProto(req, RBMsgType::UPLOAD, 3);
+                validateRBProto(req, RBMsgType::REMOVE, 3);
                 RBLog("Remove request [unimplemented]!");
 
                 auto username = 
                     AuthController::get_instance()
                     .auth_get_user_by_token(req.token());
 
-                auto am_guard = protect_file_concurrency(username, req.file_segment().path(), worker);
+                try {
+                    std::string file_token = 
+                        username + ">" + req.file_segment().path();
+                    svc_atomic_map_t::guard sv_grd(svc_map, file_token, worker);
 
-                throw RBException("unimplemented:REMOVE");
+                    fsm.remove_file(username, req);
+                    res.set_success(true);
+                } catch (svc_atomic_map_t::key_already_present  &e) {
+                    throw RBException("concurrent_write");
+                }
+
             } else if (req.type() == RBMsgType::PROBE) {
+                validateRBProto(req, RBMsgType::PROBE, 3);
                 RBLog("Probe request!");
 
                 // Authenticate the request
@@ -145,8 +150,7 @@ int main() {
                     AuthController::get_instance()
                     .auth_get_user_by_token(req.token());
 
-                FileSystemManager fs;
-                auto files = fs.get_files(username);
+                auto files = fsm.get_files(username);
 
                 auto probe_res = std::make_unique<RBProbeResponse>();
                 auto mutable_files = probe_res->mutable_files();
@@ -164,8 +168,6 @@ int main() {
             res.set_error(e.getMsg());
             res.set_success(false);
         }
-
-        svc_map.remove("testString");
 
         res.set_protover(3);
         res.set_type(req.type());

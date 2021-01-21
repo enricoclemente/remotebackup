@@ -16,28 +16,28 @@ namespace fs = boost::filesystem;
 
 typedef std::shared_ptr<boost::asio::ip::tcp::socket> sockPtr_t;
 
-class RBException : std::exception {
+class RBException : public std::exception {
 public:
-    RBException(std::string msg) : msg(msg) {}
+    RBException(const std::string& msg) : msg(msg) {}
 
-    const char *what() { return "RBException: "; }
+    const char *what() const throw() { return "RBException: "; }
 
-    const std::string &getMsg() { return msg; }
+    const std::string & getMsg() { return msg; }
 
 private:
     const std::string msg;
 };
 
-class RBProtoTypeException : RBException {
+class RBProtoTypeException : public RBException {
 public:
     using RBException::RBException; // inherit constructor
-    const char *what() { return "RBProtoTypeException: "; }
+    const char *what() const throw() { return "RBProtoTypeException: "; }
 };
 
-class RBProtoVerException : RBException {
+class RBProtoVerException : public RBException {
 public:
     using RBException::RBException; // inherit constructor
-    const char *what() { return "RBProtoVerException: "; }
+    const char *what() const throw() { return "RBProtoVerException: "; }
 };
 
 int count_segments(uint64_t size);
@@ -49,4 +49,4 @@ void validateRBProto(RBResponse &, RBMsgType, int ver, bool exactVer = false);
 
 void excHandler(std::exception &e);
 void excHandler(RBException &e);
-void RBLog(std::string s);
+void RBLog(const std::string & s);

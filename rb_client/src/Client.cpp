@@ -20,8 +20,7 @@ void Client::authenticate(std::string username, std::string password) {
     RBResponse res = run(req);
 
     validateRBProto(res, RBMsgType::AUTH, 3);
-    if (!res.has_auth_response())
-        throw RBException("missing auth response");
+
     token = res.auth_response().token();
 }
 

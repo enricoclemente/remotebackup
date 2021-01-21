@@ -18,14 +18,14 @@ Service::Service(sockPtr_t sock, RBSrvCallback callback)
               bool op = google::protobuf::io::readDelimitedFrom(&req, &cis_adp);
 
               if (!op)
-                  throw RBException("reqRecv");
+                  throw RBException("request_receive_fail");
 
               RBResponse res = callback(req, shared_from_this());
 
               op = google::protobuf::io::writeDelimitedTo(res, &cos_adp);
               cos_adp.Flush();
               if (!op)
-                  throw RBException("resSend");
+                  throw RBException("response_send_fail");
           }
       })
 {
@@ -39,20 +39,15 @@ void Service::serve(sockPtr_t sock, RBSrvCallback callback) {
     th.detach();
 }
 
-void Service::handleClient()
-{
-    try
-    {
+void Service::handleClient() {
+    try {
         RBLog("Handling client request");
         handler(sock);
         sock.get()->close();
-    }
-    catch (std::exception &e)
-    {
+    } catch (RBException &e) {
         excHandler(e);
     }
-    catch (RBException &e)
-    {
+    catch (std::exception &e) {
         excHandler(e);
     }
 }

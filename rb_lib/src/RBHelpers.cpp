@@ -10,7 +10,7 @@ void excHandler(std::exception &e) {
     std::cout << "Error occured! Message: " << e.what();
 }
 
-void RBLog(std::string s) {
+void RBLog(const std::string & s) {
     static std::mutex mutex;
     std::lock_guard<std::mutex> lock(mutex);
     std:: cout << ">> " << s << std::endl;
@@ -58,6 +58,13 @@ void validateRBProto(RBResponse & res, RBMsgType type, int ver, bool exactVer) {
         throw RBProtoTypeException("unexpected_rbproto_response_type");
     if ((exactVer && res.protover() != ver) || res.protover() < ver)
         throw RBProtoVerException("unsupported_rbproto_version");
+
+    if (!res.success()) {
+        throw RBException(res.error());
+    }
+
+    if (res.type() == RBMsgType::AUTH && !res.has_auth_response())
+        throw RBException("invalid_rbproto_auth_response");
 }
 
 void validateRBProto(RBRequest & req, RBMsgType type, int ver, bool exactVer) {
@@ -66,8 +73,8 @@ void validateRBProto(RBRequest & req, RBMsgType type, int ver, bool exactVer) {
     if ((exactVer && req.protover() != ver) || req.protover() < ver)
         throw RBProtoVerException("unsupported_rbproto_version");
     if (type == RBMsgType::AUTH && !req.has_auth_request())
-        throw RBProtoVerException("invalid_rbproto_auth_pack");
-    if ((type == RBMsgType::UPLOAD || type == RBMsgType::UPLOAD)
+        throw RBProtoTypeException("invalid_rbproto_auth_request");
+    if ((type == RBMsgType::UPLOAD || type == RBMsgType::REMOVE)
         && !req.has_file_segment())
-        throw RBProtoVerException("invalid_rbproto_auth_pack");
+        throw RBProtoTypeException("invalid_rbproto_file_request");
 }

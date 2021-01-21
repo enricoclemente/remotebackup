@@ -17,10 +17,11 @@ namespace ch = std::chrono;
 
 class FileSystemManager {
 public:
+    FileSystemManager(const fs::path & root) : root(root) {};
     std::unordered_map<std::string, RBFileMetadata> get_files(const std::string&);
-    bool find_file(std::string, const fs::path&);
+    bool file_exits(std::string, const fs::path&);
     void write_file(const std::string & username, const RBRequest & req);
-    bool remove_file(std::string, fs::path);
+    void remove_file(const std::string & username, const RBRequest & req);
     std::string md5(fs::path);
     std::string get_hash(std::string, const fs::path&);
     std::string get_size(std::string, const fs::path&);
@@ -28,5 +29,5 @@ public:
 
 private:
     std::string to_string(unsigned char*);
-    fs::path root = "./rbserver_data";
+    fs::path root;
 };

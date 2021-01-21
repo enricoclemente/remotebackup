@@ -11,19 +11,20 @@ AuthController::AuthController() {
 void AuthController::auth_by_credentials(std::string username, std::string password) {
     auto& db = Database::get_instance();
 
-    if (username.empty() || password.empty()) throw RBException("login_failed");
+    if (username.empty() || password.empty())
+        throw RBException("login_failed_wrong_credentials");
 
     std::string hash = sha256(password);
     std::string sql = "SELECT COUNT(*) FROM users WHERE username = ? AND password = ?;";
 
     auto results = db.query(sql, {username, hash});
     if (results.empty() || results[0].empty()) {
-        throw RBException("login_failed");
+        throw RBException("login_failed_wrong_credentials");
     }
 
     auto count = std::stoi(results[0].at(0));
 
-    if (!count) throw RBException("login_failed");
+    if (!count) throw RBException("login_failed_wrong_credentials");
 
     if (count > 1) RBLog("WARNING: DUPLICATED USER");
 }
@@ -31,17 +32,19 @@ void AuthController::auth_by_credentials(std::string username, std::string passw
 void AuthController::auth_by_token(std::string token) {
     auto& db = Database::get_instance();
 
+    if (token.empty()) throw RBException("unauthorized");
+
     std::string sql = "SELECT COUNT(*) FROM users WHERE token = ?;";
     
     auto results = db.query(sql, {token});
     if (results.empty() || results[0].empty()) {
         RBLog("Error executing the statement");
-        throw RBException("login_failed");
+        throw RBException("unauthorized");
     }
 
     auto count = std::stoi(results[0].at(0));
 
-    if (!count) throw RBException("login_failed");
+    if (!count) throw RBException("unauthorized");
 
     if (count > 1) RBLog("WARNING: DUPLICATED USER");
 }

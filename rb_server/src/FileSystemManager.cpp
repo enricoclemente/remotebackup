@@ -69,15 +69,17 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
     }
 
     // weakly_canonical normalizes a path (even if it doesn't correspond to an existing one)
-    auto path = root / username / fs::weakly_canonical(req_path);
+    RBLog("req_path: " + req_path);
+    auto path = root / username / fs::path(req_path).lexically_normal();
 
+    RBLog("path: " + path.string());
     if (path.filename().empty()) {
         RBLog("The path provided is not formatted as a valid file path");
         throw RBException("malformed_path");
     }
 
     auto segment_id = file_segment.segmentid();
-    auto req_c_path = fs::weakly_canonical(req_path).string();
+    auto req_c_path = fs::path(req_path).lexically_normal().string();
 
     // Check correct segment number from db before writing it
     auto& db = Database::get_instance();

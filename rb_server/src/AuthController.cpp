@@ -16,14 +16,9 @@ void AuthController::auth_by_credentials(std::string username, std::string passw
 
     std::string hash = sha256(password);
     std::string sql = "SELECT COUNT(*) FROM users WHERE username = ? AND password = ?;";
-
     auto results = db.query(sql, {username, hash});
-    if (results.empty() || results[0].empty()) {
-        throw RBException("login_failed_wrong_credentials");
-    }
 
-    auto count = std::stoi(results[0].at(0));
-
+    auto count = std::stoi(results[0][0]);
     if (!count) throw RBException("login_failed_wrong_credentials");
 
     if (count > 1) RBLog("WARNING: DUPLICATED USER");
@@ -35,15 +30,9 @@ void AuthController::auth_by_token(std::string token) {
     if (token.empty()) throw RBException("unauthorized");
 
     std::string sql = "SELECT COUNT(*) FROM users WHERE token = ?;";
-    
     auto results = db.query(sql, {token});
-    if (results.empty() || results[0].empty()) {
-        RBLog("Error executing the statement");
-        throw RBException("unauthorized");
-    }
 
-    auto count = std::stoi(results[0].at(0));
-
+    auto count = std::stoi(results[0][0]);
     if (!count) throw RBException("unauthorized");
 
     if (count > 1) RBLog("WARNING: DUPLICATED USER");
@@ -55,14 +44,12 @@ std::string AuthController::auth_get_user_by_token(const std::string& token) {
     if (token.empty()) throw RBException("unauthenticated");
 
     std::string sql = "SELECT username FROM users WHERE token = ?;";
-
     auto results = db.query(sql, {token});
-    if (results.empty() || results[0].empty()) {
-        RBLog("Error executing the statement");
-        throw RBException("unauthenticated");
-    }
 
-    auto username = results[0].at(0);
+    if (results.empty())
+        throw RBException("unauthenticated");
+
+    auto username = results[0][0];
 
     return username;
 }

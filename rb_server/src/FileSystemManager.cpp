@@ -4,10 +4,14 @@
 
 std::unordered_map<std::string, RBFileMetadata> FileSystemManager::get_files(const std::string& username) {
     auto& db = Database::get_instance();
-    std::string sql = "SELECT path, filename, hash, last_write_time, size FROM fs WHERE username = ?;";
+    std::string sql = "SELECT path, hash, last_write_time, size FROM fs WHERE username = ?;";
     auto results = db.query(sql, {username});
 
     std::unordered_map<std::string, RBFileMetadata> files;
+
+    if (results.empty())
+        return files;
+
     for (auto & [key, value] : results) {
         // Print
         std::cout << "[row " << key << "] ";
@@ -18,16 +22,19 @@ std::unordered_map<std::string, RBFileMetadata> FileSystemManager::get_files(con
 
         // Add metadata
         RBFileMetadata meta;
-        meta.set_checksum(std::stoul(value[2]));
-        meta.set_last_write_time(std::stoll(value[3]));
-        meta.set_size(std::stoull(value[4]));
-        files[value[1]] = meta;
+        files[value[0]] = meta;
+        if (!value[1].empty())
+            meta.set_checksum(std::stoul(value[1]));
+        if (!value[2].empty())
+            meta.set_last_write_time(std::stoll(value[2]));
+        if (!value[3].empty())
+            meta.set_size(std::stoull(value[3]));
     }
 
     return files;
 }
 
-bool FileSystemManager::file_exits(std::string username, const fs::path& path) {
+bool FileSystemManager::file_exists(std::string username, const fs::path& path) {
     if (!fs::exists(path)) {
         RBLog("The path provided doesn't correspond to an existing file");
         return false;
@@ -40,17 +47,10 @@ bool FileSystemManager::file_exits(std::string username, const fs::path& path) {
 
     auto& db = Database::get_instance();
 
-    std::string parent_path = path.relative_path().string();
-    std::string filename = path.filename().string();
-    std::string sql = "SELECT COUNT(*) FROM fs WHERE username = ? AND path = ? AND filename = ?;";
+    std::string sql = "SELECT COUNT(*) FROM fs WHERE username = ? AND path = ?;";
+    auto results = db.query(sql, {username, path.string()});
 
-    auto results = db.query(sql, {username, parent_path, filename});
-    if (results.empty() || results[0].empty()) {
-        RBLog("Error executing the statement");
-        return false;
-    }
-
-    auto count = std::stoi(results[0].at(0));
+    auto count = std::stoi(results[0][0]);
     if (count == 0) {
         RBLog("The file provided exists but is not present in the db");
         return false;
@@ -68,6 +68,7 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
         throw RBException("forbidden_path");
     }
 
+    // weakly_canonical normalizes a path (even if it doesn't correspond to an existing one)
     auto path = root / username / fs::weakly_canonical(req_path);
 
     if (path.filename().empty()) {
@@ -76,20 +77,20 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
     }
 
     auto segment_id = file_segment.segmentid();
+    auto req_c_path = fs::weakly_canonical(req_path).string();
 
     // Check correct segment number from db before writing it
-    auto& parent_path = path.relative_path().string();
-    auto& filename = path.filename().string();
-
     auto& db = Database::get_instance();
-    std::string sql = "SELECT tmp_chunks FROM fs WHERE username = ? AND path = ? AND filename = ?;";
-    
-    auto results = db.query(sql, {username, parent_path, filename});
-    if (!results.empty() && !results[0].empty()) {
-        auto next_segment_id = std::stoi(results[0].at(0));
-        if (segment_id != 0 && segment_id != next_segment_id)
-            throw RBException("wrong_segment");
-    }
+    std::string sql = "SELECT tmp_chunks FROM fs WHERE username = ? AND path = ?;";
+    auto results = db.query(sql, {username, req_c_path});
+
+    auto next_segment_id = 0;
+    if (!results.empty())
+        next_segment_id = std::stoi(results[0][0]);
+
+    // Skip this check if segment_id == 0 to allow starting over at any time
+    if (segment_id != 0 && segment_id != next_segment_id)
+        throw RBException("wrong_segment");
 
     // Create directories containing the file
     RBLog("Creating dirs:" + path.string());
@@ -101,7 +102,7 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
         : std::ofstream(path.string(), std::ios::app);
 
     if (ofs.is_open()) {
-        for(const std::string& datum : file_segment.data())
+        for (const std::string& datum : file_segment.data())
             ofs << datum;
         ofs.close();
     } else {
@@ -113,13 +114,13 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
     if (segment_id == 0) {
         // TODO: delete DB entry
         db.query(
-            "INSERT INTO fs (username, path, filename, tmp_chunks) VALUES (?, ?, ?, ?);",
-            {username, parent_path, filename, std::to_string(segment_id + 1)}
+            "INSERT INTO fs (username, path, tmp_chunks) VALUES (?, ?, ?);",
+            {username, req_c_path, std::to_string(segment_id + 1)}
         );
     } else {
         db.query(
-            "UPDATE fs SET tmp_chunks = ? WHERE username = ? AND path = ? AND filename = ?;",
-            {std::to_string(segment_id + 1), username, parent_path, filename}
+            "UPDATE fs SET tmp_chunks = ? WHERE username = ? AND path = ?;",
+            {std::to_string(segment_id + 1), username, req_c_path}
         );
     }
 
@@ -138,9 +139,9 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
     auto hash = std::to_string(checksum);
     auto lwt_str = std::to_string(file_segment.file_metadata().last_write_time());
     auto size_str = std::to_string(file_segment.data().size());
-    sql = "UPDATE fs SET hash = ?, last_write_time = ?, size = ? WHERE username = ? AND path = ? AND filename = ?;";
+    sql = "UPDATE fs SET hash = ?, last_write_time = ?, size = ? WHERE username = ? AND path = ?;";
     
-    db.query(sql, {hash, lwt_str, size_str, username, parent_path, filename});
+    db.query(sql, {hash, lwt_str, size_str, username, req_c_path});
 }
 
 void FileSystemManager::remove_file(const std::string& username, const RBRequest& req) {
@@ -179,17 +180,13 @@ std::string FileSystemManager::to_string(unsigned char* md) {
 std::string FileSystemManager::get_hash(std::string username, const fs::path& path) {
     auto& db = Database::get_instance();
 
-    std::string parent_path = path.parent_path().string();
-    std::string filename = path.filename().string();
-    std::string sql = "SELECT hash FROM fs WHERE username = ? AND path = ? AND filename = ?;";
+    std::string sql = "SELECT hash FROM fs WHERE username = ? AND path = ?";
 
-    auto results = db.query(sql, {username, parent_path, filename});
-    if (results.empty() || results[0].empty()) {
-        RBLog("Error executing the statement");
+    auto results = db.query(sql, {username, path.string()});
+    if (results.empty())
         return "";
-    }
 
-    auto hash = results[0].at(0);
+    auto hash = results[0][0];
 
     return hash;
 }
@@ -197,17 +194,13 @@ std::string FileSystemManager::get_hash(std::string username, const fs::path& pa
 std::string FileSystemManager::get_size(std::string username, const fs::path& path) {
     auto& db = Database::get_instance();
 
-    std::string parent_path = path.parent_path().string();
-    std::string filename = path.filename().string();
-    std::string sql = "SELECT size FROM fs WHERE username = ? AND path = ? AND filename = ?;";
+    std::string sql = "SELECT size FROM fs WHERE username = ? AND path = ?;";
 
-    auto results = db.query(sql, {username, parent_path, filename});
-    if (results.empty() || results[0].empty()) {
-        RBLog("Error executing the statement");
+    auto results = db.query(sql, {username, path.string()});
+    if (results.empty())
         return "";
-    }
 
-    auto size = results[0].at(0);
+    auto size = results[0][0];
 
     return size;
 }
@@ -215,17 +208,13 @@ std::string FileSystemManager::get_size(std::string username, const fs::path& pa
 std::string FileSystemManager::get_last_write_time(std::string username, const fs::path& path) {
     auto& db = Database::get_instance();
 
-    std::string parent_path = path.parent_path().string();
-    std::string filename = path.filename().string();
-    std::string sql = "SELECT last_write_time FROM fs WHERE username = ? AND path = ? AND filename = ?;";
+    std::string sql = "SELECT last_write_time FROM fs WHERE username = ? AND path = ?;";
 
-    auto results = db.query(sql, {username, parent_path, filename});
-    if (results.empty() || results[0].empty()) {
-        RBLog("Error executing the statement");
+    auto results = db.query(sql, {username, path.string()});
+    if (results.empty())
         return "";
-    }
 
-    auto last_write_time = results[0].at(0);
+    auto last_write_time = results[0][0];
 
     return last_write_time;
 }

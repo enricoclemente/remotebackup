@@ -19,7 +19,7 @@ class FileSystemManager {
 public:
     FileSystemManager(const fs::path & root) : root(root) {};
     std::unordered_map<std::string, RBFileMetadata> get_files(const std::string&);
-    bool file_exits(std::string, const fs::path&);
+    bool file_exists(std::string, const fs::path&);
     void write_file(const std::string & username, const RBRequest & req);
     void remove_file(const std::string & username, const RBRequest & req);
     std::string md5(fs::path);

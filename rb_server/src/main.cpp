@@ -85,6 +85,9 @@ int main() {
         (RBRequest req, std::shared_ptr<Service> worker) {
 
         RBResponse res;
+        res.set_success(false);
+        res.set_protover(3);
+        res.set_type(req.type());
 
         try {
             if (req.type() == RBMsgType::AUTH) {
@@ -164,13 +167,12 @@ int main() {
 
             if (!res.success()) throw RBException("this_shouldnt_happen");
         } catch (RBException& e) {
-            RBLog(e.getMsg());
+            RBLog("RBProto handling error: " + e.getMsg());
             res.set_error(e.getMsg());
-            res.set_success(false);
+        } catch (std::exception &e) {
+            RBLog(e.what());
+            res.set_error("internal_server_error");
         }
-
-        res.set_protover(3);
-        res.set_type(req.type());
 
         return res;
     });

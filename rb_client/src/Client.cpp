@@ -73,6 +73,7 @@ ProtoChannel::ProtoChannel(
       cos_adp(&aos),
       token(token) {
     if (!stream.socket().is_open()) throw RBException("connection_failed");
+    RBLog("Protochannel()");
 }
 
 ProtoChannel Client::open_channel() {
@@ -84,6 +85,7 @@ ProtoChannel::~ProtoChannel() {
         close();
         RBLog("ProtoChannel closed unexpectedly");
     }
+    RBLog("~Protochannel()");
 }
 
 void ProtoChannel::close() {

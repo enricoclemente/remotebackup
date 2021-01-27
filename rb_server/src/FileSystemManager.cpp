@@ -79,19 +79,19 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
     }
 
     auto segment_id = file_segment.segmentid();
-    auto req_c_path = fs::path(req_path).lexically_normal().string();
+    auto req_normal_path = fs::path(req_path).lexically_normal().string();
 
     // Check correct segment number from db before writing it
     auto& db = Database::get_instance();
-    std::string sql = "SELECT tmp_chunks FROM fs WHERE username = ? AND path = ?;";
-    auto results = db.query(sql, {username, req_c_path});
+    std::string sql = "SELECT last_chunk FROM fs WHERE username = ? AND path = ?;";
+    auto results = db.query(sql, {username, req_normal_path});
 
-    auto next_segment_id = 0;
+    auto last_chunk = 0;
     if (!results.empty())
-        next_segment_id = std::stoi(results[0][0]);
+        last_chunk = std::stoi(results[0][0]);
 
     // Skip this check if segment_id == 0 to allow starting over at any time
-    if (segment_id != 0 && segment_id != next_segment_id)
+    if (segment_id != 0 && segment_id != last_chunk + 1)
         throw RBException("wrong_segment");
 
     // Create directories containing the file
@@ -116,13 +116,13 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
     if (segment_id == 0) {
         // TODO: delete DB entry
         db.query(
-            "INSERT INTO fs (username, path, tmp_chunks) VALUES (?, ?, ?);",
-            {username, req_c_path, std::to_string(segment_id + 1)}
+            "INSERT INTO fs (username, path, last_chunk) VALUES (?, ?, ?);",
+            {username, req_normal_path, std::to_string(segment_id)}
         );
     } else {
         db.query(
-            "UPDATE fs SET tmp_chunks = ? WHERE username = ? AND path = ?;",
-            {std::to_string(segment_id + 1), username, req_c_path}
+            "UPDATE fs SET last_chunk = ? WHERE username = ? AND path = ?;",
+            {std::to_string(segment_id), username, req_normal_path}
         );
     }
 
@@ -143,7 +143,7 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
     auto size_str = std::to_string(file_segment.data().size());
     sql = "UPDATE fs SET hash = ?, last_write_time = ?, size = ? WHERE username = ? AND path = ?;";
     
-    db.query(sql, {hash, lwt_str, size_str, username, req_c_path});
+    db.query(sql, {hash, lwt_str, size_str, username, req_normal_path});
 }
 
 void FileSystemManager::remove_file(const std::string& username, const RBRequest& req) {

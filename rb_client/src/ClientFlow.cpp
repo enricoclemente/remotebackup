@@ -41,9 +41,15 @@ void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
     std::uint32_t checksum;
 
     auto upload_channel = client.open_channel();
+    
+    // ensure there's at least one segment, for empty files
+    if (!num_segments) num_segments++;
+
+    RBLog("Begin file send of " + std::to_string(num_segments) + " chunks");
 
     // Fragment files that are larger than RB_MAX_SEGMENT_SIZE (1MiB)
     for (int i = 0; i < num_segments; i++) {
+        RBLog ("Sending chunk " + std::to_string(i));
         RBRequest file_upload_request;
         file_upload_request.set_protover(3);
         file_upload_request.set_type(RBMsgType::UPLOAD);

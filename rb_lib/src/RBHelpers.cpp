@@ -10,6 +10,7 @@ void excHandler(std::exception &e) {
     std::cout << "Error occured! Message: " << e.what();
 }
 
+// TODO Logging levels and timestamps
 void RBLog(const std::string & s) {
     static std::mutex mutex;
     std::lock_guard<std::mutex> lock(mutex);

@@ -10,11 +10,11 @@ Service::Service(sockPtr_t sock, RBSrvCallback callback)
           CopyingInputStreamAdaptor cis_adp(&ais);
           CopyingOutputStreamAdaptor cos_adp(&aos);
 
-          RBRequest req;
-          req.set_final(false);
-
-          while (!req.final())
+          bool final = false;
+          while (!final)
           {
+              RBRequest req;
+
               bool op = google::protobuf::io::readDelimitedFrom(&req, &cis_adp);
 
               if (!op)
@@ -26,6 +26,8 @@ Service::Service(sockPtr_t sock, RBSrvCallback callback)
               cos_adp.Flush();
               if (!op)
                   throw RBException("response_send_fail");
+
+              final = req.final();
           }
       })
 {
@@ -102,7 +104,9 @@ using asio::ip::tcp;
 Server::Server(unsigned short port_num, RBSrvCallback callback)
     : running(true),
       tcp_acceptor(ios, tcp::endpoint(tcp::v4(), port_num)),
-      callback(callback) {}
+      callback(callback) {
+          RBLog("Server()");
+      }
 
 void Server::start()
 {
@@ -121,7 +125,7 @@ void Server::run()
     while (running.load())
     {
         sockPtr_t sock(new asio::ip::tcp::socket(ios));
-        tcp_acceptor.accept(*sock);
+        tcp_acceptor.accept(*sock); // This function blocks until a connection has been accepted
         Service::serve(sock, callback);
     }
 }

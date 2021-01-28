@@ -5,9 +5,7 @@ ClientFlow::ClientFlow(
     const std::string & port,
     const std::string & root_path,
     int socket_timeout)
-    : client(ip, port, socket_timeout), root_path(root_path) {
-    // TODO start authentication
-}
+    : client(ip, port, socket_timeout), root_path(root_path) {}
 
 void ClientFlow::authenticate(const std::string &username, const std::string &password) {
     client.authenticate(username, password);
@@ -38,67 +36,91 @@ void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
     int chunk_size = 2048;
     std::vector<char> chunk(chunk_size, 0); // Buffer to hold 2048 characters
     crc_32_type crc;
-    std::uint32_t checksum;
 
     auto upload_channel = client.open_channel();
-    
-    // ensure there's at least one segment, for empty files
-    if (!num_segments) num_segments++;
 
-    RBLog("Begin file send of " + std::to_string(num_segments) + " chunks");
+    try
+    {   
+        // ensure there's at least one segment, for empty files
+        if (!num_segments) num_segments++;
 
-    // Fragment files that are larger than RB_MAX_SEGMENT_SIZE (1MiB)
-    for (int i = 0; i < num_segments; i++) {
-        RBLog ("Sending chunk " + std::to_string(i));
-        RBRequest file_upload_request;
-        file_upload_request.set_protover(3);
-        file_upload_request.set_type(RBMsgType::UPLOAD);
+        RBLog("Begin file send of " + std::to_string(num_segments) + " chunks");
 
+        // Fragment files that are larger than RB_MAX_SEGMENT_SIZE (1MiB)
+        for (int i = 0; i < num_segments; i++) {
+            RBLog ("Sending chunk " + std::to_string(i));
+            RBRequest file_upload_request;
+            file_upload_request.set_protover(3);
+            file_upload_request.set_type(RBMsgType::UPLOAD);
+
+            auto file_segment = std::make_unique<RBFileSegment>();
+            auto file_metadata = std::make_unique<RBFileMetadata>();
+            file_segment->set_path(file_operation->get_path());
+            file_segment->set_segmentid(i);
+            file_metadata->set_size(file_size);
+            file_metadata->set_last_write_time(last_write_time);
+
+            // Length of current file segment
+            size_t segment_len = RB_MAX_SEGMENT_SIZE;
+            if (i == num_segments - 1) { // If last segment
+                if (file_size == 0)
+                    segment_len = 0;
+                else if (file_size % RB_MAX_SEGMENT_SIZE != 0)
+                    segment_len = file_size % RB_MAX_SEGMENT_SIZE;
+            }
+
+            size_t tot_read = 0;
+            size_t current_read = 0;
+            while (tot_read < segment_len) {
+                // Check every time if something has changed for the file operation
+                if (file_operation->get_abort())
+                    throw RBException("abort");
+
+                if (segment_len - tot_read >= chunk_size)
+                    fl.read(&chunk[0], chunk_size);
+                else
+                    fl.read(&chunk[0], segment_len - tot_read);
+
+                if (!fl) throw std::runtime_error("Error reading file chunk");
+
+                current_read = fl.gcount(); // Get the number of characters that have been read (always 2048, except the last time)
+                file_segment->add_data(&chunk[0], current_read); // Push characters that have been read into data
+                crc.process_bytes(&chunk[0], current_read);
+                tot_read += current_read;
+            }
+
+            if (i == num_segments - 1) { // Final file segment
+                if(crc.checksum() != metadata.checksum) // Check if checksums match
+                    throw RBException("different_checksums");
+                file_upload_request.set_final(true);
+                file_metadata->set_checksum(crc.checksum());
+            }
+
+            file_segment->set_allocated_file_metadata(file_metadata.release());
+            file_upload_request.set_allocated_file_segment(file_segment.release());
+
+            auto res = upload_channel.run(file_upload_request);
+            validateRBProto(res, RBMsgType::UPLOAD, 3);
+            if (!res.success())
+                throw RBException(res.error());
+        }
+    }
+    catch(RBException& e)
+    {
+        RBLog("File upload aborted: " + e.getMsg());
+        RBRequest req;
         auto file_segment = std::make_unique<RBFileSegment>();
-        auto file_metadata = std::make_unique<RBFileMetadata>();
         file_segment->set_path(file_operation->get_path());
-        file_segment->set_segmentid(i);
-        file_metadata->set_size(file_size);
-        file_metadata->set_last_write_time(last_write_time);
+        req.set_allocated_file_segment(file_segment.release());
+        req.set_type(RBMsgType::REMOVE);
+        req.set_final(true);
+        req.set_protover(3);
 
-        // Length of current file segment
-        size_t segment_len = ((num_segments - i) == 1) 
-            ? file_size % RB_MAX_SEGMENT_SIZE 
-            : RB_MAX_SEGMENT_SIZE;
-
-        size_t tot_read = 0;
-        size_t current_read = 0;
-        while (tot_read < segment_len) {
-            // Check every time if something has changed for the file operation
-            if (file_operation->get_abort()) return;
-
-            if (segment_len - tot_read >= chunk_size)
-                fl.read(&chunk[0], chunk_size);
-            else
-                fl.read(&chunk[0], segment_len - tot_read);
-
-            if (!fl) throw std::runtime_error("Error reading file chunk");
-
-            current_read = fl.gcount(); // Get the number of characters that have been read (always 2048, except the last time)
-            file_segment->add_data(&chunk[0], current_read); // Push characters that have been read into data
-            crc.process_bytes(&chunk[0], current_read);
-            tot_read += current_read;
-        }
-
-        if (i == num_segments - 1) { // Final file segment
-            if(crc.checksum() != metadata.checksum) // Check if checksums match
-                return; // TODO: what happened? should we ask the server to remove the file?
-            file_upload_request.set_final(true);
-            file_metadata->set_checksum(crc.checksum());
-        }
-
-        file_segment->set_allocated_file_metadata(file_metadata.release());
-        file_upload_request.set_allocated_file_segment(file_segment.release());
-
-        auto res = upload_channel.run(file_upload_request);
-        validateRBProto(res, RBMsgType::UPLOAD, 3);
-        if (!res.error().empty())
+        auto res = upload_channel.run(req);
+        validateRBProto(res, RBMsgType::REMOVE, 3);
+        if (!res.success())
             throw RBException(res.error());
+        // TODO RBMsgType::ABORT
     }
 
     upload_channel.close();

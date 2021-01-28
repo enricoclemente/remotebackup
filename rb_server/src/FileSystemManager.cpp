@@ -13,12 +13,14 @@ std::unordered_map<std::string, RBFileMetadata> FileSystemManager::get_files(con
         return files;
 
     for (auto & [key, value] : results) {
+        /*
         // Print
         std::cout << "[row " << key << "] ";
         for (auto & col : value) {
             std::cout << col << ", ";
         }
         std::cout << std::endl;
+        */
 
         // Add metadata
         RBFileMetadata meta;
@@ -69,10 +71,7 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
     }
 
     // weakly_canonical normalizes a path (even if it doesn't correspond to an existing one)
-    RBLog("req_path: " + req_path);
     auto path = root / username / fs::path(req_path).lexically_normal();
-
-    RBLog("path: " + path.string());
     if (path.filename().empty()) {
         RBLog("The path provided is not formatted as a valid file path");
         throw RBException("malformed_path");

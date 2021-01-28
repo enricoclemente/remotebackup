@@ -26,9 +26,7 @@ Database::Database()
 
 void Database::init()
 {
-    // query("SELECT name FROM sqlite_master WHERE type='table' AND name='<table_name>';") // Another way to check for the existance of tables
     exec("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL, token TEXT);");
-    // TODO: make (username, path) unique
     exec("CREATE TABLE IF NOT EXISTS fs (id INTEGER PRIMARY KEY, username TEXT NOT NULL, path TEXT NOT NULL, hash TEXT NOT NULL DEFAULT '', last_write_time TEXT NOT NULL DEFAULT '', size TEXT NOT NULL DEFAULT '', last_chunk TEXT NOT NULL DEFAULT '', UNIQUE(username, path) ON CONFLICT REPLACE);");
 }
 
@@ -58,7 +56,7 @@ void Database::close()
 void Database::exec(std::string sql) {
     char *errmsg = 0;
 
-    int res = sqlite3_exec(db, sql.c_str(), print_results, nullptr, &errmsg); // Synchronous callback 'print_results'
+    int res = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errmsg);
     if (res != SQLITE_OK) {
         RBLog(std::string("[DB] Cannot execute statement: ") + errmsg);
         sqlite3_free(errmsg);
@@ -111,6 +109,7 @@ std::unordered_map<int, std::vector<std::string>> Database::query(const std::str
 
     sqlite3_finalize(stmt);
 
+    /*
     // Print query results
     std::ostringstream oss;
     oss << "[DB] Query rows: " << results.size() << std::endl;
@@ -121,6 +120,7 @@ std::unordered_map<int, std::vector<std::string>> Database::query(const std::str
         oss << std::endl;
     }
     RBLog(oss.str());
+    */
 
     return results;
 }

@@ -24,7 +24,7 @@ class Service : public std::enable_shared_from_this<Service> {
 public:
   ~Service()
   {
-    RBLog("~Service()");
+    RBLog("~Service()\n");
   }
 
   static void serve(sockPtr_t sock, RBSrvCallback);
@@ -54,6 +54,10 @@ public:
 
   void start();
   void stop();
+
+  ~Server() {
+    RBLog("~Server()");
+  }
 
 private:
   void run();

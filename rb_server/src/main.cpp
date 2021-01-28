@@ -92,7 +92,7 @@ int main() {
         try {
             if (req.type() == RBMsgType::AUTH) {
                 validateRBProto(req, RBMsgType::AUTH, 3);
-                RBLog("Auth request!");
+                RBLog("[RB] Auth request!");
 
                 std::string username = req.auth_request().user();
                 std::string password = req.auth_request().pass();
@@ -107,12 +107,13 @@ int main() {
                 res.set_success(true);
             } else if (req.type() == RBMsgType::UPLOAD) {
                 validateRBProto(req, RBMsgType::UPLOAD, 3);
-                RBLog("Upload request!");
+                RBLog("[RB] Upload request!");
 
                 // Authenticate the request
                 auto username = 
                     AuthController::get_instance()
                     .auth_get_user_by_token(req.token());
+                RBLog("[RB] Authenticated");
 
                 try {
                     std::string file_token = 
@@ -127,11 +128,13 @@ int main() {
 
             } else if (req.type() == RBMsgType::REMOVE) {
                 validateRBProto(req, RBMsgType::REMOVE, 3);
-                RBLog("Remove request [unimplemented]!");
+                RBLog("[RB] Remove request [unimplemented]!");
 
+                // Authenticate the request
                 auto username = 
                     AuthController::get_instance()
                     .auth_get_user_by_token(req.token());
+                RBLog("[RB] Authenticated");
 
                 try {
                     std::string file_token = 
@@ -146,12 +149,13 @@ int main() {
 
             } else if (req.type() == RBMsgType::PROBE) {
                 validateRBProto(req, RBMsgType::PROBE, 3);
-                RBLog("Probe request!");
+                RBLog("[RB] Probe request!");
 
                 // Authenticate the request
                 auto username = 
                     AuthController::get_instance()
                     .auth_get_user_by_token(req.token());
+                RBLog("[RB] Authenticated");
 
                 auto files = fsm.get_files(username);
 
@@ -178,8 +182,9 @@ int main() {
     });
 
     srv.start();
-    std::this_thread::sleep_for(std::chrono::seconds(60));
+    std::this_thread::sleep_for(std::chrono::seconds(3600));
     srv.stop();
+    // TODO wait for thread join
 
     db.close();
 }

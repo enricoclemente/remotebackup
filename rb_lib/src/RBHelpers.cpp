@@ -8,7 +8,7 @@ void excHandler(RBException &e) {
 }
 
 void excHandler(std::exception &e) {
-    std::cout << "Error occured! Message: " << e.what();
+    std::cout << "Exception: " << e.what();
 }
 
 
@@ -25,11 +25,10 @@ void RBLog(const std::string & s, LogLevel level) {
     const long hours        = td.hours();
     const long minutes      = td.minutes();
     const long seconds      = td.seconds();
-    const long milliseconds = td.total_milliseconds() -
-                                ((hours * 3600 + minutes * 60 + seconds) * 1000);
     const long microseconds = td.total_microseconds() -
                                 ((hours * 3600 + minutes * 60 + seconds) * 1000000);
 
+    // handling log level
     if(level == LogLevel::DEBUG) {
         level_to_print = "DEBUG";
         print = DEBUG_PRINT != 0;
@@ -57,7 +56,8 @@ int count_segments(uint64_t size) {
 
 std::uint32_t calculate_checksum(const fs::path &file_path) {
     std::ifstream ifs(file_path.string());
-    if (ifs.fail()) throw std::runtime_error("Error opening file");
+    if (ifs.fail())
+        throw std::runtime_error("RBHelpers->Error opening file");
 
     std::size_t file_len = fs::file_size(file_path);
 
@@ -74,7 +74,8 @@ std::uint32_t calculate_checksum(const fs::path &file_path) {
             ifs.read(&chunk[0], file_len - tot_read);
         }
 
-        if (!ifs) throw std::runtime_error("Error reading file chunk");
+        if (!ifs)
+            throw std::runtime_error("RBHelpers->Error reading file chunk");
 
         current_read = ifs.gcount();
         crc.process_bytes(&chunk[0], current_read);
@@ -85,19 +86,20 @@ std::uint32_t calculate_checksum(const fs::path &file_path) {
     return crc.checksum();
 }
 
+
 void validateRBProto(RBResponse & res, RBMsgType type, int ver, bool exactVer) {
     if (res.type() != type)
         throw RBProtoTypeException("unexpected_rbproto_response_type");
     if ((exactVer && res.protover() != ver) || res.protover() < ver)
         throw RBProtoVerException("unsupported_rbproto_version");
 
-    if (!res.success()) {
-        throw RBException(res.error());
-    }
+    if (!res.success())
+        throw RBException("Server Response Error: " + res.error());
 
     if (res.type() == RBMsgType::AUTH && !res.has_auth_response())
         throw RBException("invalid_rbproto_auth_response");
 }
+
 
 void validateRBProto(RBRequest & req, RBMsgType type, int ver, bool exactVer) {
     if (req.type() != type)

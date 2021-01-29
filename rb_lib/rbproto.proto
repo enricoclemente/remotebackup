@@ -5,6 +5,7 @@ enum RBMsgType {
   UPLOAD = 1;
   REMOVE = 2;
   PROBE = 3;
+  ABORT = 4;
 }
 
 message RBFileMetadata {

@@ -3,12 +3,13 @@
 // Output Queue Class implementations
 OutputQueue::OutputQueue() : id_counter(0) {};
 
+
 void OutputQueue::add_file_operation(const std::string &path, file_metadata metadata, FileCommand command) {
     std::lock_guard lg(m);
 
     auto fo = std::make_shared<FileOperation>(path, metadata, command, id_counter);
 
-    // if there are old operations on the same file, overwrite them with the new one if they are not in process
+    // if there are old operations on the same file, overwrite them with the new one if they are not in processing
     // otherwise set abort flag true in order to interrupt the operation
     for (auto it = queue.begin(); it != queue.end(); it++) {
         if (it->get()->get_path() == path) {
@@ -26,21 +27,25 @@ void OutputQueue::add_file_operation(const std::string &path, file_metadata meta
     cv.notify_all();
 }
 
+
 std::shared_ptr<FileOperation> OutputQueue::get_file_operation() {
     std::unique_lock ul(m);
     cv.wait(ul, [this]() { return free() > 0; });
 
     bool valid = true;
 
+    // TODO:  review this logic because the re could be the case that there is a file in processing
+    //  and the same to be processed
     for (auto i : queue) {
         if (!i->get_processing()) {
-            // check if there are not other process for the same file
+            // check if there are not other processes for the same file
             for (const auto &j : queue) {
                 if (j->get_processing() && j->get_path() == i->get_path()) {
                     valid = false;
                     break;
                 }
             }
+
             if (valid) {
                 i->set_processing(true);
                 return i;
@@ -51,6 +56,7 @@ std::shared_ptr<FileOperation> OutputQueue::get_file_operation() {
 
     throw std::logic_error("invalid_file_operation");
 }
+
 
 bool OutputQueue::free_file_operation(int id) {
     std::unique_lock ul(m);
@@ -63,8 +69,10 @@ bool OutputQueue::free_file_operation(int id) {
         }
     }
 
+    // TODO: we have to make a notify, right?
     return false;
 }
+
 
 bool OutputQueue::remove_file_operation(int id) {
     std::unique_lock ul(m);
@@ -80,11 +88,11 @@ bool OutputQueue::remove_file_operation(int id) {
 }
 
 
-
 int OutputQueue::size() {
     std::lock_guard lg(m);
     return queue.size();
 }
+
 
 int OutputQueue::free() {
     int sum(0);
@@ -93,6 +101,8 @@ int OutputQueue::free() {
     }
     return sum;
 }
+
+
 
 // File Operation Class implementations
 FileOperation::FileOperation(std::string path, file_metadata metadata, FileCommand command, int id) :

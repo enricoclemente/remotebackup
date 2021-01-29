@@ -7,11 +7,13 @@
 #include <condition_variable>
 #include <atomic>
 
+
 enum class FileCommand {
     UPLOAD = 1,
     REMOVE = 3,
     RENAME = 4,
 };
+
 
 class FileOperation {
 private:
@@ -23,7 +25,7 @@ private:
     std::atomic<bool> abort{};
     void set_processing(bool flag);
     bool get_processing() const;
-    friend class OutputQueue;
+    friend class OutputQueue;       // only outputqueue can handle processing
 
 public:
     FileOperation(std::string path, file_metadata metadata, FileCommand command, int id);

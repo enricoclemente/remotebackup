@@ -1,9 +1,11 @@
 #include "FileManager.h"
 
+#include <utility>
+
 FileManager::FileManager(
-    const filesystem::path &path,
+    filesystem::path path,
     std::chrono::duration<int, std::milli> delay)
-    : path_to_watch(path), update_interval(delay) {
+    : path_to_watch(std::move(path)), update_interval(delay) {
 
     for (auto &file : filesystem::recursive_directory_iterator(path_to_watch)) {
         if(filesystem::is_regular_file(file.path())){
@@ -31,8 +33,7 @@ void FileManager::stop_monitoring() {
     files["^NIL^"] = file_metadata();
 }
 
-// Description: Set file watcher parameters
-// Errors: It can throw a runtime error because of metadata calculation
+
 // Description: Start the monitoring of the setted path to watch
 // Errors: It can throw a runtime error because of checksum calculation
 void FileManager::start_monitoring(const std::function<void(const std::string&, const file_metadata&, FileStatus)> &action) {
@@ -90,7 +91,7 @@ void FileManager::start_monitoring(const std::function<void(const std::string&, 
 void FileManager::file_system_compare(const std::unordered_map<std::string, file_metadata>& map,
                                       const std::function<void(const std::string&, const file_metadata&, FileStatus)> &action) {
     if(path_to_watch.empty())
-        throw std::logic_error("Function file_system_compare can be used only after setting the file watcher");
+        throw std::logic_error("FileManager->Function file_system_compare can be used only after the file watcher is set");
 
     auto it = map.begin();
     while(it != map.end()) {

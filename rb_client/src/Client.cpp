@@ -26,7 +26,7 @@ void Client::authenticate(std::string username, std::string password) {
 
 RBResponse Client::run(RBRequest &req) {
 
-    if (!req.final()) throw RBException("notFinalClientRun");
+    if (!req.final()) throw RBException("Client->Request is not final");
 
     ProtoChannel chan = open_channel();
     auto res = chan.run(req);
@@ -40,20 +40,20 @@ RBResponse ProtoChannel::run(RBRequest &req) {
 
     std::lock_guard<std::mutex> lock(mutex);
 
-    if (!stream.socket().is_open()) throw RBException("socketClosed");
+    if (!stream.socket().is_open()) throw RBException("Client->Socket closed");
 
     stream.expires_after(std::chrono::milliseconds(timeout));
 
     bool net_op = google::protobuf::io::writeDelimitedTo(req, &cos_adp);
     cos_adp.Flush();
 
-    if (!net_op) throw RBException("request_send_fail");
+    if (!net_op) throw RBException("Client->Request send fail");
 
     RBResponse res;
 
     net_op = google::protobuf::io::readDelimitedFrom(&res, &cis_adp);
 
-    if (!net_op) throw RBException("response_receive_fail");
+    if (!net_op) throw RBException("Client->Response receive fail");
 
     if (req.final()) stream.close();
 
@@ -72,7 +72,7 @@ ProtoChannel::ProtoChannel(
       aos(static_cast<boost::asio::ip::tcp::socket &>(stream.socket())),
       cos_adp(&aos),
       token(token) {
-    if (!stream.socket().is_open()) throw RBException("connection_failed");
+    if (!stream.socket().is_open()) throw RBException("Client->Connection failed");
     RBLog("Protochannel()");
 }
 

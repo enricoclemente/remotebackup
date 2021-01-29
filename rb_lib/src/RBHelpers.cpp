@@ -1,6 +1,7 @@
 #include "RBHelpers.h"
 #include <iostream>
 #include <mutex>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 void excHandler(RBException &e) {
     std::cout << "RBException:" << e.getMsg() << std::endl;
@@ -10,12 +11,41 @@ void excHandler(std::exception &e) {
     std::cout << "Error occured! Message: " << e.what();
 }
 
-// TODO Logging levels and timestamps
-void RBLog(const std::string & s) {
+
+void RBLog(const std::string & s, LogLevel level) {
+    // catching time
+    auto now = boost::posix_time::microsec_clock::local_time();
     static std::mutex mutex;
     std::lock_guard<std::mutex> lock(mutex);
-    std:: cout << ">> " << s << std::endl;
+
+    bool print = true;
+    std::string level_to_print;
+    // time calculus
+    auto td = now.time_of_day();
+    const long hours        = td.hours();
+    const long minutes      = td.minutes();
+    const long seconds      = td.seconds();
+    const long milliseconds = td.total_milliseconds() -
+                                ((hours * 3600 + minutes * 60 + seconds) * 1000);
+    const long microseconds = td.total_microseconds() -
+                                ((hours * 3600 + minutes * 60 + seconds) * 1000000);
+
+    if(level == LogLevel::DEBUG) {
+        level_to_print = "DEBUG";
+        print = DEBUG_PRINT != 0;
+    } else if(level == LogLevel::INFO) {
+        level_to_print = "INFO";
+        print = INFO_PRINT != 0;
+    } else if(level == LogLevel::ERROR) {
+        level_to_print = "ERROR";
+        print = ERROR_PRINT != 0;
+    }
+
+    if(print)
+        std:: cout << level_to_print <<": "<< hours <<":"<< minutes <<":"<< seconds <<"."<< microseconds <<
+            " >> " << s << std::endl;
 }
+
 
 int count_segments(uint64_t size) {
     int num_segments = size / RB_MAX_SEGMENT_SIZE;
@@ -23,6 +53,7 @@ int count_segments(uint64_t size) {
         ? num_segments
         : num_segments + 1;
 }
+
 
 std::uint32_t calculate_checksum(const fs::path &file_path) {
     std::ifstream ifs(file_path.string());

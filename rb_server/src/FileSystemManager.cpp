@@ -113,7 +113,7 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
 
     // Save number of written-to-file segments
     if (segment_id == 0) {
-        // TODO: delete DB entry
+        // Entry automatically replaced on insert if pair (username, path) conflict
         db.query(
             "INSERT INTO fs (username, path, last_chunk) VALUES (?, ?, ?);",
             {username, req_normal_path, std::to_string(segment_id)}
@@ -133,7 +133,12 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
     // Calculate final checksum
     auto checksum = calculate_checksum(path);
     if (checksum != file_segment.file_metadata().checksum()) {
-        // TODO: cleanup DB entry & remove file
+        // Clean up file and related db entry
+        fs::remove(path);
+        db.query(
+            "DELETE FROM fs WHERE username = ? AND path = ?;",
+            {username, req_normal_path}
+        );
         throw RBException("invalid_checksum");
     }
 
@@ -146,8 +151,30 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
 }
 
 void FileSystemManager::remove_file(const std::string& username, const RBRequest& req) {
-    throw RBException("unimplemented:REMOVE");
-    //fs::remove(path);
+    auto& file_segment = req.file_segment();
+
+    const std::string& req_path = file_segment.path();
+    if (req_path.find("..") != std::string::npos) {
+        RBLog("The path provided contains '..' (forbidden)");
+        throw RBException("forbidden_path");
+    }
+
+    // weakly_canonical normalizes a path (even if it doesn't correspond to an existing one)
+    auto path = root / username / fs::path(req_path).lexically_normal();
+    if (path.filename().empty()) {
+        RBLog("The path provided is not formatted as a valid file path");
+        throw RBException("malformed_path");
+    }
+
+    fs::remove(path);
+    
+    auto req_normal_path = fs::path(req_path).lexically_normal().string();
+
+    auto& db = Database::get_instance();
+    db.query(
+        "DELETE FROM fs WHERE username = ? AND path = ?;",
+        {username, req_normal_path}
+    );
 }
 
 std::string FileSystemManager::md5(fs::path path) {

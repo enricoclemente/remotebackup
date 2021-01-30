@@ -128,7 +128,7 @@ int main() {
 
             } else if (req.type() == RBMsgType::REMOVE) {
                 validateRBProto(req, RBMsgType::REMOVE, 3);
-                RBLog("[RB] Remove request [unimplemented]!");
+                RBLog("[RB] Remove request!");
 
                 // Authenticate the request
                 auto username = 
@@ -146,7 +146,26 @@ int main() {
                 } catch (svc_atomic_map_t::key_already_present  &e) {
                     throw RBException("concurrent_write");
                 }
+            } else if (req.type() == RBMsgType::ABORT) {
+                validateRBProto(req, RBMsgType::ABORT, 3);
+                RBLog("[RB] Abort request!");
 
+                // Authenticate the request
+                auto username = 
+                    AuthController::get_instance()
+                    .auth_get_user_by_token(req.token());
+                RBLog("[RB] Authenticated");
+
+                try {
+                    std::string file_token = 
+                        username + ">" + req.file_segment().path();
+                    svc_atomic_map_t::guard sv_grd(svc_map, file_token, worker);
+
+                    fsm.remove_file(username, req);
+                    res.set_success(true);
+                } catch (svc_atomic_map_t::key_already_present  &e) {
+                    throw RBException("concurrent_write");
+                }
             } else if (req.type() == RBMsgType::PROBE) {
                 validateRBProto(req, RBMsgType::PROBE, 3);
                 RBLog("[RB] Probe request!");

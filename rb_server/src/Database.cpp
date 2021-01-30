@@ -2,8 +2,6 @@
 
 #include "Database.h"
 
-// TODO: make queries throw exception in case of errors
-
 int print_results(void* unused, int num_cols, char** row_fields, char** col_names)
 {
     unused = 0;
@@ -37,7 +35,8 @@ void Database::open()
     int res = sqlite3_open("test.db", &db);
     if (res != SQLITE_OK) {
         RBLog(std::string("[DB] Cannot open database: ") + sqlite3_errmsg(db));
-        return close();
+        close();
+        throw RBException("db_open_error");
     }
 
     RBLog("[DB] DB opened successfully");
@@ -50,6 +49,7 @@ void Database::close()
     int res = sqlite3_close(db);
     if (res != SQLITE_OK) {
         RBLog(std::string("[DB] Cannot close database: ") + sqlite3_errmsg(db));
+        throw RBException("db_close_error");
     }
 }
 
@@ -60,7 +60,7 @@ void Database::exec(std::string sql) {
     if (res != SQLITE_OK) {
         RBLog(std::string("[DB] Cannot execute statement: ") + errmsg);
         sqlite3_free(errmsg);
-        return close();
+        throw RBException("internal_server_error");
     }
 
     RBLog(std::string("[DB] ") + sql);
@@ -101,11 +101,10 @@ std::unordered_map<int, std::vector<std::string>> Database::query(const std::str
         }
         row++;
     }
-    if (res != SQLITE_DONE) {
-        RBLog(std::string("[DB] Step error: ") + sqlite3_errmsg(db));
-    } else {
+    if (res != SQLITE_DONE)
+        RBLog(std::string("[DB] Step error: ") + sqlite3_errmsg(db)); // This shouldn't throw any exceptions
+    else
         RBLog(std::string("[DB] ") + sql);
-    }
 
     sqlite3_finalize(stmt);
 

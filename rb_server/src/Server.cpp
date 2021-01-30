@@ -43,7 +43,7 @@ void Service::serve(sockPtr_t sock, RBSrvCallback callback) {
 
 void Service::handleClient() {
     try {
-        RBLog("Handling client request");
+        RBLog("SRV >> Handling client request");
         handler(sock);
         sock.get()->close();
     } catch (RBException &e) {
@@ -121,7 +121,7 @@ void Server::stop()
 
 void Server::run()
 {
-    RBLog("Server started");
+    RBLog("SRV >> Server started");
     while (running.load())
     {
         sockPtr_t sock(new asio::ip::tcp::socket(ios));

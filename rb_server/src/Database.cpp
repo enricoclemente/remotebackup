@@ -7,19 +7,18 @@ int print_results(void* unused, int num_cols, char** row_fields, char** col_name
     unused = 0;
 
     std::ostringstream oss;
-    oss << "[DB] ";
     for (int i = 0; i < num_cols; i++)
         oss << col_names[i] << ": " << (row_fields[i] ? row_fields[i] : "NULL") << ", ";
     oss << std::endl;
 
-    RBLog(oss.str());
+    RBLog("DB >> " + oss.str());
 
     return 0;
 }
 
 Database::Database()
 {
-    RBLog("[DB] Database()");
+    RBLog("DB >> Database()");
 }
 
 void Database::init()
@@ -30,16 +29,17 @@ void Database::init()
 
 void Database::open()
 {
-    RBLog(std::string("[DB] SQLite version: ") + sqlite3_libversion());
+    RBLog(std::string("DB >> SQLite version: ") + sqlite3_libversion(), LogLevel::INFO);
 
     int res = sqlite3_open("test.db", &db);
     if (res != SQLITE_OK) {
-        RBLog(std::string("[DB] Cannot open database: ") + sqlite3_errmsg(db));
+        RBLog(std::string("DB >> Cannot open database: ") + sqlite3_errmsg(db), LogLevel::ERROR);
+        // CHECK
         close();
         throw RBException("db_open_error");
     }
 
-    RBLog("[DB] DB opened successfully");
+    RBLog("DB >> Database opened successfully", LogLevel::INFO);
 
     init();
 }
@@ -48,9 +48,11 @@ void Database::close()
 {
     int res = sqlite3_close(db);
     if (res != SQLITE_OK) {
-        RBLog(std::string("[DB] Cannot close database: ") + sqlite3_errmsg(db));
-        throw RBException("db_close_error");
+        RBLog(std::string("DB >> Cannot close database: ") + sqlite3_errmsg(db), LogLevel::ERROR);
+        throw RBException("db_close_error"); // CHECK
     }
+
+    RBLog("DB >> Database closed successfully", LogLevel::INFO);
 }
 
 void Database::exec(std::string sql) {
@@ -58,12 +60,12 @@ void Database::exec(std::string sql) {
 
     int res = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errmsg);
     if (res != SQLITE_OK) {
-        RBLog(std::string("[DB] Cannot execute statement: ") + errmsg);
+        RBLog(std::string("DB >> Cannot execute statement: ") + errmsg, LogLevel::ERROR);
         sqlite3_free(errmsg);
         throw RBException("internal_server_error");
     }
 
-    RBLog(std::string("[DB] ") + sql);
+    RBLog("DB >> " + sql, LogLevel::INFO);
 }
 
 std::unordered_map<int, std::vector<std::string>> Database::query(const std::string & sql, const std::initializer_list<std::string> & params) {
@@ -71,8 +73,8 @@ std::unordered_map<int, std::vector<std::string>> Database::query(const std::str
 
     int res = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
     if (res != SQLITE_OK) {
-        RBLog(std::string("[DB] Prepare error: ") + sqlite3_errmsg(db));
-        RBLog(std::string("[DB] Cannot execute statement: ") + sql);
+        RBLog(std::string("DB >> Prepare error: ") + sqlite3_errmsg(db), LogLevel::ERROR);
+        RBLog("DB >> Cannot execute statement: " + sql, LogLevel::ERROR);
         throw RBException("internal_server_error");
     }
 
@@ -81,8 +83,8 @@ std::unordered_map<int, std::vector<std::string>> Database::query(const std::str
         res = sqlite3_bind_text(stmt, i, param.c_str(), param.length(), SQLITE_TRANSIENT);
         if (res != SQLITE_OK) {
             sqlite3_finalize(stmt);
-            RBLog(std::string("[DB] Bind error: ") + sqlite3_errmsg(db));
-            RBLog(std::string("[DB] Cannot execute statement: ") + sql);
+            RBLog(std::string("DB >> Bind error: ") + sqlite3_errmsg(db), LogLevel::ERROR);
+            RBLog("DB >> Cannot execute statement: " + sql, LogLevel::ERROR);
             throw RBException("internal_server_error");
         }
         i++;
@@ -102,23 +104,23 @@ std::unordered_map<int, std::vector<std::string>> Database::query(const std::str
         row++;
     }
     if (res != SQLITE_DONE)
-        RBLog(std::string("[DB] Step error: ") + sqlite3_errmsg(db)); // This shouldn't throw any exceptions
+        RBLog(std::string("DB >> Step error: ") + sqlite3_errmsg(db), LogLevel::ERROR); // This shouldn't throw any exceptions
     else
-        RBLog(std::string("[DB] ") + sql);
+        RBLog("DB >> " + sql, LogLevel::INFO);
 
     sqlite3_finalize(stmt);
 
     /*
     // Print query results
     std::ostringstream oss;
-    oss << "[DB] Query rows: " << results.size() << std::endl;
+    oss << "Query rows: " << results.size() << std::endl;
     for (auto & [key, value] : results) {
         oss << "       [row " << key << "] ";
         for (auto & col : value)
             oss << col << ", ";
         oss << std::endl;
     }
-    RBLog(oss.str());
+    RBLog("DB >> " + oss.str());
     */
 
     return results;

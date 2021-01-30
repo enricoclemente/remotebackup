@@ -15,11 +15,12 @@ std::unordered_map<std::string, RBFileMetadata> FileSystemManager::get_files(con
     for (auto & [key, value] : results) {
         /*
         // Print
-        std::cout << "[row " << key << "] ";
-        for (auto & col : value) {
-            std::cout << col << ", ";
-        }
-        std::cout << std::endl;
+        std::ostringstream oss;
+        oss << "[row " << key << "] ";
+        for (auto & col : value)
+            oss << col << ", ";
+        oss << std::endl;
+        RBLog("FSM >> " + oss.str());
         */
 
         // Add metadata
@@ -38,12 +39,12 @@ std::unordered_map<std::string, RBFileMetadata> FileSystemManager::get_files(con
 
 bool FileSystemManager::file_exists(std::string username, const fs::path& path) {
     if (!fs::exists(path)) {
-        RBLog("The path provided doesn't correspond to an existing file");
+        RBLog("FSM >> The path provided doesn't correspond to an existing file", LogLevel::ERROR);
         return false;
     }
 
     if (!fs::is_regular_file(path)) {
-        RBLog("The path provided doesn't correspond to a file");
+        RBLog("FSM >> The path provided doesn't correspond to a file", LogLevel::ERROR);
         return false;
     }
 
@@ -54,7 +55,7 @@ bool FileSystemManager::file_exists(std::string username, const fs::path& path) 
 
     auto count = std::stoi(results[0][0]);
     if (count == 0) {
-        RBLog("The file provided exists but is not present in the db");
+        RBLog("FSM >> The file provided exists but is not present in the db", LogLevel::ERROR);
         return false;
     }
 
@@ -66,14 +67,14 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
 
     const std::string& req_path = file_segment.path();
     if (req_path.find("..") != std::string::npos) {
-        RBLog("The path provided contains '..' (forbidden)");
+        RBLog("FSM >> The path provided contains '..' (forbidden)", LogLevel::ERROR);
         throw RBException("forbidden_path");
     }
 
     // weakly_canonical normalizes a path (even if it doesn't correspond to an existing one)
     auto path = root / username / fs::path(req_path).lexically_normal();
     if (path.filename().empty()) {
-        RBLog("The path provided is not formatted as a valid file path");
+        RBLog("FSM >> The path provided is not formatted as a valid file path", LogLevel::ERROR);
         throw RBException("malformed_path");
     }
 
@@ -93,27 +94,28 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
     if (segment_id != 0 && segment_id != last_chunk + 1)
         throw RBException("wrong_segment");
 
+    RBLog("FSM >> Creating dirs and file: " + path.string());
+    
     // Create directories containing the file
-    RBLog("Creating dirs:" + path.string());
     fs::create_directories(path.parent_path());
-
+    
     // Create or overwrite file if it's the first segment (segment_id == 0), otherwise append to file
     std::ofstream ofs = segment_id == 0
         ? std::ofstream(path.string())
         : std::ofstream(path.string(), std::ios::app);
-
+    
     if (ofs.is_open()) {
         for (const std::string& datum : file_segment.data())
             ofs << datum;
         ofs.close();
     } else {
-        RBLog("Cannot open file");
+        RBLog("FSM >> Cannot open file", LogLevel::ERROR);
         throw RBException("internal_server_error");
     }
 
     // Save number of written-to-file segments
     if (segment_id == 0) {
-        // Entry automatically replaced on insert if pair (username, path) conflict
+        // CHECK Entry automatically replaced on insert if pair (username, path) conflict
         db.query(
             "INSERT INTO fs (username, path, last_chunk) VALUES (?, ?, ?);",
             {username, req_normal_path, std::to_string(segment_id)}
@@ -133,7 +135,7 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
     // Calculate final checksum
     auto checksum = calculate_checksum(path);
     if (checksum != file_segment.file_metadata().checksum()) {
-        // Clean up file and related db entry
+        // CHECK Clean up file and related db entry
         fs::remove(path);
         db.query(
             "DELETE FROM fs WHERE username = ? AND path = ?;",
@@ -151,21 +153,23 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
 }
 
 void FileSystemManager::remove_file(const std::string& username, const RBRequest& req) {
+    // CHECK
     auto& file_segment = req.file_segment();
 
     const std::string& req_path = file_segment.path();
     if (req_path.find("..") != std::string::npos) {
-        RBLog("The path provided contains '..' (forbidden)");
+        RBLog("FSM >> The path provided contains '..' (forbidden)", LogLevel::ERROR);
         throw RBException("forbidden_path");
     }
 
     // weakly_canonical normalizes a path (even if it doesn't correspond to an existing one)
     auto path = root / username / fs::path(req_path).lexically_normal();
     if (path.filename().empty()) {
-        RBLog("The path provided is not formatted as a valid file path");
+        RBLog("FSM >> The path provided is not formatted as a valid file path", LogLevel::ERROR);
         throw RBException("malformed_path");
     }
 
+    RBLog("FSM >> Deleting file: " + path.string());
     fs::remove(path);
     
     auto req_normal_path = fs::path(req_path).lexically_normal().string();
@@ -191,7 +195,7 @@ std::string FileSystemManager::md5(fs::path path) {
     MD5_Final(md, &md5_ctx);
 
     std::string hash = to_string(md);
-    RBLog(std::string("MD5 hash/digest: ") + hash);
+    RBLog("FSM >> MD5 hash/digest: " + hash);
 
     return hash;
 }

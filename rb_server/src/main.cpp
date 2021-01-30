@@ -14,15 +14,17 @@
 
 namespace fs = boost::filesystem;
 
-void test_db_and_auth() {
+void test_auth_req() {
     auto& db = Database::get_instance();
     auto& auth_controller = AuthController::get_instance();
     
     std::string hash = AuthController::get_instance().sha256("test-pw");
-    db.query("INSERT INTO users (username, password) VALUES ('test-user', ?);", {hash});
 
-    db.exec("SELECT * FROM users;");
-    db.exec("SELECT * FROM fs;");
+    try {
+        db.query("INSERT INTO users (username, password) VALUES ('test-user', ?);", {hash});
+    } catch (RBException &e) {
+        RBLog("RB >> " + e.getMsg(), LogLevel::ERROR);
+    }
     
     std::string token;
     RBAuthRequest auth_request;
@@ -30,53 +32,49 @@ void test_db_and_auth() {
     auth_request.set_pass("test-pw");
     try {
         auth_controller.auth_by_credentials(auth_request.user(), auth_request.pass());
-        RBLog("User authenticated successfully by username and password");
         token = auth_controller.generate_token("test-user");
     } catch (RBException &e) {
-        RBLog("CAN'T AUTHENTICATE USER");
+        RBLog("RB >> " + e.getMsg(), LogLevel::ERROR);
     }
 
     RBRequest request;
     request.set_token(token);
     try {
         auth_controller.auth_by_token(request.token());
-        RBLog("User authenticated successfully by token");
     } catch (RBException &e) {
-        RBLog("CAN'T AUTHENTICATE USER");
+        RBLog("RB >> " + e.getMsg(), LogLevel::ERROR);
     }
 }
 
 void add_user_u1() {
     auto& db = Database::get_instance();
-    
     std::string hash = AuthController::get_instance().sha256("u1");
     db.query("INSERT INTO users (username, password) VALUES ('u1', ?);", {hash});
-
-    db.exec("SELECT * FROM users;");
 }
 
-void test_fsmanager() {
-    std::cout << "Skipping test_fsmanager";
-    /*FileSystemManager fs("./rbserver_data");
+void test_fsm() {
+    FileSystemManager fsm("./rbserver_data");
+    auto res = fsm.file_exists("u1", fs::path("example.txt"));
+}
 
-    bool res = fs.write_file("u1", fs::path("./u1/ciao.txt"), "This is the first file", "0", "0", "0");
-    std::cout << "File written: " << res << std::endl;
-
-    res = fs.file_exits("u1", fs::path("./u1/ciao.txt"));
-    std::cout << "File found: " << res << std::endl;
-    */
+void print_db() {
+    auto& db = Database::get_instance();
+    db.exec("SELECT * FROM users;");
+    db.exec("SELECT * FROM fs;");
 }
 
 typedef atomic_map<std::string, std::shared_ptr<Service>> svc_atomic_map_t;
 
 int main() {
     auto& db = Database::get_instance();
-    db.open();
+    db.open(); // Do this operation the first time an instance is retrieved
     
+    RBLog("RB >> TESTS STARTING");
     add_user_u1();
-    // test_fsmanager();
-
-    // test_db_and_auth();
+    test_fsm();
+    test_auth_req();
+    print_db();
+    RBLog("RB >> TESTS ENDED\n\n\n");
 
     FileSystemManager fsm("./rbserver_data");
     svc_atomic_map_t svc_map(8);
@@ -92,7 +90,7 @@ int main() {
         try {
             if (req.type() == RBMsgType::AUTH) {
                 validateRBProto(req, RBMsgType::AUTH, 3);
-                RBLog("[RB] Auth request!");
+                RBLog("RB >> AUTH request received", LogLevel::INFO);
 
                 std::string username = req.auth_request().user();
                 std::string password = req.auth_request().pass();
@@ -107,13 +105,13 @@ int main() {
                 res.set_success(true);
             } else if (req.type() == RBMsgType::UPLOAD) {
                 validateRBProto(req, RBMsgType::UPLOAD, 3);
-                RBLog("[RB] Upload request!");
+                RBLog("RB >> UPLOAD request received", LogLevel::INFO);
 
                 // Authenticate the request
                 auto username = 
                     AuthController::get_instance()
                     .auth_get_user_by_token(req.token());
-                RBLog("[RB] Authenticated");
+                RBLog("RB >> Request authenticated successfully");
 
                 try {
                     std::string file_token = 
@@ -128,13 +126,13 @@ int main() {
 
             } else if (req.type() == RBMsgType::REMOVE) {
                 validateRBProto(req, RBMsgType::REMOVE, 3);
-                RBLog("[RB] Remove request!");
+                RBLog("RB >> REMOVE request received", LogLevel::INFO);
 
                 // Authenticate the request
                 auto username = 
                     AuthController::get_instance()
                     .auth_get_user_by_token(req.token());
-                RBLog("[RB] Authenticated");
+                RBLog("RB >> Request authenticated successfully");
 
                 try {
                     std::string file_token = 
@@ -147,14 +145,15 @@ int main() {
                     throw RBException("concurrent_write");
                 }
             } else if (req.type() == RBMsgType::ABORT) {
+                // CHECK
                 validateRBProto(req, RBMsgType::ABORT, 3);
-                RBLog("[RB] Abort request!");
+                RBLog("RB >> ABORT request received", LogLevel::INFO);
 
                 // Authenticate the request
                 auto username = 
                     AuthController::get_instance()
                     .auth_get_user_by_token(req.token());
-                RBLog("[RB] Authenticated");
+                RBLog("RB >> Request authenticated successfully");
 
                 try {
                     std::string file_token = 
@@ -168,13 +167,13 @@ int main() {
                 }
             } else if (req.type() == RBMsgType::PROBE) {
                 validateRBProto(req, RBMsgType::PROBE, 3);
-                RBLog("[RB] Probe request!");
+                RBLog("RB >> PROBE request received", LogLevel::INFO);
 
                 // Authenticate the request
                 auto username = 
                     AuthController::get_instance()
                     .auth_get_user_by_token(req.token());
-                RBLog("[RB] Authenticated");
+                RBLog("RB >> Request authenticated successfully");
 
                 auto files = fsm.get_files(username);
 
@@ -190,10 +189,10 @@ int main() {
 
             if (!res.success()) throw RBException("this_shouldnt_happen");
         } catch (RBException& e) {
-            RBLog("RBProto handling error: " + e.getMsg());
+            RBLog("RB >> RBProto handling error: " + e.getMsg(), LogLevel::ERROR);
             res.set_error(e.getMsg());
         } catch (std::exception &e) {
-            RBLog(e.what());
+            RBLog(std::string("RB >> ") + e.what(), LogLevel::ERROR);
             res.set_error("internal_server_error");
         }
 

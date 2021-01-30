@@ -21,7 +21,7 @@ void AuthController::auth_by_credentials(std::string username, std::string passw
     auto count = std::stoi(results[0][0]);
     if (!count) throw RBException("login_failed_wrong_credentials");
 
-    if (count > 1) RBLog("WARNING: DUPLICATED USER");
+    if (count > 1) RBLog("WARNING: DUPLICATED USER", LogLevel::INFO);
 }
 
 void AuthController::auth_by_token(std::string token) {
@@ -35,7 +35,7 @@ void AuthController::auth_by_token(std::string token) {
     auto count = std::stoi(results[0][0]);
     if (!count) throw RBException("unauthorized");
 
-    if (count > 1) RBLog("WARNING: DUPLICATED USER");
+    if (count > 1) RBLog("WARNING: DUPLICATED USER", LogLevel::INFO);
 }
 
 std::string AuthController::auth_get_user_by_token(const std::string& token) {

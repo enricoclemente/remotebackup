@@ -18,7 +18,7 @@ FileManager::FileManager(
         }
     }
 
-    std::cout<<"File watcher set"<<std::endl;
+    RBLog("File watcher set", LogLevel::INFO);
 }
 
 // Utils function

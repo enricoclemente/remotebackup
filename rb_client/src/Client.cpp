@@ -3,7 +3,12 @@
 using boost::asio::ip::tcp;
 
 Client::Client(const std::string &ip, const std::string &port, int timeout)
-    :timeout(timeout), ip(ip), port(port) {}
+    :timeout(timeout) {
+    if (ec.value()) throw ec;
+    tcp::resolver resolver(io_service);
+    tcp::resolver::query query(ip, port);
+    endpoints = resolver.resolve(query);
+}
 
 void Client::authenticate(std::string username, std::string password) {
     RBRequest req;
@@ -40,48 +45,57 @@ RBResponse ProtoChannel::run(RBRequest &req) {
 
     std::lock_guard<std::mutex> lock(mutex);
 
-    if (!stream.socket().is_open()) throw RBException("Client->Socket closed");
-
-    stream.expires_after(std::chrono::milliseconds(timeout));
-
+    if (!socket.is_open()) throw RBException("Client->Socket closed");
+    deadline.expires_from_now(timeout);
     bool net_op = google::protobuf::io::writeDelimitedTo(req, &cos_adp);
     cos_adp.Flush();
-
     if (!net_op) throw RBException("Client->Request send fail");
 
+    if (!socket.is_open()) throw RBException("Client->Socket closed");
+    deadline.expires_from_now(timeout);
     RBResponse res;
-
     net_op = google::protobuf::io::readDelimitedFrom(&res, &cis_adp);
-
     if (!net_op) throw RBException("Client->Response receive fail");
 
-    if (req.final()) stream.close();
+    if (req.final()) socket.close();
 
     return res;
 }
 
-typedef boost::asio::detail::socket_option::integer<SOL_SOCKET, SO_RCVTIMEO> asio_socket_timeout_option;
 
 ProtoChannel::ProtoChannel(
-    std::string &ip,
-    std::string &port,
-    std::string & token)
-    : stream(ip, port),
-      ais(static_cast<boost::asio::ip::tcp::socket &>(stream.socket())),
+    tcp::resolver::iterator &endpoints,
+    boost::asio::io_service &io_service,
+    std::string & token,
+    boost::posix_time::time_duration timeout)
+    : socket(io_service),
+      deadline(io_service),
+      timeout(timeout),
+      ais(socket),
       cis_adp(&ais),
-      aos(static_cast<boost::asio::ip::tcp::socket &>(stream.socket())),
+      aos(socket),
       cos_adp(&aos),
       token(token) {
-    if (!stream.socket().is_open()) throw RBException("Client->Connection failed");
+    // No deadline is required until the first socket operation is started. We
+    // set the deadline to positive infinity so that the actor takes no action
+    // until a specific deadline is set.
+    deadline.expires_at(boost::posix_time::pos_infin);
+    // Start the persistent actor that checks for deadline expiry.
+    check_deadline();
+
+    deadline.expires_from_now(timeout);
+    boost::asio::connect(socket, endpoints);
+    if (!socket.is_open()) throw RBException("Client->Connection failed");
+
     RBLog("Protochannel()");
 }
 
 ProtoChannel Client::open_channel() {
-    return ProtoChannel(ip, port, token);
+    return ProtoChannel(endpoints, io_service, token, boost::posix_time::milliseconds(timeout));
 }
 
 ProtoChannel::~ProtoChannel() {
-    if (stream.socket().is_open()) {
+    if (socket.is_open()) {
         close();
         RBLog("ProtoChannel closed unexpectedly");
     }
@@ -89,5 +103,5 @@ ProtoChannel::~ProtoChannel() {
 }
 
 void ProtoChannel::close() {
-    if (stream.socket().is_open()) stream.close();
+    if (socket.is_open()) socket.close();
 }

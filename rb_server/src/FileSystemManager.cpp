@@ -13,25 +13,17 @@ std::unordered_map<std::string, RBFileMetadata> FileSystemManager::get_files(con
         return files;
 
     for (auto & [key, value] : results) {
-        /*
-        // Print
-        std::ostringstream oss;
-        oss << "[row " << key << "] ";
-        for (auto & col : value)
-            oss << col << ", ";
-        oss << std::endl;
-        RBLog("FSM >> " + oss.str());
-        */
 
-        // Add metadata
         RBFileMetadata meta;
-        files[value[0]] = meta;
         if (!value[1].empty())
             meta.set_checksum(std::stoul(value[1]));
         if (!value[2].empty())
             meta.set_last_write_time(std::stoll(value[2]));
         if (!value[3].empty())
             meta.set_size(std::stoull(value[3]));
+
+        // Add metadata
+        files[value[0]] = meta;
     }
 
     return files;

@@ -6,7 +6,9 @@ ClientFlow::ClientFlow(
     const std::string & port,
     const std::string & root_path,
     int socket_timeout)
-    : client(ip, port, socket_timeout), root_path(root_path) {}
+    : client(ip, port, socket_timeout), root_path(root_path) {
+    keep_going.store(true);
+}
 
 
 void ClientFlow::authenticate(const std::string &username, const std::string &password) {

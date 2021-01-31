@@ -108,7 +108,7 @@ void validateRBProto(RBRequest & req, RBMsgType type, int ver, bool exactVer) {
         throw RBProtoVerException("unsupported_rbproto_version");
     if (type == RBMsgType::AUTH && !req.has_auth_request())
         throw RBProtoTypeException("invalid_rbproto_auth_request");
-    if ((type == RBMsgType::UPLOAD || type == RBMsgType::REMOVE)
+    if ((type == RBMsgType::UPLOAD || type == RBMsgType::REMOVE || type == RBMsgType::ABORT)
         && !req.has_file_segment())
         throw RBProtoTypeException("invalid_rbproto_file_request");
 }

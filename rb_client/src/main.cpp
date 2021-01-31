@@ -116,7 +116,7 @@ int main(int argc, char **argv) {
             auto op = out_queue.get_file_operation();
             std::string command_to_print;
 
-            if (!keep_going) break;
+            if (!keep_going.load()) break;
             try {
                 switch (op->get_command()) {
                     case FileCommand::UPLOAD:
@@ -160,6 +160,9 @@ int main(int argc, char **argv) {
 
     RBLog("Stopping monitoring...", LogLevel::INFO);
     file_manager.stop_monitoring();
+
+    RBLog("Stopping RBProto client...", LogLevel::INFO);
+    client_logic.stop();
 
     RBLog("Waiting for watcher thread to finish...", LogLevel::INFO);
     system.join();

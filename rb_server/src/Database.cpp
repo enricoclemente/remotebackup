@@ -31,7 +31,7 @@ void Database::open()
 {
     RBLog(std::string("DB >> SQLite version: ") + sqlite3_libversion(), LogLevel::INFO);
 
-    int res = sqlite3_open("test.db", &db);
+    int res = sqlite3_open(db_path.c_str(), &db);
     if (res != SQLITE_OK) {
         RBLog(std::string("DB >> Cannot open database: ") + sqlite3_errmsg(db), LogLevel::ERROR);
         // CHECK
@@ -49,10 +49,16 @@ void Database::close()
     int res = sqlite3_close(db);
     if (res != SQLITE_OK) {
         RBLog(std::string("DB >> Cannot close database: ") + sqlite3_errmsg(db), LogLevel::ERROR);
-        throw RBException("db_close_error"); // CHECK
+        throw RBException("db_close_error");
     }
+    db = nullptr;
 
     RBLog("DB >> Database closed successfully", LogLevel::INFO);
+}
+
+void Database::clear() {
+    if (db != nullptr) throw RBException("no_clear_open_db");
+    boost::filesystem::remove(db_path);
 }
 
 void Database::exec(std::string sql) {
@@ -68,7 +74,8 @@ void Database::exec(std::string sql) {
     RBLog("DB >> " + sql, LogLevel::INFO);
 }
 
-std::unordered_map<int, std::vector<std::string>> Database::query(const std::string & sql, const std::initializer_list<std::string> & params) {
+std::unordered_map<int, std::vector<std::string>> Database::query(const std::string & sql, const std::initializer_list<std::string> & params, bool throwOnStep) {
+    // TODO: make stmt RAII wrapper
     sqlite3_stmt *stmt;
 
     int res = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
@@ -85,6 +92,7 @@ std::unordered_map<int, std::vector<std::string>> Database::query(const std::str
             sqlite3_finalize(stmt);
             RBLog(std::string("DB >> Bind error: ") + sqlite3_errmsg(db), LogLevel::ERROR);
             RBLog("DB >> Cannot execute statement: " + sql, LogLevel::ERROR);
+            sqlite3_finalize(stmt);
             throw RBException("internal_server_error");
         }
         i++;
@@ -97,15 +105,23 @@ std::unordered_map<int, std::vector<std::string>> Database::query(const std::str
     //       SELECT <field> can return no rows (and therefore no columns), if WHERE clause is not met.
     int row = 0;
     while ((res = sqlite3_step(stmt)) == SQLITE_ROW) { // While there are rows in the result set
+        
         for (int col = 0; col < sqlite3_column_count(stmt); col++) { // Iterate over the row's columns
             auto result = sqlite3_column_text(stmt, col);
             results[row].push_back(std::string(reinterpret_cast<const char*>(result)));
         }
         row++;
     }
-    if (res != SQLITE_DONE)
-        RBLog(std::string("DB >> Step error: ") + sqlite3_errmsg(db), LogLevel::ERROR); // This shouldn't throw any exceptions
-    else
+
+    if (res != SQLITE_DONE) {
+        if (throwOnStep) {
+            sqlite3_finalize(stmt);
+            throw RBException(
+                std::string("db_step_error:") + sqlite3_errmsg(db));
+        } else
+            RBLog(std::string("DB >> Step error: ") + 
+                sqlite3_errmsg(db), LogLevel::ERROR);    
+    } else
         RBLog("DB >> " + sql, LogLevel::INFO);
 
     sqlite3_finalize(stmt);

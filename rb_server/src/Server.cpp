@@ -102,30 +102,34 @@ std::string Service::get_data() {
 using asio::ip::tcp;
 
 Server::Server(unsigned short port_num, RBSrvCallback callback)
-    : running(true),
-      tcp_acceptor(ios, tcp::endpoint(tcp::v4(), port_num)),
-      callback(callback) {
-          RBLog("Server()");
-      }
+    : running(true), callback(callback),
+    tcp_acceptor(ios, tcp::endpoint(tcp::v4(), port_num)){
+        // intense nonsense: port(port_num) doesn't work...
+        port = port_num;
+        RBLog("Server() on port" + std::to_string(port));
+    }
 
-void Server::start()
-{
+void Server::start() {
     thread_ptr.reset(new std::thread([this]() { run(); }));
 }
 
-void Server::stop()
-{
+void Server::stop() {
     running.store(false);
+    
+    asio::io_service ios2;
+    tcp::endpoint ep(asio::ip::address::from_string("127.0.0.1"), port);
+    tcp::socket sock(ios2, tcp::v4());
+    sock.connect(ep);
     thread_ptr->join();
 }
 
-void Server::run()
-{
+void Server::run() {
     RBLog("SRV >> Server started");
     while (running.load())
     {
         sockPtr_t sock(new asio::ip::tcp::socket(ios));
         tcp_acceptor.accept(*sock); // This function blocks until a connection has been accepted
-        Service::serve(sock, callback);
+        if (running.load()) Service::serve(sock, callback);
+        else sock->close();
     }
 }

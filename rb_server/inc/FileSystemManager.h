@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <shared_mutex>
 
 #include "Database.h"
 #include "RBHelpers.h"
@@ -26,8 +27,10 @@ public:
     std::string get_hash(std::string, const fs::path&);
     std::string get_size(std::string, const fs::path&);
     std::string get_last_write_time(std::string, const fs::path&);
+    void clear();
 
 private:
     std::string to_string(unsigned char*);
     fs::path root;
+    std::shared_mutex mutex;
 };

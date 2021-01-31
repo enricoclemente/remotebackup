@@ -47,8 +47,7 @@ private:
   } file_data;
 };
 
-class Server
-{
+class Server {
 public:
   Server(unsigned short port_num, RBSrvCallback);
 
@@ -67,4 +66,5 @@ private:
   asio::io_service ios;
   asio::ip::tcp::acceptor tcp_acceptor;
   RBSrvCallback callback;
+  unsigned short port;
 };

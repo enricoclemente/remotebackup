@@ -86,3 +86,10 @@ std::string AuthController::sha256(const std::string str) {
 
     return ss.str();
 }
+
+void AuthController::add_user(const std::string & username, const std::string & pw) {
+    auto& db = Database::get_instance();
+    std::string hash = AuthController::get_instance().sha256(pw);
+    db.query("INSERT INTO users (username, password) VALUES (?, ?);", 
+        {username, hash}, true);
+}

@@ -21,13 +21,15 @@ public:
 
     void open();
     void close();
+    void clear();
     void exec(std::string); // For statements without parameters, no returned results
-    std::unordered_map<int, std::vector<std::string>> query(const std::string &, const std::initializer_list<std::string> &); // For statements with parameters, with returned results
+    std::unordered_map<int, std::vector<std::string>> query(const std::string &, const std::initializer_list<std::string> &, bool throwOnStep = false); // For statements with parameters, with returned results
 
 private:
     Database();
 
     void init(); // Prepare database
 
-    sqlite3 *db;
+    sqlite3 *db = nullptr;
+    std::string db_path = "database.db";
 };

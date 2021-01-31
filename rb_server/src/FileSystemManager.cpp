@@ -3,6 +3,7 @@
 #include <utility>
 
 std::unordered_map<std::string, RBFileMetadata> FileSystemManager::get_files(const std::string& username) {
+    std::shared_lock<std::shared_mutex> slock(mutex);
     auto& db = Database::get_instance();
     std::string sql = "SELECT path, hash, last_write_time, size FROM fs WHERE username = ?;";
     auto results = db.query(sql, {username});
@@ -30,6 +31,7 @@ std::unordered_map<std::string, RBFileMetadata> FileSystemManager::get_files(con
 }
 
 bool FileSystemManager::file_exists(std::string username, const fs::path& path) {
+    std::shared_lock<std::shared_mutex> slock(mutex);
     if (!fs::exists(path)) {
         RBLog("FSM >> The path provided doesn't correspond to an existing file", LogLevel::ERROR);
         return false;
@@ -55,6 +57,7 @@ bool FileSystemManager::file_exists(std::string username, const fs::path& path) 
 }
 
 void FileSystemManager::write_file(const std::string& username, const RBRequest& req) {
+    std::shared_lock<std::shared_mutex> slock(mutex);
     auto& file_segment = req.file_segment();
 
     const std::string& req_path = file_segment.path();
@@ -145,6 +148,7 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
 }
 
 void FileSystemManager::remove_file(const std::string& username, const RBRequest& req) {
+    std::shared_lock<std::shared_mutex> slock(mutex);
     // CHECK
     auto& file_segment = req.file_segment();
 
@@ -174,6 +178,7 @@ void FileSystemManager::remove_file(const std::string& username, const RBRequest
 }
 
 std::string FileSystemManager::md5(fs::path path) {
+    std::shared_lock<std::shared_mutex> slock(mutex);
     MD5_CTX md5_ctx;
     MD5_Init(&md5_ctx);
 
@@ -241,4 +246,9 @@ std::string FileSystemManager::get_last_write_time(std::string username, const f
     auto last_write_time = results[0][0];
 
     return last_write_time;
+}
+
+void FileSystemManager::clear() {
+    std::unique_lock<std::shared_mutex> ulock(mutex);
+    boost::filesystem::remove_all(root);
 }

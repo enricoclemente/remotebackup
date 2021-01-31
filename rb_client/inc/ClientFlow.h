@@ -9,6 +9,7 @@ class ClientFlow {
 private:
     Client client;
     filesystem::path root_path;
+    std::atomic_bool keep_going;
 
 public:
     ClientFlow(
@@ -26,6 +27,5 @@ public:
 
     void remove_file(const std::shared_ptr<FileOperation> &file_operation);
 
+    void stop() { keep_going.store(false); }
 };
-
-

@@ -102,17 +102,16 @@ void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
                     throw RBException("ClientFlow->different_checksums");
                 file_upload_request.set_final(true);
                 file_metadata->set_checksum(crc.checksum());
+            } else if (!keep_going.load()) {
+                throw RBException("ClientFlow->client_stopped");
             }
 
             file_segment->set_allocated_file_metadata(file_metadata.release());
             file_upload_request.set_allocated_file_segment(file_segment.release());
 
             auto res = upload_channel.run(file_upload_request);
+            // in case the response is not valid the validator will throw an excaption, triggering the abort
             validateRBProto(res, RBMsgType::UPLOAD, 3);
-            // TODO: This is not necessary because is inside validate proto, right?
-            //  is it correct to abort after this?
-            if (!res.success())
-                throw RBException("ClientFlow->Server Response Error: " + res.error());
         }
     }
     catch(RBException& e)

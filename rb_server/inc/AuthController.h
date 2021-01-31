@@ -32,6 +32,8 @@ public:
     std::string generate_token(std::string);
     std::string sha256(const std::string);
 
+    void add_user(const std::string & username, const std::string & pw);
+
 private:
     AuthController();
 };

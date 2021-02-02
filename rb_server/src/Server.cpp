@@ -101,12 +101,10 @@ std::string Service::get_data() {
 
 using asio::ip::tcp;
 
-Server::Server(unsigned short port_num, RBSrvCallback callback)
-    : running(true), callback(callback),
-    tcp_acceptor(ios, tcp::endpoint(tcp::v4(), port_num)){
-        // intense nonsense: port(port_num) doesn't work...
-        port = port_num;
-        RBLog("Server() on port" + std::to_string(port));
+Server::Server(unsigned short port_num, const RBSrvCallback & callback)
+    : port(port_num), running(true), callback(callback),
+    tcp_acceptor(ios, tcp::endpoint(tcp::v4(), port)){
+        RBLog("Server(" + std::to_string(port) + ")", LogLevel::DEBUG);
     }
 
 void Server::start() {
@@ -114,13 +112,20 @@ void Server::start() {
 }
 
 void Server::stop() {
+    if (!running.load()) return;
     running.store(false);
     
     asio::io_service ios2;
     tcp::endpoint ep(asio::ip::address::from_string("127.0.0.1"), port);
     tcp::socket sock(ios2, tcp::v4());
-    sock.connect(ep);
+    try {
+        RBLog("SERVER >> Self-connecting to wake acceptor... (" + std::to_string(port) + ")", LogLevel::DEBUG);
+        sock.connect(ep);
+    } catch(std::exception &e) {
+        RBLog("SERVER >> FAILED!", LogLevel::ERROR);
+    }
     thread_ptr->join();
+    RBLog("SERVER >> Acceptor thread joined.", LogLevel::DEBUG);
 }
 
 void Server::run() {

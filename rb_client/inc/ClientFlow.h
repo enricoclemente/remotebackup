@@ -9,7 +9,7 @@ class ClientFlow {
 private:
     Client client;
     filesystem::path root_path;
-    std::atomic_bool keep_going;
+    std::atomic_bool keep_going = true;
 
 public:
     ClientFlow(

@@ -49,7 +49,7 @@ private:
 
 class Server {
 public:
-  Server(unsigned short port_num, RBSrvCallback);
+  Server(unsigned short port_num, const RBSrvCallback &);
 
   void start();
   void stop();
@@ -61,10 +61,10 @@ public:
 private:
   void run();
 
+  unsigned short port; // WARNING: if moved at the end the server breaks!!
   std::unique_ptr<std::thread> thread_ptr;
   std::atomic<bool> running;
   asio::io_service ios;
   asio::ip::tcp::acceptor tcp_acceptor;
   RBSrvCallback callback;
-  unsigned short port;
 };

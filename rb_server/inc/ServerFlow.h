@@ -10,9 +10,14 @@ typedef atomic_map<std::string, std::shared_ptr<Service>> svc_atomic_map_t;
 class ServerFlow {
 public:
     ServerFlow(unsigned short port, int workersLimit, const std::string & rootPath) 
-        : svc_map(workersLimit), fsm(rootPath), srv(port, [&](RBRequest req, std::shared_ptr<Service> worker) {
+        : svc_map(workersLimit), fsm(rootPath), 
+        srv(port, [&](RBRequest req, std::shared_ptr<Service> worker) {
             return flow(req, worker);
         }) {
+            start();
+    }
+
+    void start() {
         db.open();
         test_all();
         add_u1();

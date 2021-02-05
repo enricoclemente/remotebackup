@@ -123,20 +123,24 @@ int main(int argc, char **argv) {
                         command_to_print = "UPLOAD";
                         RBLog("Got operation for: " + op->get_path() + " command: " + command_to_print,
                                 LogLevel::INFO);
-                        client_logic.upload_file(op);
+                        if (client_logic.upload_file(op)) 
+                            RBLog("Client >> file " + op->get_path() + 
+                                "uploaded correctly ended", LogLevel::INFO);
+                        
                         break;
                     case FileCommand::REMOVE:
                         command_to_print = "REMOVE;";
                         RBLog("Got operation for: " + op->get_path() + " command: " + command_to_print,
                                 LogLevel::INFO);
                         client_logic.remove_file(op);
+                        RBLog("Client >> file " + op->get_path() + 
+                                "removed correctly ended", LogLevel::INFO);
+
                         break;
                     default:
+                        RBLog("Client >> unhandled file operation!", LogLevel::ERROR);
                         break;
                 }
-
-                RBLog("Operation for: " + op->get_path() + " command: " + command_to_print + " correctly ended",
-                        LogLevel::INFO);
 
                 attempt_count = 0;      // resetting attempt count
                 out_queue.remove_file_operation(op->get_id());      // deleting file operation because completed correctly

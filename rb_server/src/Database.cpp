@@ -46,6 +46,7 @@ void Database::open()
 
 void Database::close()
 {
+    if (db == nullptr) return;
     int res = sqlite3_close(db);
     if (res != SQLITE_OK) {
         RBLog(std::string("DB >> Cannot close database: ") + sqlite3_errmsg(db), LogLevel::ERROR);
@@ -71,7 +72,7 @@ void Database::exec(std::string sql) {
         throw RBException("internal_server_error");
     }
 
-    RBLog("DB >> " + sql, LogLevel::INFO);
+    RBLog("DB >> " + sql, LogLevel::DEBUG);
 }
 
 std::unordered_map<int, std::vector<std::string>> Database::query(const std::string & sql, const std::initializer_list<std::string> & params, bool throwOnStep) {
@@ -122,7 +123,7 @@ std::unordered_map<int, std::vector<std::string>> Database::query(const std::str
             RBLog(std::string("DB >> Step error: ") + 
                 sqlite3_errmsg(db), LogLevel::ERROR);    
     } else
-        RBLog("DB >> " + sql, LogLevel::INFO);
+        RBLog("DB >> " + sql, LogLevel::DEBUG);
 
     sqlite3_finalize(stmt);
 

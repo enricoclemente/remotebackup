@@ -124,7 +124,7 @@ private:
                 try {
                     std::string file_token = 
                         username + ">" + req.file_segment().path();
-                    svc_atomic_map_t::guard sv_grd(svc_map, file_token, worker);
+                    auto svc_grd = svc_map.make_guard(file_token, worker);
 
                     fsm.write_file(username, req);
                     res.set_success(true);
@@ -143,7 +143,7 @@ private:
                 try {
                     std::string file_token = 
                         username + ">" + req.file_segment().path();
-                    svc_atomic_map_t::guard sv_grd(svc_map, file_token, worker);
+                    auto sv_grd = svc_map.make_guard(file_token, worker);
 
                     fsm.remove_file(username, req);
                     res.set_success(true);
@@ -161,7 +161,7 @@ private:
                 try {
                     std::string file_token = 
                         username + ">" + req.file_segment().path();
-                    svc_atomic_map_t::guard sv_grd(svc_map, file_token, worker);
+                    auto sv_grd = svc_map.make_guard(file_token, worker);
 
                     fsm.remove_file(username, req);
                     res.set_success(true);

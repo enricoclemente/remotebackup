@@ -23,7 +23,7 @@ public:
 
     std::unordered_map<std::string, file_metadata> get_server_files();
 
-    void upload_file(const std::shared_ptr<FileOperation> &file_operationh);
+    bool upload_file(const std::shared_ptr<FileOperation> &file_operationh);
 
     void remove_file(const std::shared_ptr<FileOperation> &file_operation);
 

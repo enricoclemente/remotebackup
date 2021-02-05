@@ -95,9 +95,10 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
     fs::create_directories(path.parent_path());
     
     // Create or overwrite file if it's the first segment (segment_id == 0), otherwise append to file
-    std::ofstream ofs = segment_id == 0
-        ? std::ofstream(path.string())
-        : std::ofstream(path.string(), std::ios::app);
+    auto open_mode = segment_id == 0 ? std::ios::trunc : std::ios::app;
+    std::ofstream ofs = std::ofstream(
+        path.string(), open_mode | std::ios::binary
+    );
     
     if (ofs.is_open()) {
         for (const std::string& datum : file_segment.data())

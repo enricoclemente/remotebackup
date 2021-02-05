@@ -14,29 +14,27 @@ void ClientFlow::authenticate(const std::string &username, const std::string &pa
 }
 
 
-void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operation) {
+bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operation) {
     if (file_operation->get_command() != FileCommand::UPLOAD)
         throw std::logic_error("ClientFlow->Wrong type of FileOperation command");
 
     filesystem::path file_path{root_path};
     file_path.append(file_operation->get_path());
 
-    std::ifstream fl(file_path.string());
+    std::ifstream fl(file_path.string(), std::ios::binary);
     if (fl.fail()) {
-        if(filesystem::exists(file_path) && filesystem::is_regular_file(file_path))
-            throw std::runtime_error("ClientFlow->Error opening file");
-        else
-            // TODO: how to handle this?
-            return;
+        RBLog("ClientFlow >> Can't open file <" 
+            + file_path.string() + "> for upload", LogLevel::ERROR);
+        return false;
     }
 
     file_metadata metadata = file_operation->get_metadata();
     size_t file_size = filesystem::file_size(file_path);
     time_t last_write_time = filesystem::last_write_time(file_path);
 
-    // TODO: how to handle this? it is better to delete the file operation
-    if(file_size != metadata.size || last_write_time != metadata.last_write_time) // Check if metadata match
-        return;
+    // Skip if metadata don't match
+    if(file_size != metadata.size || last_write_time != metadata.last_write_time)
+        return false;
 
     int num_segments = count_segments(file_size);
     int chunk_size = 2048;
@@ -45,8 +43,7 @@ void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
 
     auto upload_channel = client.open_channel();    // opening protochannel
 
-    try
-    {   
+    try {   
         // ensure there's at least one segment, for empty files
         if (!num_segments) num_segments++;
 
@@ -113,9 +110,7 @@ void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
             // in case the response is not valid the validator will throw an excaption, triggering the abort
             validateRBProto(res, RBMsgType::UPLOAD, 3);
         }
-    }
-    catch(RBException& e)
-    {
+    } catch(RBException& e) {
         RBLog("File upload aborted: " + e.getMsg(), LogLevel::ERROR);
 
         RBRequest req;
@@ -128,13 +123,12 @@ void ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
 
         auto res = upload_channel.run(req);
         validateRBProto(res, RBMsgType::ABORT, 3);
-        if (!res.success())
-            throw RBException("ClientFlow->Server Response Error: " + res.error());
     }
 
     upload_channel.close();
 
     fl.close();
+    return true;
 }
 
 

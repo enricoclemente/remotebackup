@@ -55,7 +55,7 @@ int count_segments(uint64_t size) {
 
 
 std::uint32_t calculate_checksum(const fs::path &file_path) {
-    std::ifstream ifs(file_path.string());
+    std::ifstream ifs(file_path.string(), std::ios::binary);
     if (ifs.fail())
         throw std::runtime_error("RBHelpers->Error opening file");
 

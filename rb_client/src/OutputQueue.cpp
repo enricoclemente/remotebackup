@@ -27,27 +27,24 @@ void OutputQueue::add_file_operation(const std::string &path, file_metadata meta
     cv.notify_all();
 }
 
-
 std::shared_ptr<FileOperation> OutputQueue::get_file_operation() {
     std::unique_lock ul(m);
     cv.wait(ul, [this]() { return free() > 0; });
 
     bool valid = true;
 
-    // TODO:  review this logic because the re could be the case that there is a file in processing
-    //  and the same to be processed
+    // TODO:  review this logic because there could be the case that there is a file in processing and the same to be processed
+    auto not_found = processing_files.end();
     for (auto i : queue) {
         if (!i->get_processing()) {
             // check if there are not other processes for the same file
-            for (const auto &j : queue) {
-                if (j->get_processing() && j->get_path() == i->get_path()) {
-                    valid = false;
-                    break;
-                }
+            if (processing_files.find(i->get_path()) != not_found) {
+                valid = false;
             }
 
             if (valid) {
                 i->set_processing(true);
+                processing_files.emplace(i->get_path());
                 return i;
             }
             valid = true;
@@ -65,11 +62,12 @@ bool OutputQueue::free_file_operation(int id) {
     for (const auto& val : queue) {
         if (val->get_id() == id) {
             val->set_processing(false);
+            processing_files.erase(val->get_path());
+            cv.notify_all();
             return true;
         }
     }
 
-    // TODO: we have to make a notify, right?
     return false;
 }
 
@@ -77,13 +75,22 @@ bool OutputQueue::free_file_operation(int id) {
 bool OutputQueue::remove_file_operation(int id) {
     std::unique_lock ul(m);
     cv.wait(ul, [this]() { return queue.size() > 0; });
+    
+    queue.remove_if([&](auto &e) {
+        if (e->get_id() == id) {
+            processing_files.erase(e->get_path());
+            return true;
+        }
+        return false;
+    });
 
-    for (auto it = queue.begin(); it != queue.end(); it++) {
+    /* for (auto it = queue.begin(); it != queue.end(); it++) {
         if (it->get()->get_id() == id) {
+            processing_files.erase(it->get()->get_path());
             queue.erase(it);
             return true;
         }
-    }
+    } */
     return false;
 }
 
@@ -93,11 +100,17 @@ int OutputQueue::size() {
     return queue.size();
 }
 
+// a, a*, b
 
 int OutputQueue::free() {
     int sum(0);
+    auto not_found = processing_files.end();
+
     for (const auto& val : queue) {
-        if (!(val->get_processing())) sum++;
+        if (!(val->get_processing())
+            && processing_files.find(val->get_path()) == not_found) {
+            sum++;
+        }
     }
     return sum;
 }

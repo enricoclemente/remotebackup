@@ -1,13 +1,11 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <fstream>
-#include <boost/filesystem.hpp>
 #include <string>
 
 #include "ServerFlow.h"
 
 
-namespace fs = boost::filesystem;
 std::function<void(void)> sig_int_handler;
 
 void handle_sig_int(int n) {

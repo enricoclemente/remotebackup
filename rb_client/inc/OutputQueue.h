@@ -3,6 +3,7 @@
 #include <iostream>
 #include <optional>
 #include <list>
+#include <set>
 #include <mutex>
 #include <condition_variable>
 #include <atomic>
@@ -41,6 +42,7 @@ public:
 class OutputQueue {
 private:
     std::list<std::shared_ptr<FileOperation>> queue;
+    std::unordered_set<std::string> processing_files;
     int id_counter;
     std::mutex m;
     std::condition_variable cv;

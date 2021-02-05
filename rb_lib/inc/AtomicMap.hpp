@@ -14,19 +14,36 @@ public:
         guard(atomic_map<K,V> &m, K &key, V &value)
             : m(m), key(key) {
             if (m.has(key)) throw typename atomic_map<K, V>::key_already_present();
+            RBLog("atomic_map::guard()", LogLevel::DEBUG);
             m.add(key, value);
+        }
+        guard(guard && src) : m(src.m), key(src.key) {
+            src.moved = true;
+            RBLog("atomic_map::guard(&&)", LogLevel::DEBUG);
+        }
+        guard& operator=(guard&& src) {
+            src.moved = true;
+            RBLog("atomic_map::guard::operator=(&&)", LogLevel::DEBUG);
         }
 
         ~guard() {
-            m.remove(key);
+            RBLog("atomic_map::~guard()", LogLevel::DEBUG);
+            if (!moved) m.remove(key);
         }
 
     private:
+        bool moved = false;
+        guard(const guard &) = delete;
+        guard& operator=(const guard &) = delete;
         K &key;
         atomic_map<K,V> &m;
     };
     
     atomic_map<K, V>(size_t limit) : limit(limit){};
+
+    guard make_guard(K &key, V &value) {
+        return guard(*this, key, value);
+    }
 
     void add(K key, V value) {
         std::unique_lock<std::shared_mutex> lock(m);

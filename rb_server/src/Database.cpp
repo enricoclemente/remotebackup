@@ -75,70 +75,92 @@ void Database::exec(std::string sql) {
     RBLog("DB >> " + sql, LogLevel::DEBUG);
 }
 
-std::unordered_map<int, std::vector<std::string>> Database::query(const std::string & sql, const std::initializer_list<std::string> & params, bool throwOnStep) {
-    // TODO: make stmt RAII wrapper
-    sqlite3_stmt *stmt;
+std::unordered_map<int, std::vector<std::string>> Database::query(
+    const std::string & sql, const std::initializer_list<std::string> & params, bool throwOnStep) {
+    Statement stmt{sql, params, throwOnStep};
 
-    int res = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
+    auto &db = Database::get_instance();
+    stmt.prepare(db);
+    stmt.bind(db);
+    const auto& results = stmt.step(db); // Extending the lifetime of the object created by step
+    // stmt.print_results(results); // Not looking good as a Statement's function
+
+    return results;
+}
+
+Statement::Statement(const std::string& sql, const std::initializer_list<std::string>& params, bool throwOnStep)
+    : sql(sql), params(params), throwOnStep(throwOnStep) {
+    RBLog("Statement()");
+}
+
+Statement::~Statement() {
+    RBLog("~Statement()");
+    sqlite3_finalize(stmt);
+}
+
+void Statement::prepare(Database& db_instance) {
+    int res = sqlite3_prepare_v2(db_instance.db, sql.c_str(), -1, &stmt, nullptr);
     if (res != SQLITE_OK) {
-        RBLog(std::string("DB >> Prepare error: ") + sqlite3_errmsg(db), LogLevel::ERROR);
+        RBLog(std::string("DB >> Prepare error: ") + sqlite3_errmsg(db_instance.db), LogLevel::ERROR);
         RBLog("DB >> Cannot execute statement: " + sql, LogLevel::ERROR);
         throw RBException("internal_server_error");
     }
+}
 
+void Statement::bind(Database& db_instance) {
     int i = 1;
     for (auto param : params) {
-        res = sqlite3_bind_text(stmt, i, param.c_str(), param.length(), SQLITE_TRANSIENT);
+        int res = sqlite3_bind_text(stmt, i, param.c_str(), param.length(), SQLITE_TRANSIENT);
         if (res != SQLITE_OK) {
             sqlite3_finalize(stmt);
-            RBLog(std::string("DB >> Bind error: ") + sqlite3_errmsg(db), LogLevel::ERROR);
+            RBLog(std::string("DB >> Bind error: ") + sqlite3_errmsg(db_instance.db), LogLevel::ERROR);
             RBLog("DB >> Cannot execute statement: " + sql, LogLevel::ERROR);
             sqlite3_finalize(stmt);
             throw RBException("internal_server_error");
         }
         i++;
     }
+}
 
-    std::unordered_map<int, std::vector<std::string>> results; // Defaults to {}, i.e. an empty map
-    
-    // Populate map<row, vector of columns> with db results
-    // Note: SELECT COUNT(*) always returns one row and one column, even if WHERE clause is not met (count is 0).
-    //       SELECT <field> can return no rows (and therefore no columns), if WHERE clause is not met.
-    int row = 0;
-    while ((res = sqlite3_step(stmt)) == SQLITE_ROW) { // While there are rows in the result set
-        
-        for (int col = 0; col < sqlite3_column_count(stmt); col++) { // Iterate over the row's columns
-            auto result = sqlite3_column_text(stmt, col);
-            results[row].push_back(std::string(reinterpret_cast<const char*>(result)));
-        }
-        row++;
-    }
+std::unordered_map<int, std::vector<std::string>> Statement::step(Database& db_instance) {
+  std::unordered_map<int, std::vector<std::string>> results; // Defaults to {}, i.e. an empty map
 
-    if (res != SQLITE_DONE) {
-        if (throwOnStep) {
-            sqlite3_finalize(stmt);
-            throw RBException(
-                std::string("db_step_error:") + sqlite3_errmsg(db));
-        } else
-            RBLog(std::string("DB >> Step error: ") + 
-                sqlite3_errmsg(db), LogLevel::ERROR);    
-    } else
-        RBLog("DB >> " + sql, LogLevel::DEBUG);
+  // Populate map<row, vector of columns> with db results
+  // Note: SELECT COUNT(*) always returns one row and one column, even if WHERE clause is not met (count is 0).
+  //       SELECT <field> can return no rows (and therefore no columns), if WHERE clause is not met.
+  int res;
+  int row = 0;
+  while ((res = sqlite3_step(stmt)) == SQLITE_ROW) { // While there are rows in the result set
+      
+      for (int col = 0; col < sqlite3_column_count(stmt); col++) { // Iterate over the row's columns
+          auto result = sqlite3_column_text(stmt, col);
+          results[row].push_back(std::string(reinterpret_cast<const char*>(result)));
+      }
+      row++;
+  }
 
-    sqlite3_finalize(stmt);
+  if (res != SQLITE_DONE) {
+      if (throwOnStep) {
+          sqlite3_finalize(stmt);
+          throw RBException(
+              std::string("db_step_error:") + sqlite3_errmsg(db_instance.db));
+      } else
+          RBLog(std::string("DB >> Step error: ") + 
+              sqlite3_errmsg(db_instance.db), LogLevel::ERROR);    
+  } else
+      RBLog("DB >> " + sql, LogLevel::DEBUG);
 
-    /*
-    // Print query results
-    std::ostringstream oss;
-    oss << "Query rows: " << results.size() << std::endl;
-    for (auto & [key, value] : results) {
-        oss << "       [row " << key << "] ";
-        for (auto & col : value)
-            oss << col << ", ";
-        oss << std::endl;
-    }
-    RBLog("DB >> " + oss.str());
-    */
+  return results;
+}
 
-    return results;
+void Statement::print_results(const std::unordered_map<int, std::vector<std::string>>& results ) {
+  std::ostringstream oss;
+  oss << "Query rows: " << results.size() << std::endl;
+  for (auto & [key, value] : results) {
+      oss << "       [row " << key << "] ";
+      for (auto & col : value)
+          oss << col << ", ";
+      oss << std::endl;
+  }
+  RBLog("DB >> " + oss.str());
 }

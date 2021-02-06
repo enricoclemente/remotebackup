@@ -32,4 +32,23 @@ private:
 
     sqlite3 *db = nullptr;
     std::string db_path = "database.db";
+    
+    friend class Statement;
+};
+
+class Statement
+{
+public:
+    Statement(const std::string &, const std::initializer_list<std::string> &, bool);
+    ~Statement();
+    void prepare(Database &);
+    void bind(Database &);
+    std::unordered_map<int, std::vector<std::string>> step(Database &);
+    void print_results(const std::unordered_map<int, std::vector<std::string>> &);
+
+private:
+    std::string sql;
+    const std::initializer_list<std::string> & params;
+    bool throwOnStep;
+    sqlite3_stmt *stmt;
 };

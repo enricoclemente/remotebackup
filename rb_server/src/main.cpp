@@ -42,9 +42,8 @@ int main() {
             }
             if (command == "clear") {
                 server_logic.clear();
-                RBLog("CONSOLE >> Server cleared correctly! Will now restart...");
-                server_logic.start();
-                continue;
+                RBLog("CONSOLE >> Server cleared correctly! Will now halt...");
+                break;
             }
             if (command == "adduser") {
                 std::string uname, pw;

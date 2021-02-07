@@ -253,3 +253,18 @@ void FileSystemManager::clear() {
     std::unique_lock<std::shared_mutex> ulock(mutex);
     boost::filesystem::remove_all(root);
 }
+
+namespace fs = boost::filesystem;
+void recursiveCleanup(fs::path root) {
+    for (auto &file: fs::directory_iterator(root)) {
+        if (fs::is_directory(file)) {
+            recursiveCleanup(file);
+            if (fs::is_empty(file)) fs::remove(file);
+        }
+    }
+}
+
+void FileSystemManager::cleanup_empty_folders() {
+    std::unique_lock<std::shared_mutex> ul(mutex);
+    if (fs::is_directory(root)) recursiveCleanup(root);
+}

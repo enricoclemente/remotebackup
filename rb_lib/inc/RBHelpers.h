@@ -60,6 +60,10 @@ std::uint32_t calculate_checksum(const fs::path &file_path);
 void validateRBProto(RBRequest &, RBMsgType, int ver, bool exactVer = false);
 void validateRBProto(RBResponse &, RBMsgType, int ver, bool exactVer = false);
 
-void excHandler(std::exception &e);
-void excHandler(RBException &e);
 void RBLog(const std::string & s, LogLevel level = LogLevel::DEBUG);
+
+std::thread make_watchdog(
+    std::chrono::system_clock::duration interval,
+    std::function<bool(void)> cond_checker,
+    std::function<void(void)> wd_function
+);

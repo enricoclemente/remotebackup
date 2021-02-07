@@ -3,15 +3,6 @@
 #include <mutex>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-void excHandler(RBException &e) {
-    std::cout << "RBException:" << e.getMsg() << std::endl;
-}
-
-void excHandler(std::exception &e) {
-    std::cout << "Exception: " << e.what();
-}
-
-
 void RBLog(const std::string & s, LogLevel level) {
     // catching time
     auto now = boost::posix_time::microsec_clock::local_time();
@@ -111,4 +102,23 @@ void validateRBProto(RBRequest & req, RBMsgType type, int ver, bool exactVer) {
     if ((type == RBMsgType::UPLOAD || type == RBMsgType::REMOVE || type == RBMsgType::ABORT)
         && !req.has_file_segment())
         throw RBProtoTypeException("invalid_rbproto_file_request");
+}
+
+std::thread make_watchdog(
+    std::chrono::system_clock::duration interval,
+    std::function<bool(void)> cond_checker,
+    std::function<void(void)> wd_function
+) {
+    return std::thread([interval, cond_checker, wd_function]() {
+        typedef std::chrono::system_clock sc;
+        sc::time_point next_wake;
+        while(true) {
+            next_wake = sc::now() + interval;
+            while (cond_checker() && (sc::now() < next_wake)) {
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+            }
+            if (!cond_checker()) return;
+            wd_function();
+        }
+    });
 }

@@ -47,10 +47,9 @@ void Service::handleClient() {
         handler(sock);
         sock.get()->close();
     } catch (RBException &e) {
-        excHandler(e);
-    }
-    catch (std::exception &e) {
-        excHandler(e);
+        RBLog("SRV >> Server >> RBProto failure: " + e.getMsg(), LogLevel::ERROR);
+    } catch (std::exception &e) {
+        RBLog("SRV >> Server >> RBProto failure: " + std::string(e.what()), LogLevel::ERROR);
     }
 }
 

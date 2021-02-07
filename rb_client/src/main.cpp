@@ -81,12 +81,11 @@ int main(int argc, char **argv) {
                     status_to_print = "MODIFIED";
                 }
 
+                out_queue.add_file_operation(path, meta, command);
                 RBLog("Added file operation for " + path + " status: " + status_to_print, LogLevel::INFO);
                 RBLog("File metadata: size " + std::to_string(meta.size) +
                     " last write time " + std::to_string(meta.last_write_time) +
                     " checksum " + std::to_string(meta.checksum));
-
-                out_queue.add_file_operation(path, meta, command);
             } catch (RBException &e) {
                 RBLog("RBException:" + e.getMsg(), LogLevel::ERROR);
             } catch (std::exception &e) {
@@ -126,6 +125,8 @@ int main(int argc, char **argv) {
                         if (client_logic.upload_file(op)) 
                             RBLog("Client >> file " + op->get_path() + 
                                 "uploaded correctly ended", LogLevel::INFO);
+                        else
+                            RBLog("Client >> Upload skipped");
                         
                         break;
                     case FileCommand::REMOVE:

@@ -5,8 +5,9 @@ OutputQueue::OutputQueue() : id_counter(0) {};
 
 
 void OutputQueue::add_file_operation(const std::string &path, file_metadata metadata, FileCommand command) {
-    std::lock_guard lg(m);
+    std::unique_lock ul(m);
 
+    cv.wait(ul, [this]() { return queue.size() < 100; });
     auto fo = std::make_shared<FileOperation>(path, metadata, command, id_counter);
 
     // if there are old operations on the same file, overwrite them with the new one if they are not in processing
@@ -29,29 +30,19 @@ void OutputQueue::add_file_operation(const std::string &path, file_metadata meta
 
 std::shared_ptr<FileOperation> OutputQueue::get_file_operation() {
     std::unique_lock ul(m);
-    cv.wait(ul, [this]() { return free() > 0; });
-
-    bool valid = true;
-
-    // TODO:  review this logic because there could be the case that there is a file in processing and the same to be processed
     auto not_found = processing_files.end();
-    for (auto i : queue) {
-        if (!i->get_processing()) {
-            // check if there are not other processes for the same file
-            if (processing_files.find(i->get_path()) != not_found) {
-                valid = false;
+    
+    while(true) {
+        for (const auto& val : queue) {
+            if (!(val->get_processing())
+                && processing_files.find(val->get_path()) == not_found) {
+                val->set_processing(true);
+                processing_files.emplace(val->get_path());
+                return val;
             }
-
-            if (valid) {
-                i->set_processing(true);
-                processing_files.emplace(i->get_path());
-                return i;
-            }
-            valid = true;
         }
+        cv.wait(ul);
     }
-
-    throw std::logic_error("invalid_file_operation");
 }
 
 
@@ -79,6 +70,7 @@ bool OutputQueue::remove_file_operation(int id) {
     queue.remove_if([&](auto &e) {
         if (e->get_id() == id) {
             processing_files.erase(e->get_path());
+            cv.notify_all();
             return true;
         }
         return false;
@@ -99,22 +91,6 @@ int OutputQueue::size() {
     std::lock_guard lg(m);
     return queue.size();
 }
-
-// a, a*, b
-
-int OutputQueue::free() {
-    int sum(0);
-    auto not_found = processing_files.end();
-
-    for (const auto& val : queue) {
-        if (!(val->get_processing())
-            && processing_files.find(val->get_path()) == not_found) {
-            sum++;
-        }
-    }
-    return sum;
-}
-
 
 
 // File Operation Class implementations

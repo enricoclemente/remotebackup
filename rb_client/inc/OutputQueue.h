@@ -46,7 +46,6 @@ private:
     int id_counter;
     std::mutex m;
     std::condition_variable cv;
-    int free();
 
 public:
     OutputQueue();

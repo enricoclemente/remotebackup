@@ -28,7 +28,7 @@ struct file_metadata {
 
 class FileManager {
     filesystem::path path_to_watch;
-    std::chrono::duration<int, std::milli> update_interval;
+    std::chrono::system_clock::duration update_interval;
     std::unordered_map<std::string, file_metadata> files;
     std::atomic<bool> running = true;
     template<typename Map>
@@ -38,11 +38,14 @@ class FileManager {
     }
 
 public:
-    FileManager(filesystem::path path, std::chrono::duration<int, std::milli> delay);
+    FileManager(filesystem::path path, std::chrono::system_clock::duration delay);
     void start_monitoring(const std::function<void(const std::string&, const file_metadata&, FileStatus)> &action);
     void stop_monitoring();
-    void file_system_compare(const std::unordered_map<std::string, file_metadata>& map,
-            const std::function<void(const std::string&, const file_metadata&, FileStatus)> &action);
+    void initial_scan();
+    void file_system_compare(
+        const std::unordered_map<std::string, file_metadata>& map,
+        const std::function<void(const std::string&, const file_metadata&, FileStatus)> &action
+    );
 };
 
 

@@ -1,9 +1,10 @@
 #include "Client.h"
+#include <exception>
 
 using boost::asio::ip::tcp;
 
-Client::Client(const std::string &ip, const std::string &port, int timeout)
-    :timeout(timeout) {
+Client::Client(const std::string &ip, const std::string &port, int timeout, int n)
+    :timeout(timeout), protochan_pool_max_n(n) {
     if (ec.value()) throw ec;
     tcp::resolver resolver(io_service);
     tcp::resolver::query query(ip, port);
@@ -20,32 +21,85 @@ void Client::authenticate(std::string username, std::string password) {
     req.set_protover(3);
     req.set_type(RBMsgType::AUTH);
     req.set_allocated_auth_request(authReq.release());
-    req.set_final(true);
 
-    RBResponse res = run(req);
+    RBResponse res = run(req, true);
 
     validateRBProto(res, RBMsgType::AUTH, 3);
 
     token = res.auth_response().token();
 }
 
-RBResponse Client::run(RBRequest &req) {
+RBResponse Client::run(RBRequest &req, bool force_single) {
 
-    if (!req.final()) throw RBException("Client->Request is not final");
+    if (force_single) {
+        req.set_final(true);
+        ProtoChannel chan = open_channel();
+        auto res = chan.run(req);
+        chan.close();
 
-    ProtoChannel chan = open_channel();
-    auto res = chan.run(req);
-    chan.close();
-
-    return std::move(res);
+        return std::move(res);
+    } else {
+        std::unique_lock ul(pcp_m);
+        while(true) {
+            for (auto &p : protochan_pool) {
+                try {
+                    ul.unlock();
+                    auto res = p->run(req, true);
+                    pcp_cv.notify_one();
+                    return res;
+                } catch (std::runtime_error &e) {
+                    ul.lock();
+                }
+            }
+            if (protochan_pool.size() < protochan_pool_max_n) {
+                auto ps = std::make_shared<ProtoChannel>(endpoints, io_service, token, boost::posix_time::milliseconds(timeout), *this);
+                protochan_pool.push_back(ps);
+                ul.unlock();
+                auto res = ps->run(req);
+                pcp_cv.notify_one();
+                return res;
+            }
+            pcp_cv.wait(ul);
+        }
+    }
 }
 
-RBResponse ProtoChannel::run(RBRequest &req) {
+ProtoChannel Client::open_channel() {
+    return ProtoChannel(endpoints, io_service, token,
+        boost::posix_time::milliseconds(timeout), *this);
+}
+
+void Client::clean_protochan_pool() {
+    std::unique_lock ul(pcp_m);
+    protochan_pool.remove_if([this](auto ps) {
+        auto now = std::chrono::system_clock::now();
+        auto timeout = ps->last_use + std::chrono::seconds(30);
+        if (now < timeout || !ps->mutex.try_lock()) return false;
+        RBLog("Client >> Cleaning up unused ProtoChannel", LogLevel::DEBUG);
+        std::lock_guard(ps->mutex, std::adopt_lock);
+        ps->close();
+        return true;
+    });
+    pcp_cv.notify_all();
+}
+
+RBResponse ProtoChannel::run(RBRequest &req, bool do_try) {
+    if (do_try) {
+        if (!mutex.try_lock()) {
+            throw std::runtime_error("busy_protochannel");
+        }
+    } else {
+        mutex.lock();
+    }
+
+    std::lock_guard lg(mutex, std::adopt_lock);
+
     req.set_token(token);
 
-    std::lock_guard<std::mutex> lock(mutex);
-
-    if (!socket.is_open()) throw RBException("Client->Socket closed");
+    if (!socket.is_open()) {
+        if (do_try) throw std::runtime_error("closed_protochannel");
+        throw RBException("Client->Socket closed");
+    }
     deadline.expires_from_now(timeout);
     bool net_op = google::protobuf::io::writeDelimitedTo(req, &cos_adp);
     cos_adp.Flush();
@@ -59,15 +113,25 @@ RBResponse ProtoChannel::run(RBRequest &req) {
 
     if (req.final()) socket.close();
 
+    if (!socket.is_open()) {
+        try {
+            client.protochan_pool.remove(shared_from_this());
+        } catch (std::bad_weak_ptr & e) {
+            // we surely aren't in the protochan pool...
+        }
+    }
+
+    last_use = std::chrono::system_clock::now();
+
     return res;
 }
-
 
 ProtoChannel::ProtoChannel(
     tcp::resolver::iterator &endpoints,
     boost::asio::io_service &io_service,
     std::string & token,
-    boost::posix_time::time_duration timeout)
+    boost::posix_time::time_duration timeout,
+    Client & c)
     : socket(io_service),
       deadline(io_service),
       timeout(timeout),
@@ -75,6 +139,7 @@ ProtoChannel::ProtoChannel(
       cis_adp(&ais),
       aos(socket),
       cos_adp(&aos),
+      client(c),
       token(token) {
     // No deadline is required until the first socket operation is started. We
     // set the deadline to positive infinity so that the actor takes no action
@@ -88,10 +153,6 @@ ProtoChannel::ProtoChannel(
     if (!socket.is_open()) throw RBException("Client->Connection failed");
 
     RBLog("Protochannel()");
-}
-
-ProtoChannel Client::open_channel() {
-    return ProtoChannel(endpoints, io_service, token, boost::posix_time::milliseconds(timeout));
 }
 
 ProtoChannel::~ProtoChannel() {

@@ -21,43 +21,66 @@ public:
     Client(
         const std::string & ip,
         const std::string & port,
-        int timeout
+        int timeout, 
+        int protochan_pool_max_n
     );
 
-    RBResponse run(RBRequest &);
+    RBResponse run(RBRequest &, bool force_single = false);
 
     ProtoChannel open_channel();
     void authenticate(std::string, std::string);
 
+    ~Client() {
+        keep_going = false;
+        RBLog("Waiting for client watchdog termination...", LogLevel::DEBUG);
+        watchdog.join();
+    }
 private:
+    friend class ProtoChannel;
     boost::asio::ip::tcp::resolver::iterator endpoints;
     boost::system::error_code ec;
     boost::asio::io_service io_service;
     std::string token;
     int timeout;
+
+    std::list<std::shared_ptr<ProtoChannel>> protochan_pool;
+    int protochan_pool_max_n;
+    /** protochannel_pool mutex */
+    std::mutex pcp_m;
+    /** protochannel_pool condition variable */
+    std::condition_variable pcp_cv;
+    std::atomic<bool> keep_going = true;
+
+    void clean_protochan_pool();
+    std::thread watchdog = make_watchdog(
+        std::chrono::seconds(10),
+        [this]() { return keep_going.load(); },
+        [this]() { clean_protochan_pool(); }
+    );
 };
 
 using boost::asio::ip::tcp;
 using boost::asio::deadline_timer;
 using boost::lambda::bind;
 
-class ProtoChannel {
+class ProtoChannel : public std::enable_shared_from_this<ProtoChannel> {
 public:
-    ProtoChannel(ProtoChannel &) = delete;
+    ProtoChannel(const ProtoChannel &) = delete;
 
     ProtoChannel(ProtoChannel &&) = default;
 
     ~ProtoChannel();
 
-    RBResponse run(RBRequest &);
+    RBResponse run(RBRequest &, bool do_try = false);
 
     void close();
 
+    ProtoChannel(tcp::resolver::iterator &, boost::asio::io_service &, std::string &, boost::posix_time::time_duration, Client &);
+
 private:
-    ProtoChannel(tcp::resolver::iterator &, boost::asio::io_service &, std::string &, boost::posix_time::time_duration );
-
-    friend ProtoChannel Client::open_channel();
-
+    friend class Client;
+    Client & client;
+    std::chrono::system_clock::time_point last_use;
     tcp::socket socket;
     deadline_timer deadline;
     AsioInputStream<tcp::socket> ais;

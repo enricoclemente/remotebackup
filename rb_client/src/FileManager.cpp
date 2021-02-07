@@ -4,9 +4,11 @@
 
 FileManager::FileManager(
     filesystem::path path,
-    std::chrono::duration<int, std::milli> delay)
-    : path_to_watch(std::move(path)), update_interval(delay) {
+    std::chrono::system_clock::duration delay)
+    : path_to_watch(std::move(path)), update_interval(delay) {}
 
+void FileManager::initial_scan() {
+    RBLog("Watcher >> Performing initial scan...", LogLevel::INFO);
     for (auto &file : filesystem::recursive_directory_iterator(path_to_watch)) {
         if(filesystem::is_regular_file(file.path())){
             file_metadata current_file_metadata{};
@@ -17,8 +19,6 @@ FileManager::FileManager(
             files[file.path().string()] = current_file_metadata;
         }
     }
-
-    RBLog("File watcher set", LogLevel::INFO);
 }
 
 // Utils function
@@ -32,7 +32,6 @@ void FileManager::stop_monitoring() {
     running = false;
     files["^NIL^"] = file_metadata();
 }
-
 
 // Description: Start the monitoring of the setted path to watch
 // Errors: It can throw a runtime error because of checksum calculation

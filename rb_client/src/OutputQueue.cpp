@@ -33,6 +33,7 @@ std::shared_ptr<FileOperation> OutputQueue::get_file_operation() {
     auto not_found = processing_files.end();
     
     while(true) {
+        if (!keep_going) throw RBException("stop");
         for (const auto& val : queue) {
             if (!(val->get_processing())
                 && processing_files.find(val->get_path()) == not_found) {

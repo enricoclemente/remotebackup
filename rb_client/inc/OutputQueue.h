@@ -46,6 +46,12 @@ private:
     int id_counter;
     std::mutex m;
     std::condition_variable cv;
+    std::atomic<bool> keep_going = true;
+    std::thread watchdog = make_watchdog(
+        std::chrono::seconds(3),
+        [this]() { return keep_going.load(); },
+        [this]() { cv.notify_all(); }
+    );
 
 public:
     OutputQueue();
@@ -54,4 +60,8 @@ public:
     bool free_file_operation(int id);
     bool remove_file_operation(int id);
     int size();
+    void stop() {
+        keep_going = false;
+        cv.notify_all();
+    }
 };

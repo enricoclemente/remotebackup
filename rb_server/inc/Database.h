@@ -41,12 +41,13 @@ class Statement
 public:
     Statement(const std::string &, const std::initializer_list<std::string> &, bool);
     ~Statement();
-    void prepare(Database &);
-    void bind(Database &);
-    std::unordered_map<int, std::vector<std::string>> step(Database &);
+    void prepare();
+    void bind();
+    std::unordered_map<int, std::vector<std::string>> step();
     void print_results(const std::unordered_map<int, std::vector<std::string>> &);
 
 private:
+    Database &db;
     std::string sql;
     const std::initializer_list<std::string> & params;
     bool throwOnStep;

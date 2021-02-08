@@ -21,7 +21,7 @@ Database::Database() {
 
 void Database::init() {
     exec("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL, token TEXT);");
-    exec("CREATE TABLE IF NOT EXISTS fs (id INTEGER PRIMARY KEY, username TEXT NOT NULL, path TEXT NOT NULL, hash TEXT NOT NULL DEFAULT '', last_write_time TEXT NOT NULL DEFAULT '', size TEXT NOT NULL DEFAULT '', last_chunk TEXT NOT NULL DEFAULT '', UNIQUE(username, path) ON CONFLICT REPLACE);");
+    exec("CREATE TABLE IF NOT EXISTS fs (id INTEGER PRIMARY KEY, username TEXT NOT NULL, path TEXT NOT NULL, hash TEXT NOT NULL DEFAULT '', last_write_time TEXT NOT NULL DEFAULT '', size TEXT NOT NULL DEFAULT '', last_segment TEXT NOT NULL DEFAULT '', UNIQUE(username, path) ON CONFLICT REPLACE);");
 }
 
 void Database::open() {

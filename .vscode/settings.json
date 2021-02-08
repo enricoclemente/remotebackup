@@ -69,7 +69,19 @@
     "bit": "cpp",
     "filesystem": "cpp",
     "*.ipp": "cpp",
-    "shared_mutex": "cpp"
+    "shared_mutex": "cpp",
+    "strstream": "cpp",
+    "cassert": "cpp",
+    "cerrno": "cpp",
+    "cfloat": "cpp",
+    "ciso646": "cpp",
+    "climits": "cpp",
+    "ios": "cpp",
+    "locale": "cpp",
+    "queue": "cpp",
+    "stack": "cpp",
+    "cfenv": "cpp",
+    "cstdbool": "cpp"
   },
   "C_Cpp.clang_format_style": "{ BasedOnStyle: Google, UseTab: Never, IndentWidth: 4, TabWidth: 4, AllowShortIfStatementsOnASingleLine: true, IndentCaseLabels: false, ColumnLimit: 0, AccessModifierOffset: -4, NamespaceIndentation: All }"
 }

@@ -78,15 +78,15 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
 
     // Check correct segment number from db before writing it
     auto& db = Database::get_instance();
-    std::string sql = "SELECT last_chunk FROM fs WHERE username = ? AND path = ?;";
+    std::string sql = "SELECT last_segment FROM fs WHERE username = ? AND path = ?;";
     auto results = db.query(sql, {username, req_normal_path});
 
-    auto last_chunk = 0;
+    auto last_segment = 0;
     if (!results.empty())
-        last_chunk = std::stoi(results[0][0]);
+        last_segment = std::stoi(results[0][0]);
 
     // Skip this check if segment_id == 0 to allow starting over at any time
-    if (segment_id != 0 && segment_id != last_chunk + 1)
+    if (segment_id != 0 && segment_id != last_segment + 1)
         throw RBException("wrong_segment");
 
     RBLog("FSM >> Creating dirs and file: " + path.string());
@@ -113,12 +113,12 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
     if (segment_id == 0) {
         // CHECK Entry automatically replaced on insert if pair (username, path) conflict
         db.query(
-            "INSERT INTO fs (username, path, last_chunk) VALUES (?, ?, ?);",
+            "INSERT INTO fs (username, path, last_segment) VALUES (?, ?, ?);",
             {username, req_normal_path, std::to_string(segment_id)}
         );
     } else {
         db.query(
-            "UPDATE fs SET last_chunk = ? WHERE username = ? AND path = ?;",
+            "UPDATE fs SET last_segment = ? WHERE username = ? AND path = ?;",
             {std::to_string(segment_id), username, req_normal_path}
         );
     }

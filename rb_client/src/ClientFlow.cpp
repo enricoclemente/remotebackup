@@ -49,11 +49,11 @@ bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
         // ensure there's at least one segment, for empty files
         if (!num_segments) num_segments++;
 
-        RBLog("Begin transfer of " + std::to_string(num_segments) + " chunks");
+        RBLog("Begin transfer of " + std::to_string(num_segments) + " segments");
 
         // Fragment files that are larger than RB_MAX_SEGMENT_SIZE
         for (int i = 0; i < num_segments; i++) {
-            RBLog ("Sending chunk " + std::to_string(i));
+            RBLog ("Sending segment " + std::to_string(i));
 
             RBRequest file_upload_request;
             file_upload_request.set_protover(3);
@@ -75,7 +75,7 @@ bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
                     segment_len = file_size % RB_MAX_SEGMENT_SIZE;
             }
 
-            // Reading file segment with chunks
+            // Reading file segment by 2048-character long chunks
             size_t tot_read = 0;
             size_t current_read = 0;
             while (tot_read < segment_len) {
@@ -222,10 +222,11 @@ void ClientFlow::sender_loop() {
     try {
         while (true) {
             if(attempt_count == max_attempts) {
-                RBLog("Reached max attempts number. Terminating client", LogLevel::ERROR);
+                RBLog("Reached max attempts number. Terminating client", LogLevel::ERROR); // TODO Solve client not terminating
                 stop();
                 break;
             }
+            RBLog("Client >> attempt number " + std::to_string(attempt_count + 1));
 
             auto op = out_queue.get_file_operation();
             const auto & path = op->get_path();
@@ -239,7 +240,7 @@ void ClientFlow::sender_loop() {
                         if (upload_file(op)) 
                             RBLog("Client >> UPLOADED: " + path , LogLevel::INFO);
                         else
-                            RBLog("Client >> SKIP: " + path, LogLevel::DEBUG);
+                            RBLog("Client >> SKIPPED: " + path, LogLevel::DEBUG);
                         break;
                     case FileCommand::REMOVE:
                         RBLog("Client >> REMOVING: " + path, LogLevel::INFO);
@@ -251,8 +252,8 @@ void ClientFlow::sender_loop() {
                         break;
                 }
 
-                attempt_count = 0;      // resetting attempt count
-                out_queue.remove_file_operation(op->get_id());      // deleting file operation because completed correctly
+                attempt_count = 0; 								// resetting attempt count
+                out_queue.remove_file_operation(op->get_id());  // deleting file operation because completed correctly
             } catch (RBException &e) {
                 attempt_count++;
                 RBLog("RBException:" + e.getMsg(), LogLevel::ERROR);

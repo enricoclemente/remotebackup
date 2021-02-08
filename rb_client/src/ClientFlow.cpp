@@ -226,7 +226,6 @@ void ClientFlow::sender_loop() {
                 stop();
                 break;
             }
-            RBLog("Client >> attempt number " + std::to_string(attempt_count + 1));
 
             auto op = out_queue.get_file_operation();
             const auto & path = op->get_path();
@@ -284,7 +283,7 @@ void ClientFlow::start() {
         exit(-1);
     }
 
-    RBLog("Main >> Starting file watcher...", LogLevel::INFO);
+    RBLog("ClientFLow >> Starting file watcher...", LogLevel::INFO);
     file_manager.initial_scan();
 
     // thread for keep running file watcher and inital probe
@@ -295,9 +294,12 @@ void ClientFlow::start() {
         RBLog("Main >> Starting sender thread " + std::to_string(i), LogLevel::INFO);
         senders_pool.emplace_back(std::thread([this]() { sender_loop(); }));
     }
-}
 
-void ClientFlow::stop() {
+    RBLog("ClientFLow >> RB client started!", LogLevel::INFO);
+    
+    std::unique_lock<std::mutex> waiter_lk(waiter);
+    waiter_cv.wait(waiter_lk, [this]() { return !keep_going; });
+
     RBLog("ClientFLow >> Stopping RB client...", LogLevel::INFO);
     keep_going = false;
     RBLog("ClientFLow >> Stopping file watcher...", LogLevel::INFO);
@@ -311,7 +313,11 @@ void ClientFlow::stop() {
     for (auto &s : senders_pool){
         try {
             s.join();
-        } catch (std::exception &e) {
-        }
+        } catch (std::exception &e) {}
     }
+}
+
+void ClientFlow::stop() {
+    keep_going = false;
+    waiter_cv.notify_all();
 }

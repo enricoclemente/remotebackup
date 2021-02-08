@@ -1,6 +1,7 @@
 #include <signal.h>
 
 #include <mutex>
+#include <condition_variable>
 #include <thread>
 
 #include "ConfigMap.hpp"
@@ -47,18 +48,11 @@ int main(int argc, char **argv) {
 
     void (*original_sigint_handler)(int) = signal(SIGINT, handle_sig_int);
     sig_int_handler = [&]() {
-        waiter.unlock();
+        client_logic.stop();
         signal(SIGINT, original_sigint_handler);
     };
 
     client_logic.start();
-
-    waiter.lock();
-    RBLog("Main >> Client started!", LogLevel::INFO);
-    waiter.lock();
-
-    RBLog("Main >> Stopping client...", LogLevel::INFO);
-    client_logic.stop();
 
     RBLog("Main >> Client stopped!", LogLevel::INFO);
     exit(0);

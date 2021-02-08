@@ -1,6 +1,7 @@
 #pragma once
 #include "Client.h"
 #include "OutputQueue.h"
+#include <mutex>
 
 class ClientFlow {
 private:
@@ -21,6 +22,8 @@ private:
     void sender_loop();
 
     std::atomic<bool> keep_going = true;
+    std::mutex waiter;
+    std::condition_variable waiter_cv;
 
     std::unordered_map<std::string, file_metadata> get_server_files();
     bool upload_file(const std::shared_ptr<FileOperation> &file_operationh);
@@ -40,4 +43,5 @@ public:
 
     void stop();
     void start();
+    void run();
 };

@@ -166,3 +166,22 @@ ProtoChannel::~ProtoChannel() {
 void ProtoChannel::close() {
     if (socket.is_open()) socket.close();
 }
+
+
+
+ConnectionTimeout::ConnectionTimeout(std::chrono::system_clock::duration interval) : timeout_interval(interval) {}
+
+void ConnectionTimeout::start_timer() {
+    auto timer = std::thread([this]() {
+        std::this_thread::sleep_for(this->timeout_interval);
+        if(!this->stopped.load()) {
+            throw RBException("ConnectionTimeout >> out of connection time without response!");
+        }
+    });
+
+    timer.join();
+}
+
+void ConnectionTimeout::stop_timer() {
+    stopped.store(true);
+}

@@ -225,6 +225,9 @@ void ClientFlow::sender_loop() {
                 RBLog("Reached max attempts number. Terminating client", LogLevel::ERROR); // TODO Solve client not terminating
                 stop();
                 break;
+            } else if( attempt_count > 0 ) {
+                // from the second attempt the thread have to wait a little bit in order to not solve the problem
+                std::this_thread::sleep_for(std::chrono::milliseconds(3000));
             }
 
             auto op = out_queue.get_file_operation();

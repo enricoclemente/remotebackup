@@ -115,3 +115,12 @@ private:
     }
 };
 
+class ConnectionTimeout {
+    std::chrono::system_clock::duration timeout_interval;
+    std::atomic<bool> stopped = false;
+
+public:
+    ConnectionTimeout(std::chrono::system_clock::duration interval);
+    void start_timer();
+    void stop_timer();
+};

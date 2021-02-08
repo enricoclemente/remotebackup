@@ -71,19 +71,13 @@ bool OutputQueue::remove_file_operation(int id) {
     queue.remove_if([&](auto &e) {
         if (e->get_id() == id) {
             processing_files.erase(e->get_path());
-            cv.notify_all();
+            if(queue.size() < 75)
+                cv.notify_all();
             return true;
         }
         return false;
     });
 
-    /* for (auto it = queue.begin(); it != queue.end(); it++) {
-        if (it->get()->get_id() == id) {
-            processing_files.erase(it->get()->get_path());
-            queue.erase(it);
-            return true;
-        }
-    } */
     return false;
 }
 

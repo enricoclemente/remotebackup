@@ -22,7 +22,7 @@ bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
     if (file_operation->get_command() != FileCommand::UPLOAD)
         throw std::logic_error("ClientFlow->Wrong type of FileOperation command");
 
-    filesystem::path file_path{root_path};
+    fs::path file_path{root_path};
     file_path.append(file_operation->get_path());
 
     std::ifstream fl(file_path.string(), std::ios::binary);
@@ -33,8 +33,8 @@ bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
     }
 
     file_metadata metadata = file_operation->get_metadata();
-    size_t file_size = filesystem::file_size(file_path);
-    time_t last_write_time = filesystem::last_write_time(file_path);
+    size_t file_size = fs::file_size(file_path);
+    time_t last_write_time = fs::last_write_time(file_path);
 
     // Skip if metadata don't match
     if(file_size != metadata.size || last_write_time != metadata.last_write_time)
@@ -43,7 +43,7 @@ bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
     int num_segments = count_segments(file_size);
     int chunk_size = 2048;
     std::vector<char> chunk(chunk_size, 0); // Buffer to hold 2048 characters
-    crc_32_type crc;
+    boost::crc_32_type crc;
 
     try {   
         // ensure there's at least one segment, for empty files
@@ -178,7 +178,7 @@ void ClientFlow::watcher_loop() {
     auto update_handler = [&](const std::string &path, const file_metadata &meta, FileStatus status) {
         try {
             if (!keep_going) return;
-            if (!filesystem::is_regular_file(root_path / path) && status != FileStatus::REMOVED)
+            if (!fs::is_regular_file(root_path / path) && status != FileStatus::REMOVED)
                 return;
 
             FileCommand command;
@@ -220,7 +220,6 @@ void ClientFlow::sender_loop() {
     int attempt_count = 0;
     int max_attempts = 3;
     try {
-
         while (true) {
             if(attempt_count == max_attempts) {
                 RBLog("Reached max attempts number. Terminating client", LogLevel::ERROR);
@@ -273,7 +272,6 @@ void ClientFlow::sender_loop() {
 }
 
 void ClientFlow::start() {
-
     RBLog("Main >> Authenticating...", LogLevel::INFO);
     try {
         client.authenticate(username, password);
@@ -309,9 +307,10 @@ void ClientFlow::stop() {
     out_queue.stop();
 
     RBLog("ClientFLow >> Waiting for sender threads to finish...", LogLevel::INFO);
-    for (auto &s : senders_pool) try {
-        s.join();
-    } catch (std::exception &e) {}
-
-
+    for (auto &s : senders_pool){
+        try {
+            s.join();
+        } catch (std::exception &e) {
+        }
+    }
 }

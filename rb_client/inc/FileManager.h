@@ -10,7 +10,7 @@
 
 #include "RBHelpers.h"
 
-using namespace boost;
+namespace fs = boost::filesystem;
 
 enum class FileStatus {
     CREATED = 0,
@@ -27,7 +27,7 @@ struct file_metadata {
 
 
 class FileManager {
-    filesystem::path path_to_watch;
+    fs::path path_to_watch;
     std::chrono::system_clock::duration update_interval;
     std::unordered_map<std::string, file_metadata> files;
     std::atomic<bool> running = true;
@@ -38,7 +38,7 @@ class FileManager {
     }
 
 public:
-    FileManager(filesystem::path path, std::chrono::system_clock::duration delay);
+    FileManager(fs::path path, std::chrono::system_clock::duration delay);
     void start_monitoring(const std::function<void(const std::string&, const file_metadata&, FileStatus)> &action);
     void stop_monitoring();
     void initial_scan();

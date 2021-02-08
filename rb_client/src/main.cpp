@@ -6,7 +6,6 @@
 #include "ConfigMap.hpp"
 #include "ClientFlow.h"
 
-using namespace boost;
 
 char CONFIG_FILE_PATH[] = "./rbclient.conf";
 
@@ -32,10 +31,8 @@ int main(int argc, char **argv) {
     config.load(CONFIG_FILE_PATH);
     config.store(CONFIG_FILE_PATH);
 
-    int senders_pool_n = config.get_numeric("sender_threads_num");
-
-    boost::filesystem::path root_folder(config["root_folder"]);
-    boost::filesystem::create_directory(root_folder);   // directory is created only if not already present
+    fs::path root_folder(config["root_folder"]);
+    fs::create_directory(root_folder);   // directory is created only if not already present
 
     ClientFlow client_logic(
         config["host"], config["port"],

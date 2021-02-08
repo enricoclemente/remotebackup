@@ -1,6 +1,3 @@
-//
-// Created by Enrico Clemente on 05/12/2020.
-//
 #pragma once
 #include "Client.h"
 #include "OutputQueue.h"
@@ -13,7 +10,7 @@ private:
 
     std::string username;
     std::string password;
-    filesystem::path root_path;
+    fs::path root_path;
 
     int senders_pool_n;
 

@@ -88,8 +88,6 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
     // Skip this check if segment_id == 0 to allow starting over at any time
     if (segment_id != 0 && segment_id != last_segment + 1)
         throw RBException("wrong_segment");
-
-    RBLog("FSM >> Creating dirs and file: " + path.string());
     
     // Create directories containing the file
     fs::create_directories(path.parent_path());
@@ -142,7 +140,7 @@ void FileSystemManager::write_file(const std::string& username, const RBRequest&
 
     auto hash = std::to_string(checksum);
     auto lwt_str = std::to_string(file_segment.file_metadata().last_write_time());
-    auto size_str = std::to_string(file_segment.data().size());
+    auto size_str = std::to_string(file_segment.file_metadata().size());
     sql = "UPDATE fs SET hash = ?, last_write_time = ?, size = ? WHERE username = ? AND path = ?;";
     
     db.query(sql, {hash, lwt_str, size_str, username, req_normal_path});
@@ -176,6 +174,59 @@ void FileSystemManager::remove_file(const std::string& username, const RBRequest
         "DELETE FROM fs WHERE username = ? AND path = ?;",
         {username, req_normal_path}
     );
+}
+
+void FileSystemManager::read_file_segment(const std::string& username, const RBRequest& req, RBResponse& res) {
+    auto& file_segment_info = req.file_segment();
+
+    const std::string& req_path = file_segment_info.path();
+    if (req_path.find("..") != std::string::npos) {
+        RBLog("FSM >> The path provided contains '..' (forbidden)", LogLevel::ERROR);
+        throw RBException("forbidden_path");
+    }
+
+    // lexically_normal normalizes a path (even if it doesn't correspond to an existing one)
+    auto path = root / username / fs::path(req_path).lexically_normal();
+    if (path.filename().empty()) {
+        RBLog("FSM >> The path provided is not formatted as a valid file path", LogLevel::ERROR);
+        throw RBException("malformed_path");
+    }
+
+    auto segment_id = file_segment_info.segmentid();
+    auto pos = segment_id * RB_MAX_SEGMENT_SIZE;
+
+    std::ifstream ifs(path.string(), std::ios::binary);
+    if (!ifs) {
+        RBLog("FSM >> Cannot open file \"" + path.string() + "\" for reading", LogLevel::ERROR);
+        throw RBException("cannot_read_file");
+    }
+
+    ifs.seekg(0, ifs.end);
+    int length = ifs.tellg(); // Get length of file
+
+    /*
+    RBLog("Path: " + path.string());
+    RBLog("Segment: " + std::to_string(segment_id));
+    RBLog("Pos: " + std::to_string(pos));
+    RBLog("Length: " + std::to_string(length));
+    */
+
+    if (pos > length) {
+        RBLog("FSM >> Requested segment exceeds file's length", LogLevel::ERROR);
+        throw RBException("invalid_read");
+    }
+
+    std::vector<char> buffer(RB_MAX_SEGMENT_SIZE, 0);
+    ifs.seekg(pos);
+    ifs.read(&buffer[0], RB_MAX_SEGMENT_SIZE);
+    auto read = ifs.gcount(); // Get the number of characters that have been read
+    ifs.close();
+
+    auto file_segment = std::make_unique<RBFileSegment>();
+    file_segment->add_data(&buffer[0], read);
+    file_segment->set_segmentid(segment_id);
+    file_segment->set_path(fs::path(req_path).lexically_normal().string());
+    res.set_allocated_file_segment(file_segment.release());
 }
 
 std::string FileSystemManager::md5(fs::path path) {

@@ -25,6 +25,7 @@ public:
     bool file_exists(std::string, const fs::path&);
     void write_file(const std::string & username, const RBRequest & req);
     void remove_file(const std::string & username, const RBRequest & req);
+    void read_file_segment(const std::string&, const RBRequest&, RBResponse&);
     std::string md5(fs::path);
     std::string get_hash(std::string, const fs::path&);
     std::string get_size(std::string, const fs::path&);

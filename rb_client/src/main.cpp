@@ -35,10 +35,19 @@ int main(int argc, char **argv) {
     fs::path root_folder(config["root_folder"]);
     fs::create_directory(root_folder);   // directory is created only if not already present
 
+    bool restore_option = false;
+    if (argv[1] != nullptr) {
+        if (std::string(argv[1]) == "--restore")
+            restore_option = true;
+        else
+            RBLog("Main >> Possible arguments are: \"--restore\"");
+    }
+
     ClientFlow client_logic(
         config["host"], config["port"],
         config["root_folder"],
         config["username"], config["password"],
+        restore_option,
         std::chrono::milliseconds(config.get_numeric("watcher_interval")),
         config.get_numeric("connection_timeout"),
         config.get_numeric("sender_threads_num")

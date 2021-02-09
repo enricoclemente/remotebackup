@@ -43,7 +43,7 @@ void Service::serve(sockPtr_t sock, RBSrvCallback callback) {
 
 void Service::handleClient() {
     try {
-        RBLog("SRV >> Handling client request");
+        // RBLog("SRV >> Handling client request");
         handler(sock);
         sock.get()->close();
     } catch (RBException &e) {

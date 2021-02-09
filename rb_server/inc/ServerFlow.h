@@ -184,6 +184,16 @@ private:
 
                 res.set_allocated_probe_response(probe_res.release());
                 res.set_success(true);
+            } else if (req.type() == RBMsgType::RESTORE) {
+                validateRBProto(req, RBMsgType::RESTORE, 3);
+                RBLog("RB >> RESTORE request received", LogLevel::INFO);
+
+                // Authenticate the request
+                auto username = auth_controller.auth_get_user_by_token(req.token());
+                RBLog("RB >> Request authenticated successfully");
+
+                fsm.read_file_segment(username, req, res);
+                res.set_success(true);
             } else {
                 throw RBException("invalid_request");
             }

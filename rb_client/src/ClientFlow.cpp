@@ -1,22 +1,22 @@
 #include "ClientFlow.h"
 
-
 ClientFlow::ClientFlow(
-    const std::string & ip,
-    const std::string & port,
-    const std::string & root_path,
+    const std::string &ip,
+    const std::string &port,
+    const std::string &root_path,
     const std::string &username,
     const std::string &password,
+    bool restore_option,
     std::chrono::system_clock::duration watcher_interval,
-    int socket_timeout, 
+    int socket_timeout,
     int senders_pool_n)
-    :
-    client(ip, port, socket_timeout, senders_pool_n),
-    root_path(root_path),
-    username(username),
-    password(password),
-    senders_pool_n(senders_pool_n),
-    file_manager(root_path, watcher_interval) {}
+    : client(ip, port, socket_timeout, senders_pool_n),
+      root_path(root_path),
+      username(username),
+      password(password),
+      restore_from_server(restore_option),
+      senders_pool_n(senders_pool_n),
+      file_manager(root_path, watcher_interval) {}
 
 bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operation) {
     if (file_operation->get_command() != FileCommand::UPLOAD)
@@ -27,8 +27,7 @@ bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
 
     std::ifstream fl(file_path.string(), std::ios::binary);
     if (fl.fail()) {
-        RBLog("ClientFlow >> Can't open file <" 
-            + file_path.string() + "> for upload", LogLevel::ERROR);
+        RBLog("ClientFlow >> Can't open file <" + file_path.string() + "> for upload", LogLevel::ERROR);
         return false;
     }
 
@@ -37,23 +36,23 @@ bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
     time_t last_write_time = fs::last_write_time(file_path);
 
     // Skip if metadata don't match
-    if(file_size != metadata.size || last_write_time != metadata.last_write_time)
+    if (file_size != metadata.size || last_write_time != metadata.last_write_time)
         return false;
 
     int num_segments = count_segments(file_size);
     int chunk_size = 2048;
-    std::vector<char> chunk(chunk_size, 0); // Buffer to hold 2048 characters
+    std::vector<char> chunk(chunk_size, 0);  // Buffer to hold 2048 characters
     boost::crc_32_type crc;
 
-    try {   
+    try {
         // ensure there's at least one segment, for empty files
         if (!num_segments) num_segments++;
 
-        RBLog("Begin transfer of " + std::to_string(num_segments) + " segments");
+        RBLog("Begin outbound transfer of " + std::to_string(num_segments) + " segments");
 
         // Fragment files that are larger than RB_MAX_SEGMENT_SIZE
         for (int i = 0; i < num_segments; i++) {
-            RBLog ("Sending segment " + std::to_string(i));
+            RBLog("Sending segment " + std::to_string(i));
 
             RBRequest file_upload_request;
             file_upload_request.set_protover(3);
@@ -68,7 +67,7 @@ bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
 
             // Length of current file segment
             size_t segment_len = RB_MAX_SEGMENT_SIZE;
-            if (i == num_segments - 1) { // If last segment
+            if (i == num_segments - 1) {  // If last segment
                 if (file_size == 0)
                     segment_len = 0;
                 else if (file_size % RB_MAX_SEGMENT_SIZE != 0)
@@ -90,14 +89,14 @@ bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
 
                 if (!fl) throw std::runtime_error("ClientFlow->Error reading file chunk");
 
-                current_read = fl.gcount(); // Get the number of characters that have been read (always 2048, except the last time)
-                file_segment->add_data(&chunk[0], current_read); // Push characters that have been read into data
+                current_read = fl.gcount();                       // Get the number of characters that have been read (always 2048, except the last time)
+                file_segment->add_data(&chunk[0], current_read);  // Push characters that have been read into data
                 crc.process_bytes(&chunk[0], current_read);
                 tot_read += current_read;
             }
 
-            if (i == num_segments - 1) { // Final file segment
-                if(crc.checksum() != metadata.checksum) // Check if checksums match
+            if (i == num_segments - 1) {                  // Final file segment
+                if (crc.checksum() != metadata.checksum)  // Check if checksums match
                     throw RBException("ClientFlow->different_checksums");
                 file_metadata->set_checksum(crc.checksum());
             } else if (!keep_going.load()) {
@@ -111,7 +110,7 @@ bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
             // in case the response is not valid the validator will throw an excaption, triggering the abort
             validateRBProto(res, RBMsgType::UPLOAD, 3);
         }
-    } catch(RBException& e) {
+    } catch (RBException &e) {
         RBLog("File upload aborted: " + e.getMsg(), LogLevel::ERROR);
 
         RBRequest req;
@@ -131,7 +130,6 @@ bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
     return true;
 }
 
-
 void ClientFlow::remove_file(const std::shared_ptr<FileOperation> &file_operation) {
     if (file_operation->get_command() != FileCommand::REMOVE)
         throw std::logic_error("ClientFlow->Wrong type of FileOperation command");
@@ -149,8 +147,91 @@ void ClientFlow::remove_file(const std::shared_ptr<FileOperation> &file_operatio
         throw RBException("ClientFlow->Server Response Error: " + res.error());
 }
 
+void ClientFlow::get_server_files(const std::unordered_map<std::string, file_metadata> &server_map) {
+    for (const auto &pair : server_map) {
+        RBLog("Path: " + pair.first);
+        RBLog("Size: " + std::to_string(pair.second.size));
+        int num_segments = count_segments(pair.second.size);
+        RBLog("Segments: " + std::to_string(num_segments));
 
-std::unordered_map<std::string, file_metadata> ClientFlow::get_server_files() {
+        // ensure there's at least one segment, for empty files
+        if (!num_segments) num_segments++;
+
+        RBLog("Begin inbound transfer of " + std::to_string(num_segments) + " segments");
+
+        // Files larger than RB_MAX_SEGMENT_SIZE are requested in segments
+        for (int i = 0; i < num_segments; i++) {
+            if (!keep_going.load())
+                throw RBException("ClientFlow->client_stopped");
+
+            RBLog("Requesting segment " + std::to_string(i));
+
+            auto file_segment_info = std::make_unique<RBFileSegment>();
+            file_segment_info->set_path(pair.first);
+            file_segment_info->set_segmentid(i);
+
+            RBRequest restore_request;
+            restore_request.set_protover(3);
+            restore_request.set_type(RBMsgType::RESTORE);
+            restore_request.set_allocated_file_segment(file_segment_info.release());
+
+            auto res = client.run(restore_request, true);
+            validateRBProto(res, RBMsgType::RESTORE, 3);
+
+            // write segment received from server
+            const auto &file_segment = res.file_segment();
+            const auto &res_path = file_segment.path();  // CHECK not checking for forbidden paths
+            auto path = root_path / fs::path(res_path).lexically_normal();
+            if (path.filename().empty()) {
+                RBLog("Client >> The path provided is not formatted as a valid file path", LogLevel::ERROR);
+                throw RBException("ClientFlow->malformed_path");
+            }
+
+            auto segment_id = file_segment.segmentid();
+            if (segment_id != i) {
+                RBLog("Client >> Wrong segment received");
+                throw RBException("ClientFlow->wrong_segment");
+            }
+            // CHECK What if we don't check for wrong segment, but we accept them in
+            // any order and place them in a file at the right position, even if
+            // the file doesn't exist and the segment_id is greater than 0
+
+            // Create directories containing the file
+            fs::create_directories(path.parent_path());
+
+            // Create or overwrite file if it's the first segment (segment_id == 0), otherwise append to file
+            auto open_mode = segment_id == 0
+                ? std::ios::trunc
+                : std::ios::app;
+            std::ofstream ofs{path.string(), open_mode | std::ios::binary};
+
+            if (!ofs) {
+                RBLog("Client >> Cannot open file", LogLevel::ERROR);
+                // fs::remove(path); // CHECK Delete file?
+                throw RBException("ClientFlow->cannot_open_file");
+            }
+
+            for (const std::string &datum : file_segment.data())
+                ofs << datum;
+            ofs.close();
+
+            if (i != num_segments - 1) continue;
+
+            // CHECK This checks against original checksum received from server
+            // Check if checksums match
+            auto checksum = calculate_checksum(path);
+            if (checksum != pair.second.checksum) {
+                RBLog("Client >> Checksums don't match");  //", deleting file..."
+                // fs::remove(path); // CHECK Delete file?
+                throw RBException("ClientFlow->invalid_checksum");
+            }
+        }
+    }
+
+    // CHECK directly throwing an exception in order to prevent from doing the file_system_compare
+}
+
+std::unordered_map<std::string, file_metadata> ClientFlow::get_server_state() {
     RBRequest probe_all_request;
     probe_all_request.set_protover(3);
     probe_all_request.set_type(RBMsgType::PROBE);
@@ -159,14 +240,14 @@ std::unordered_map<std::string, file_metadata> ClientFlow::get_server_files() {
     validateRBProto(res, RBMsgType::PROBE, 3);
     if (!res.error().empty())
         throw RBException("ClientFlow->Server Response Error: " + res.error());
-    if(!res.has_probe_response())
+    if (!res.has_probe_response())
         throw RBException("ClientFlow->Missing probe response");
 
     auto server_files = res.probe_response().files();
     std::unordered_map<std::string, file_metadata> map;
 
     auto it = server_files.begin();
-    while(it != server_files.end()) {
+    while (it != server_files.end()) {
         map[it->first] = file_metadata{it->second.checksum(), it->second.size(), it->second.last_write_time()};
         it++;
     }
@@ -183,13 +264,13 @@ void ClientFlow::watcher_loop() {
 
             FileCommand command;
             std::string status_to_print;
-            if(status == FileStatus::REMOVED) {
+            if (status == FileStatus::REMOVED) {
                 command = FileCommand::REMOVE;
                 status_to_print = "REMOVED";
-            } else if(status == FileStatus::CREATED) {
+            } else if (status == FileStatus::CREATED) {
                 command = FileCommand::UPLOAD;
                 status_to_print = "CREATED";
-            } else if(status == FileStatus::MODIFIED) {
+            } else if (status == FileStatus::MODIFIED) {
                 command = FileCommand::UPLOAD;
                 status_to_print = "MODIFIED";
             }
@@ -206,12 +287,23 @@ void ClientFlow::watcher_loop() {
         }
     };
 
-    RBLog("Watcher >> Syncing...");
     // probing server
-    std::unordered_map server_files = get_server_files();
+    std::unordered_map server_files = get_server_state();
+
+    // restoring files from server's backup
+    if (restore_from_server) {
+        RBLog("Watcher >> Syncing client to server's state...", LogLevel::INFO);
+        get_server_files(server_files);
+        RBLog("Client >> RESTORE DONE", LogLevel::INFO);
+    }
+
+    RBLog("Watcher >> Syncing server to client's state...", LogLevel::INFO);
+    // scanning current files
+    file_manager.initial_scan();
     // comparing client and server files
     file_manager.file_system_compare(server_files, update_handler);
-    RBLog("Watcher >> Start monitoring");
+
+    RBLog("Watcher >> Start monitoring...", LogLevel::INFO);
     // running file watcher to monitor client fs
     file_manager.start_monitoring(update_handler);
 }
@@ -221,40 +313,40 @@ void ClientFlow::sender_loop() {
     int max_attempts = 3;
     try {
         while (true) {
-            if(attempt_count == max_attempts) {
-                RBLog("Reached max attempts number. Terminating client", LogLevel::ERROR); // TODO Solve client not terminating
+            if (attempt_count == max_attempts) {
+                RBLog("Reached max attempts number. Terminating client", LogLevel::ERROR);  // TODO Solve client not terminating
                 stop();
                 break;
-            } else if( attempt_count > 0 ) {
+            } else if (attempt_count > 0) {
                 // from the second attempt the thread have to wait a little bit in order to not solve the problem
                 std::this_thread::sleep_for(std::chrono::milliseconds(3000));
             }
 
             auto op = out_queue.get_file_operation();
-            const auto & path = op->get_path();
+            const auto &path = op->get_path();
 
             if (!keep_going) return;
 
             try {
                 switch (op->get_command()) {
-                    case FileCommand::UPLOAD:
-                        RBLog("Client >> UPLOADING: " + path, LogLevel::INFO);
-                        if (upload_file(op)) 
-                            RBLog("Client >> UPLOADED: " + path , LogLevel::INFO);
-                        else
-                            RBLog("Client >> SKIPPED: " + path, LogLevel::DEBUG);
-                        break;
-                    case FileCommand::REMOVE:
-                        RBLog("Client >> REMOVING: " + path, LogLevel::INFO);
-                        remove_file(op);
-                        RBLog("Client >> REMOVED: " + path, LogLevel::INFO);
-                        break;
-                    default:
-                        RBLog("Client >> unhandled file operation!", LogLevel::ERROR);
-                        break;
+                case FileCommand::UPLOAD:
+                    RBLog("Client >> UPLOADING: " + path, LogLevel::INFO);
+                    if (upload_file(op))
+                        RBLog("Client >> UPLOADED: " + path, LogLevel::INFO);
+                    else
+                        RBLog("Client >> SKIPPED: " + path, LogLevel::DEBUG);
+                    break;
+                case FileCommand::REMOVE:
+                    RBLog("Client >> REMOVING: " + path, LogLevel::INFO);
+                    remove_file(op);
+                    RBLog("Client >> REMOVED: " + path, LogLevel::INFO);
+                    break;
+                default:
+                    RBLog("Client >> unhandled file operation!", LogLevel::ERROR);
+                    break;
                 }
 
-                attempt_count = 0; 								// resetting attempt count
+                attempt_count = 0;                              // resetting attempt count
                 out_queue.remove_file_operation(op->get_id());  // deleting file operation because completed correctly
             } catch (RBException &e) {
                 attempt_count++;
@@ -267,7 +359,7 @@ void ClientFlow::sender_loop() {
             }
         }
     } catch (RBException &e) {
-        if (keep_going) 
+        if (keep_going)
             RBLog("Client >> unexpected termination of sender thread: " + e.getMsg());
     } catch (std::exception &e) {
         RBLog("Client >> unexpected termination of sender thread: " + std::string(e.what()));
@@ -287,9 +379,8 @@ void ClientFlow::start() {
     }
 
     RBLog("ClientFLow >> Starting file watcher...", LogLevel::INFO);
-    file_manager.initial_scan();
 
-    // thread for keep running file watcher and inital probe
+    // thread for making some initial operations and then keeping file watcher running
     watcher_thread = std::thread([this]() { watcher_loop(); });
 
     // threads for handling file operation: sending requests and receiving responses
@@ -299,7 +390,7 @@ void ClientFlow::start() {
     }
 
     RBLog("ClientFLow >> RB client started!", LogLevel::INFO);
-    
+
     std::unique_lock<std::mutex> waiter_lk(waiter);
     waiter_cv.wait(waiter_lk, [this]() { return !keep_going; });
 
@@ -313,10 +404,11 @@ void ClientFlow::start() {
     out_queue.stop();
 
     RBLog("ClientFLow >> Waiting for sender threads to finish...", LogLevel::INFO);
-    for (auto &s : senders_pool){
+    for (auto &s : senders_pool) {
         try {
             s.join();
-        } catch (std::exception &e) {}
+        } catch (std::exception &e) {
+        }
     }
 }
 

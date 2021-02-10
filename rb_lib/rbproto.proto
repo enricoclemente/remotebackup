@@ -7,6 +7,7 @@ enum RBMsgType {
   PROBE = 3;
   ABORT = 4;
   RESTORE = 5;
+  NOP = 6;
 }
 
 message RBFileMetadata {

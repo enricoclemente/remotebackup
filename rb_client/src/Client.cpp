@@ -41,10 +41,11 @@ RBResponse Client::run(RBRequest &req, bool force_single) {
     } else {
         std::unique_lock ul(pcp_m);
         while(true) {
-            for (auto &p : protochan_pool) {
+            for (auto ps : protochan_pool) {
                 try {
                     ul.unlock();
-                    auto res = p->run(req, true);
+                    // true on doTry throws exception if busy
+                    auto res = ps->run(req, true);
                     pcp_cv.notify_one();
                     return res;
                 } catch (std::runtime_error &e) {
@@ -70,14 +71,20 @@ ProtoChannel Client::open_channel() {
 }
 
 void Client::clean_protochan_pool() {
-    std::unique_lock ul(pcp_m);
     protochan_pool.remove_if([this](auto ps) {
         auto now = std::chrono::system_clock::now();
-        auto timeout = ps->last_use + std::chrono::seconds(30);
-        if (now < timeout || !ps->mutex.try_lock()) return false;
+        auto timeout = ps->last_use + std::chrono::seconds(PROTOCHANNEL_POOL_TIMEOUT);
+        if (now < timeout) return false;
         RBLog("Client >> Cleaning up unused ProtoChannel", LogLevel::DEBUG);
-        std::lock_guard(ps->mutex, std::adopt_lock);
-        ps->close();
+        RBRequest nop_req;
+        nop_req.set_type(RBMsgType::NOP);
+        nop_req.set_protover(3);
+        nop_req.set_final(true);
+        try {
+            ps->run(nop_req, true);
+        } catch (std::runtime_error &e) {
+            return false;
+        }
         return true;
     });
     pcp_cv.notify_all();
@@ -113,8 +120,9 @@ RBResponse ProtoChannel::run(RBRequest &req, bool do_try) {
 
     if (req.final()) socket.close();
 
-    if (!socket.is_open()) {
+    if (!socket.is_open() && client.pcp_m.try_lock()) {
         try {
+            std::unique_lock ul(client.pcp_m, std::adopt_lock);
             client.protochan_pool.remove(shared_from_this());
         } catch (std::bad_weak_ptr & e) {
             // we surely aren't in the protochan pool...

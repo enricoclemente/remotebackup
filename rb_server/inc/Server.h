@@ -29,9 +29,6 @@ public:
 
   static void serve(sockPtr_t sock, RBSrvCallback);
 
-  bool accumulate_data(const RBRequest&);
-  std::string get_data();
-
 private:
   Service(sockPtr_t sock, RBSrvCallback);
 

@@ -53,51 +53,6 @@ void Service::handleClient() {
     }
 }
 
-bool Service::accumulate_data(const RBRequest& req) {
-    auto size = req.file_segment().file_metadata().size();
-    if (size == 0) return false;
-
-    if (file_data.size == 0)
-        file_data.size = size;
-    else if (file_data.size != size)
-        return false;
-
-    auto last_write_time = req.file_segment().file_metadata().last_write_time();
-
-    if (file_data.last_write_time == 0)
-        file_data.last_write_time = last_write_time;
-    else if (file_data.last_write_time != last_write_time)
-        return false;
-
-    std::stringstream ss;
-    auto data = req.file_segment().data();
-    for(const std::string& datum : data)
-        ss << datum;
-    
-    auto segment_id = req.file_segment().segmentid();
-    if (file_data.segment_map.count(segment_id) != 0)
-        return false;
-    
-    file_data.segment_map[segment_id] = ss.str();
-
-    return true;
-}
-
-std::string Service::get_data() {
-    std::stringstream ss;
-    std::map<uint64_t, std::string>::iterator it;
-    for (it = file_data.segment_map.begin(); it != file_data.segment_map.end(); it++) {
-        ss << it->second;
-    }
-
-    // Reset file data
-    file_data.segment_map.clear();
-    file_data.size = 0;
-    file_data.last_write_time = 0;
-    
-    return ss.str();
-}
-
 using asio::ip::tcp;
 
 Server::Server(unsigned short port_num, const RBSrvCallback & callback)

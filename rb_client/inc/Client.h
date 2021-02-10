@@ -14,6 +14,8 @@
 #include "RBHelpers.h"
 #include "rbproto.pb.h"
 
+#define PROTOCHANNEL_POOL_TIMEOUT 5
+
 class ProtoChannel;
 
 class Client {
@@ -53,7 +55,7 @@ private:
 
     void clean_protochan_pool();
     std::thread watchdog = make_watchdog(
-        std::chrono::seconds(10),
+        std::chrono::seconds(PROTOCHANNEL_POOL_TIMEOUT),
         [this]() { return keep_going.load(); },
         [this]() { clean_protochan_pool(); }
     );

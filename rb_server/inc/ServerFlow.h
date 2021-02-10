@@ -19,7 +19,6 @@ public:
 
     void start() {
         db.open();
-        test_all();
         add_u1();
         srv.start();
     }
@@ -194,6 +193,9 @@ private:
 
                 fsm.read_file_segment(username, req, res);
                 res.set_success(true);
+            } else if (req.type() == RBMsgType::NOP) {
+                res.set_success(true);
+                //NOP
             } else {
                 throw RBException("invalid_request");
             }

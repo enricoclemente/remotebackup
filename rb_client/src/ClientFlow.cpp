@@ -1,5 +1,45 @@
 #include "ClientFlow.h"
 
+ClientFlow::ClientFlowConsumer::ClientFlowConsumer(Client &client, std::function<void(ClientFlowConsumer&)> handler) 
+    : client(client), sender([handler, this](){ 
+        handler(*this);
+    }) {}
+
+void ClientFlow::ClientFlowConsumer::clear_protochannel() {
+    if (pc == nullptr) return;
+    if (pc->is_open()) {
+        RBRequest nop_req;
+        nop_req.set_type(RBMsgType::NOP);
+        nop_req.set_protover(3);
+        nop_req.set_final(true);
+        pc->run(nop_req, true);
+    }
+    pc = nullptr;
+}
+
+ProtoChannel & ClientFlow::ClientFlowConsumer::get_protochannel() {
+    std::lock_guard lg(m);
+    if (pc == nullptr || !pc->is_open()) {
+        pc = client.open_channel();
+    }
+    last_use = std::chrono::system_clock::now();
+    return *pc;
+}
+
+void ClientFlow::ClientFlowConsumer::clean_protochannel() {
+    std::lock_guard lg(m);
+    auto timeout = last_use + std::chrono::seconds(PROTOCHANNEL_POOL_TIMEOUT_SECS);
+    auto now = std::chrono::system_clock::now();
+    if (now > timeout) {
+        RBLog("ClientFlow >> Cleaning unused ProtoChannel...", LogLevel::DEBUG);
+        clear_protochannel();
+    }
+}
+
+void ClientFlow::ClientFlowConsumer::join() {
+    sender.join();
+}
+
 ClientFlow::ClientFlow(
     const std::string &ip,
     const std::string &port,
@@ -16,9 +56,16 @@ ClientFlow::ClientFlow(
       password(password),
       restore_from_server(restore_option),
       senders_pool_n(senders_pool_n),
+      watchdog(make_watchdog(
+        std::chrono::seconds(PROTOCHANNEL_POOL_TIMEOUT_SECS),
+        [this]() { return keep_going.load(); },
+        [this]() { 
+            for(auto &cfc : senders_pool) cfc->clean_protochannel();
+        }
+      )),
       file_manager(root_path, watcher_interval) {}
 
-bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operation) {
+bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operation, ProtoChannel &pc) {
     if (file_operation->get_command() != FileCommand::UPLOAD)
         throw std::logic_error("ClientFlow->Wrong type of FileOperation command");
 
@@ -106,7 +153,7 @@ bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
             file_segment->set_allocated_file_metadata(file_metadata.release());
             file_upload_request.set_allocated_file_segment(file_segment.release());
 
-            auto res = client.run(file_upload_request);
+            auto res = pc.run(file_upload_request);
             // in case the response is not valid the validator will throw an excaption, triggering the abort
             validateRBProto(res, RBMsgType::UPLOAD, 3);
         }
@@ -130,7 +177,7 @@ bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
     return true;
 }
 
-void ClientFlow::remove_file(const std::shared_ptr<FileOperation> &file_operation) {
+void ClientFlow::remove_file(const std::shared_ptr<FileOperation> &file_operation, ProtoChannel &pc) {
     if (file_operation->get_command() != FileCommand::REMOVE)
         throw std::logic_error("ClientFlow->Wrong type of FileOperation command");
 
@@ -141,7 +188,7 @@ void ClientFlow::remove_file(const std::shared_ptr<FileOperation> &file_operatio
     file_segment->set_path(file_operation->get_path());
     file_remove_request.set_allocated_file_segment(file_segment.release());
 
-    auto res = client.run(file_remove_request);
+    auto res = pc.run(file_remove_request);
     validateRBProto(res, RBMsgType::REMOVE, 3);
     if (!res.success())
         throw RBException("ClientFlow->Server Response Error: " + res.error());
@@ -175,7 +222,7 @@ void ClientFlow::get_server_files(const std::unordered_map<std::string, file_met
             restore_request.set_type(RBMsgType::RESTORE);
             restore_request.set_allocated_file_segment(file_segment_info.release());
 
-            auto res = client.run(restore_request, true);
+            auto res = client.run(restore_request);
             validateRBProto(res, RBMsgType::RESTORE, 3);
 
             // write segment received from server
@@ -236,7 +283,7 @@ std::unordered_map<std::string, file_metadata> ClientFlow::get_server_state() {
     probe_all_request.set_protover(3);
     probe_all_request.set_type(RBMsgType::PROBE);
 
-    auto res = client.run(probe_all_request, true);
+    auto res = client.run(probe_all_request);
     validateRBProto(res, RBMsgType::PROBE, 3);
     if (!res.error().empty())
         throw RBException("ClientFlow->Server Response Error: " + res.error());
@@ -308,7 +355,7 @@ void ClientFlow::watcher_loop() {
     file_manager.start_monitoring(update_handler);
 }
 
-void ClientFlow::sender_loop() {
+void ClientFlow::sender_loop(ClientFlowConsumer &cfc) {
     int attempt_count = 0;
     int max_attempts = 3;
     try {
@@ -331,14 +378,14 @@ void ClientFlow::sender_loop() {
                 switch (op->get_command()) {
                 case FileCommand::UPLOAD:
                     RBLog("Client >> UPLOADING: " + path, LogLevel::INFO);
-                    if (upload_file(op))
+                    if (upload_file(op, cfc.get_protochannel()))
                         RBLog("Client >> UPLOADED: " + path, LogLevel::INFO);
                     else
                         RBLog("Client >> SKIPPED: " + path, LogLevel::DEBUG);
                     break;
                 case FileCommand::REMOVE:
                     RBLog("Client >> REMOVING: " + path, LogLevel::INFO);
-                    remove_file(op);
+                    remove_file(op, cfc.get_protochannel());
                     RBLog("Client >> REMOVED: " + path, LogLevel::INFO);
                     break;
                 default:
@@ -386,7 +433,10 @@ void ClientFlow::start() {
     // threads for handling file operation: sending requests and receiving responses
     for (int i = 0; i < senders_pool_n; i++) {
         RBLog("Main >> Starting sender thread " + std::to_string(i), LogLevel::INFO);
-        senders_pool.emplace_back(std::thread([this]() { sender_loop(); }));
+        senders_pool.emplace_back(std::make_unique<ClientFlowConsumer>(
+            client, 
+            [this](ClientFlowConsumer &cfc) { sender_loop(cfc); }
+        ));
     }
 
     RBLog("ClientFLow >> RB client started!", LogLevel::INFO);
@@ -406,7 +456,7 @@ void ClientFlow::start() {
     RBLog("ClientFLow >> Waiting for sender threads to finish...", LogLevel::INFO);
     for (auto &s : senders_pool) {
         try {
-            s.join();
+            s->join();
         } catch (std::exception &e) {
         }
     }

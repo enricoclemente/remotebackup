@@ -3,8 +3,25 @@
 #include "OutputQueue.h"
 #include <mutex>
 
+#define PROTOCHANNEL_POOL_TIMEOUT_SECS 5
+
 class ClientFlow {
 private:
+    class ClientFlowConsumer {
+    private:
+        std::thread sender;
+        std::shared_ptr<ProtoChannel> pc;
+        Client &client;
+        std::chrono::system_clock::time_point last_use;
+        std::mutex m;
+        void clear_protochannel();
+    public:
+        ClientFlowConsumer(Client &, std::function<void(ClientFlowConsumer&)>);
+        ProtoChannel & get_protochannel();
+        void clean_protochannel();
+        void join();
+    };
+
     Client client;
     OutputQueue out_queue;
     FileManager file_manager;
@@ -19,8 +36,8 @@ private:
     std::thread watcher_thread;
     void watcher_loop();
 
-    std::vector<std::thread> senders_pool;
-    void sender_loop();
+    std::vector<std::unique_ptr<ClientFlowConsumer>> senders_pool;
+    void sender_loop(ClientFlowConsumer &cfc);
 
     std::atomic<bool> keep_going = true;
     std::mutex waiter;
@@ -28,8 +45,10 @@ private:
 
     std::unordered_map<std::string, file_metadata> get_server_state();
     void get_server_files(const std::unordered_map<std::string, file_metadata>&);
-    bool upload_file(const std::shared_ptr<FileOperation> &file_operationh);
-    void remove_file(const std::shared_ptr<FileOperation> &file_operation);
+    bool upload_file(const std::shared_ptr<FileOperation> &file_operationh, ProtoChannel &pc);
+    void remove_file(const std::shared_ptr<FileOperation> &file_operation, ProtoChannel &pc);
+
+    std::thread watchdog;
 
 public:
     ClientFlow(

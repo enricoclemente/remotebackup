@@ -17,17 +17,18 @@ void ClientFlow::ClientFlowConsumer::clear_protochannel() {
     pc = nullptr;
 }
 
-ProtoChannel & ClientFlow::ClientFlowConsumer::get_protochannel() {
+std::shared_ptr<ProtoChannel> ClientFlow::ClientFlowConsumer::get_protochannel() {
     std::lock_guard lg(m);
     if (pc == nullptr || !pc->is_open()) {
         pc = client.open_channel();
     }
     last_use = std::chrono::system_clock::now();
-    return *pc;
+    return pc;
 }
 
 void ClientFlow::ClientFlowConsumer::clean_protochannel() {
     std::lock_guard lg(m);
+    if (pc == nullptr) return;
     auto timeout = last_use + std::chrono::seconds(PROTOCHANNEL_POOL_TIMEOUT_SECS);
     auto now = std::chrono::system_clock::now();
     if (now > timeout) {
@@ -65,7 +66,7 @@ ClientFlow::ClientFlow(
       )),
       file_manager(root_path, watcher_interval) {}
 
-bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operation, ProtoChannel &pc) {
+bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operation, ClientFlowConsumer & cfc) {
     if (file_operation->get_command() != FileCommand::UPLOAD)
         throw std::logic_error("ClientFlow->Wrong type of FileOperation command");
 
@@ -153,7 +154,7 @@ bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
             file_segment->set_allocated_file_metadata(file_metadata.release());
             file_upload_request.set_allocated_file_segment(file_segment.release());
 
-            auto res = pc.run(file_upload_request);
+            auto res = cfc.get_protochannel()->run(file_upload_request);
             // in case the response is not valid the validator will throw an excaption, triggering the abort
             validateRBProto(res, RBMsgType::UPLOAD, 3);
         }
@@ -177,7 +178,7 @@ bool ClientFlow::upload_file(const std::shared_ptr<FileOperation> &file_operatio
     return true;
 }
 
-void ClientFlow::remove_file(const std::shared_ptr<FileOperation> &file_operation, ProtoChannel &pc) {
+void ClientFlow::remove_file(const std::shared_ptr<FileOperation> &file_operation, ClientFlowConsumer &cfc) {
     if (file_operation->get_command() != FileCommand::REMOVE)
         throw std::logic_error("ClientFlow->Wrong type of FileOperation command");
 
@@ -188,7 +189,7 @@ void ClientFlow::remove_file(const std::shared_ptr<FileOperation> &file_operatio
     file_segment->set_path(file_operation->get_path());
     file_remove_request.set_allocated_file_segment(file_segment.release());
 
-    auto res = pc.run(file_remove_request);
+    auto res = cfc.get_protochannel()->run(file_remove_request);
     validateRBProto(res, RBMsgType::REMOVE, 3);
     if (!res.success())
         throw RBException("ClientFlow->Server Response Error: " + res.error());
@@ -378,14 +379,14 @@ void ClientFlow::sender_loop(ClientFlowConsumer &cfc) {
                 switch (op->get_command()) {
                 case FileCommand::UPLOAD:
                     RBLog("Client >> UPLOADING: " + path, LogLevel::INFO);
-                    if (upload_file(op, cfc.get_protochannel()))
+                    if (upload_file(op, cfc))
                         RBLog("Client >> UPLOADED: " + path, LogLevel::INFO);
                     else
                         RBLog("Client >> SKIPPED: " + path, LogLevel::DEBUG);
                     break;
                 case FileCommand::REMOVE:
                     RBLog("Client >> REMOVING: " + path, LogLevel::INFO);
-                    remove_file(op, cfc.get_protochannel());
+                    remove_file(op, cfc);
                     RBLog("Client >> REMOVED: " + path, LogLevel::INFO);
                     break;
                 default:

@@ -17,7 +17,7 @@ private:
         void clear_protochannel();
     public:
         ClientFlowConsumer(Client &, std::function<void(ClientFlowConsumer&)>);
-        ProtoChannel & get_protochannel();
+        std::shared_ptr<ProtoChannel> get_protochannel();
         void clean_protochannel();
         void join();
     };
@@ -45,8 +45,8 @@ private:
 
     std::unordered_map<std::string, file_metadata> get_server_state();
     void get_server_files(const std::unordered_map<std::string, file_metadata>&);
-    bool upload_file(const std::shared_ptr<FileOperation> &file_operationh, ProtoChannel &pc);
-    void remove_file(const std::shared_ptr<FileOperation> &file_operation, ProtoChannel &pc);
+    bool upload_file(const std::shared_ptr<FileOperation> &file_operationh, ClientFlowConsumer &cfc);
+    void remove_file(const std::shared_ptr<FileOperation> &file_operation, ClientFlowConsumer &cfc);
 
     std::thread watchdog;
 

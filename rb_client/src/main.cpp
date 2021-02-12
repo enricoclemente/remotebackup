@@ -18,14 +18,17 @@ void handle_sig_int(int n) {
 
 int main(int argc, char **argv) {
 
+    int n_cpu_thrds = std::thread::hardware_concurrency();
+    if (n_cpu_thrds > 4) n_cpu_thrds = 4;
+
     ConfigMap config;
     config["root_folder"] = "./data";
     config["port"] = "8888";
     config["host"] = "localhost";
-    config["username"] = "u1";
-    config["password"] = "u1";
+    config["username"] = "";
+    config["password"] = "";
     config["watcher_interval"] = "3000";
-    config["sender_threads_num"] = std::to_string(std::thread::hardware_concurrency());
+    config["sender_threads_num"] = std::to_string(n_cpu_thrds);
 
     RBLog("Main >> Reading config...", LogLevel::INFO);
     config.load(CONFIG_FILE_PATH);

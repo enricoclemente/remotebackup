@@ -38,6 +38,7 @@ void ClientFlow::ClientFlowConsumer::clean_protochannel() {
 }
 
 void ClientFlow::ClientFlowConsumer::join() {
+    clear_protochannel();
     sender.join();
 }
 

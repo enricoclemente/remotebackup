@@ -19,7 +19,6 @@ public:
 
     void start() {
         db.open();
-        add_u1();
         srv.start();
     }
 

@@ -3,9 +3,7 @@
 
 using boost::asio::ip::tcp;
 
-Client::Client(const std::string &ip, const std::string &port, int timeout, int n)
-    :timeout(timeout) {
-    if (ec.value()) throw ec;
+Client::Client(const std::string &ip, const std::string &port, int n) {
     tcp::resolver resolver(io_service);
     tcp::resolver::query query(ip, port);
     endpoints = resolver.resolve(query);

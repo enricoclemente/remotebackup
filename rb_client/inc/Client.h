@@ -18,7 +18,6 @@ public:
     Client(
         const std::string & ip,
         const std::string & port,
-        int timeout, 
         int protochan_pool_max_n
     );
 
@@ -33,7 +32,6 @@ private:
     boost::system::error_code ec;
     boost::asio::io_service io_service;
     std::string token;
-    int timeout;
 };
 
 using boost::asio::ip::tcp;

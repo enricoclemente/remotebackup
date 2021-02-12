@@ -59,7 +59,6 @@ public:
         const std::string &password,
         bool restore_from_server,
         std::chrono::system_clock::duration watcher_interval,
-        int socket_timeout,
         int senders_pool_n
     );
 

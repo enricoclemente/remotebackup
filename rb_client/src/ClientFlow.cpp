@@ -49,9 +49,8 @@ ClientFlow::ClientFlow(
     const std::string &password,
     bool restore_option,
     std::chrono::system_clock::duration watcher_interval,
-    int socket_timeout,
     int senders_pool_n)
-    : client(ip, port, socket_timeout, senders_pool_n),
+    : client(ip, port, senders_pool_n),
       root_path(root_path),
       username(username),
       password(password),

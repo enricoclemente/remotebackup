@@ -24,9 +24,8 @@ int main(int argc, char **argv) {
     config["host"] = "localhost";
     config["username"] = "u1";
     config["password"] = "u1";
-    config["connection_timeout"] = "5000";
     config["watcher_interval"] = "3000";
-    config["sender_threads_num"] = "4";
+    config["sender_threads_num"] = std::to_string(std::thread::hardware_concurrency());
 
     RBLog("Main >> Reading config...", LogLevel::INFO);
     config.load(CONFIG_FILE_PATH);
@@ -49,7 +48,6 @@ int main(int argc, char **argv) {
         config["username"], config["password"],
         restore_option,
         std::chrono::milliseconds(config.get_numeric("watcher_interval")),
-        config.get_numeric("connection_timeout"),
         config.get_numeric("sender_threads_num")
     );
 

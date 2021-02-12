@@ -357,8 +357,6 @@ void ClientFlow::watcher_loop() {
 }
 
 void ClientFlow::sender_loop(ClientFlowConsumer &cfc) {
-    int attempt_count = 0;
-    int max_attempts = 3;
     try {
         while (true) {
             if (attempt_count == max_attempts) {
@@ -453,6 +451,13 @@ void ClientFlow::start() {
     watcher_thread.join();
 
     out_queue.stop();
+
+    std::thread killer([]() {
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+        RBLog("Graceful termination failed, will now halt.", LogLevel::INFO);
+        exit(1);
+    });
+    killer.detach();
 
     RBLog("ClientFLow >> Waiting for sender threads to finish...", LogLevel::INFO);
     for (auto &s : senders_pool) {

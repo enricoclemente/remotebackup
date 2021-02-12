@@ -43,6 +43,9 @@ private:
     std::mutex waiter;
     std::condition_variable waiter_cv;
 
+    const int max_attempts = 5;
+    std::atomic<int> attempt_count = 0;
+
     std::unordered_map<std::string, file_metadata> get_server_state();
     void get_server_files(const std::unordered_map<std::string, file_metadata>&);
     bool upload_file(const std::shared_ptr<FileOperation> &file_operationh, ClientFlowConsumer &cfc);

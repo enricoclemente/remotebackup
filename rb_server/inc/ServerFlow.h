@@ -99,12 +99,12 @@ private:
         try {
             if (req.type() == RBMsgType::AUTH) {
                 validateRBProto(req, RBMsgType::AUTH, 3);
-                RBLog("RB >> AUTH request received", LogLevel::INFO);
 
                 std::string username = req.auth_request().user();
                 std::string password = req.auth_request().pass();
 
                 auth_controller.auth_by_credentials(username, password);
+                RBLog("RB >> USER <" + username + "> authenticated!", LogLevel::INFO);
                 
                 std::string token = auth_controller.generate_token(username);
                 auto auth_response = std::make_unique<RBAuthResponse>();
@@ -113,11 +113,10 @@ private:
                 res.set_success(true);
             } else if (req.type() == RBMsgType::UPLOAD) {
                 validateRBProto(req, RBMsgType::UPLOAD, 3);
-                RBLog("RB >> UPLOAD request received", LogLevel::INFO);
 
                 // Authenticate the request
                 auto username = auth_controller.auth_get_user_by_token(req.token());
-                RBLog("RB >> Request authenticated successfully");
+                RBLog("RB >> UPLOAD request received from <" + username + ">", LogLevel::INFO);
 
                 try {
                     std::string file_token = 
@@ -132,11 +131,10 @@ private:
 
             } else if (req.type() == RBMsgType::REMOVE) {
                 validateRBProto(req, RBMsgType::REMOVE, 3);
-                RBLog("RB >> REMOVE request received", LogLevel::INFO);
 
                 // Authenticate the request
                 auto username = auth_controller.auth_get_user_by_token(req.token());
-                RBLog("RB >> Request authenticated successfully");
+                RBLog("RB >> REMOVE request received from <" + username + ">", LogLevel::INFO);
 
                 try {
                     std::string file_token = 
@@ -150,11 +148,10 @@ private:
                 }
             } else if (req.type() == RBMsgType::ABORT) {
                 validateRBProto(req, RBMsgType::ABORT, 3);
-                RBLog("RB >> ABORT request received", LogLevel::INFO);
 
                 // Authenticate the request
                 auto username = auth_controller.auth_get_user_by_token(req.token());
-                RBLog("RB >> Request authenticated successfully");
+                RBLog("RB >> ABORT request received from <" + username + ">", LogLevel::INFO);
 
                 try {
                     std::string file_token = 
@@ -168,11 +165,10 @@ private:
                 }
             } else if (req.type() == RBMsgType::PROBE) {
                 validateRBProto(req, RBMsgType::PROBE, 3);
-                RBLog("RB >> PROBE request received", LogLevel::INFO);
 
                 // Authenticate the request
                 auto username = auth_controller.auth_get_user_by_token(req.token());
-                RBLog("RB >> Request authenticated successfully");
+                RBLog("RB >> PROBE request received from <" + username + ">", LogLevel::INFO);
 
                 auto files = fsm.get_files(username);
 
@@ -184,17 +180,16 @@ private:
                 res.set_success(true);
             } else if (req.type() == RBMsgType::RESTORE) {
                 validateRBProto(req, RBMsgType::RESTORE, 3);
-                RBLog("RB >> RESTORE request received", LogLevel::INFO);
 
                 // Authenticate the request
                 auto username = auth_controller.auth_get_user_by_token(req.token());
-                RBLog("RB >> Request authenticated successfully");
+                RBLog("RB >> RESTORE request received from <" + username + ">", LogLevel::INFO);
 
                 fsm.read_file_segment(username, req, res);
                 res.set_success(true);
             } else if (req.type() == RBMsgType::NOP) {
                 res.set_success(true);
-                //NOP
+                RBLog("RB >> NOP", LogLevel::INFO);
             } else {
                 throw RBException("invalid_request");
             }

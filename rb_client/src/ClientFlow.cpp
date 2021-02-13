@@ -447,17 +447,10 @@ void ClientFlow::start() {
     keep_going = false;
     RBLog("ClientFLow >> Stopping file watcher...", LogLevel::INFO);
     file_manager.stop_monitoring();
+    RBLog("ClientFLow >> Stopping output queue...", LogLevel::INFO);
+    out_queue.stop();
     RBLog("ClientFLow >> Waiting for watcher thread to finish...", LogLevel::INFO);
     watcher_thread.join();
-
-    out_queue.stop();
-
-    std::thread killer([]() {
-        std::this_thread::sleep_for(std::chrono::seconds(10));
-        RBLog("Graceful termination failed, will now halt.", LogLevel::INFO);
-        exit(1);
-    });
-    killer.detach();
 
     RBLog("ClientFLow >> Waiting for sender threads to finish...", LogLevel::INFO);
     for (auto &s : senders_pool) {

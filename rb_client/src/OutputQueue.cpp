@@ -1,13 +1,15 @@
 #include "OutputQueue.h"
 
 // Output Queue Class implementations
-OutputQueue::OutputQueue() : id_counter(0) {};
+OutputQueue::OutputQueue() : id_counter(0){};
 
-
-void OutputQueue::add_file_operation(const std::string &path, file_metadata metadata, FileCommand command) {
+void OutputQueue::add_file_operation(const std::string& path, file_metadata metadata, FileCommand command) {
     std::unique_lock ul(m);
 
-    cv.wait(ul, [this]() { return queue.size() < 100; });
+    cv.wait(ul, [this]() { return queue.size() < 100 || !keep_going; });
+
+    if (!keep_going) throw RBException("stop");
+    
     auto fo = std::make_shared<FileOperation>(path, metadata, command, id_counter);
 
     // if there are old operations on the same file, overwrite them with the new one if they are not in processing
@@ -31,12 +33,11 @@ void OutputQueue::add_file_operation(const std::string &path, file_metadata meta
 std::shared_ptr<FileOperation> OutputQueue::get_file_operation() {
     std::unique_lock ul(m);
     auto not_found = processing_files.end();
-    
-    while(true) {
+
+    while (true) {
         if (!keep_going) throw RBException("stop");
         for (const auto& val : queue) {
-            if (!(val->get_processing())
-                && processing_files.find(val->get_path()) == not_found) {
+            if (!(val->get_processing()) && processing_files.find(val->get_path()) == not_found) {
                 val->set_processing(true);
                 processing_files.emplace(val->get_path());
                 return val;
@@ -45,7 +46,6 @@ std::shared_ptr<FileOperation> OutputQueue::get_file_operation() {
         cv.wait(ul);
     }
 }
-
 
 bool OutputQueue::free_file_operation(int id) {
     std::unique_lock ul(m);
@@ -63,15 +63,14 @@ bool OutputQueue::free_file_operation(int id) {
     return false;
 }
 
-
 bool OutputQueue::remove_file_operation(int id) {
     std::unique_lock ul(m);
     cv.wait(ul, [this]() { return queue.size() > 0; });
-    
-    queue.remove_if([&](auto &e) {
+
+    queue.remove_if([&](auto& e) {
         if (e->get_id() == id) {
             processing_files.erase(e->get_path());
-            if(queue.size() < 75)
+            if (queue.size() < 75)
                 cv.notify_all();
             return true;
         }
@@ -81,16 +80,13 @@ bool OutputQueue::remove_file_operation(int id) {
     return false;
 }
 
-
 int OutputQueue::size() {
     std::lock_guard lg(m);
     return queue.size();
 }
 
-
 // File Operation Class implementations
-FileOperation::FileOperation(std::string path, file_metadata metadata, FileCommand command, int id) :
-        path(std::move(path)), command(command), metadata(metadata), id(id) {
+FileOperation::FileOperation(std::string path, file_metadata metadata, FileCommand command, int id) : path(std::move(path)), command(command), metadata(metadata), id(id) {
     processing = false;
     abort = false;
 }
@@ -126,6 +122,3 @@ bool FileOperation::get_processing() const {
 bool FileOperation::get_abort() const {
     return abort.load();
 }
-
-
-

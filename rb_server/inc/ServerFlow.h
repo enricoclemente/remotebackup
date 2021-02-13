@@ -11,7 +11,7 @@ class ServerFlow {
 public:
     ServerFlow(unsigned short port, int workersLimit, const std::string & rootPath) 
         : svc_map(workersLimit), fsm(rootPath), 
-        srv(port, [&](RBRequest req, std::shared_ptr<Service> worker) {
+        srv(port, workersLimit,[&](RBRequest req, std::shared_ptr<Service> worker) {
             return flow(req, worker);
         }) {
             start();
@@ -26,7 +26,7 @@ public:
         try {
             auth_controller.add_user("u1", "u1");
         } catch (std::exception &e) {
-            RBLog("SRV >> user u1 already exists");
+            RBLog("ServerFlow >> >> user u1 already exists");
         }
     }
 
@@ -71,17 +71,17 @@ public:
     }
 
     void stop() {
-        RBLog("[SRV] Stopping server...", LogLevel::INFO);
+        RBLog("ServerFlow >> Stopping server...", LogLevel::INFO);
         srv.stop();
         db.close();
     }
 
     void clear() {
         stop();
-        RBLog("[SRV] Clearing server...", LogLevel::INFO);
+        RBLog("ServerFlow >> Clearing server...", LogLevel::INFO);
         fsm.clear();
         db.clear();
-        RBLog("[SRV] Server cleared!", LogLevel::INFO);
+        RBLog("ServerFlow >> Server cleared!", LogLevel::INFO);
     }
 private:
     Server srv;
@@ -91,6 +91,7 @@ private:
     AuthController & auth_controller = AuthController::get_instance();
 
     RBResponse inline flow(RBRequest req, std::shared_ptr<Service> worker) {
+        if (!srv.is_running()) throw RBException("Server stopped");
         RBResponse res;
         res.set_success(false);
         res.set_protover(3);

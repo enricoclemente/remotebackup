@@ -5,7 +5,6 @@
 
 #include "ServerFlow.h"
 
-
 std::function<void(void)> sig_int_handler;
 
 void handle_sig_int(int n) {
@@ -16,7 +15,11 @@ std::atomic<bool> keep_going = true;
 
 int main() {
 
-    ServerFlow server_logic(8888, 8, "./rbserver_data");
+    ServerFlow server_logic(
+        8888,
+        std::thread::hardware_concurrency(),
+        "./rbserver_data"
+    );
     
     void (*original_sigint_handler)(int) = signal(SIGINT, handle_sig_int);
 
@@ -28,7 +31,7 @@ int main() {
         exit(0);
     };
 
-    RBLog("CONSOLE >> Server console ready, enter `help` for available commands");
+    RBLog("CONSOLE >> Server console ready, enter `help` for available commands", LogLevel::INFO);
 
     while(keep_going.load()) {
         try {

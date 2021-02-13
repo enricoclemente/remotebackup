@@ -11,8 +11,7 @@ Service::Service(sockPtr_t sock, RBSrvCallback callback)
           CopyingOutputStreamAdaptor cos_adp(&aos);
 
           bool final = false;
-          while (!final)
-          {
+          while (!final) {
               RBRequest req;
 
               bool op = google::protobuf::io::readDelimitedFrom(&req, &cis_adp);
@@ -34,40 +33,51 @@ Service::Service(sockPtr_t sock, RBSrvCallback callback)
     RBLog("Service()");
 }
 
-void Service::serve(sockPtr_t sock, RBSrvCallback callback) {
-    auto svc_ptr = std::shared_ptr<Service>(new Service(sock, callback));
-
-    std::thread th(([svc_ptr]() { svc_ptr->handleClient(); }));
-    th.detach();
+std::shared_ptr<Service> Service::create(sockPtr_t sock, RBSrvCallback callback) {
+    return std::shared_ptr<Service>(new Service(sock, callback));
 }
 
-void Service::handleClient() {
+void Service::handle_request() {
     try {
-        // RBLog("SRV >> Handling client request");
         handler(sock);
         sock.get()->close();
     } catch (RBException &e) {
-        RBLog("SRV >> Server >> RBProto failure: " + e.getMsg(), LogLevel::ERROR);
+        RBLog("Server >> RBProto failure: " + e.getMsg(), LogLevel::ERROR);
     } catch (std::exception &e) {
-        RBLog("SRV >> Server >> RBProto failure: " + std::string(e.what()), LogLevel::ERROR);
+        RBLog("Server >> RBProto failure: " + std::string(e.what()), LogLevel::ERROR);
     }
 }
 
 using asio::ip::tcp;
 
-Server::Server(unsigned short port_num, const RBSrvCallback & callback)
-    : port(port_num), running(true), callback(callback),
+Server::Server(unsigned short port_num, int n_workers, const RBSrvCallback & callback)
+    : port(port_num), running(true), callback(callback), n_workers(n_workers),
     tcp_acceptor(ios, tcp::endpoint(tcp::v4(), port)){
         RBLog("Server(" + std::to_string(port) + ")", LogLevel::DEBUG);
     }
 
 void Server::start() {
     thread_ptr.reset(new std::thread([this]() { run(); }));
+    RBLog("Server >> Starting " + std::to_string(n_workers) + " workers...", LogLevel::INFO);
+    for (int i = 0; i < n_workers; i++) {
+        workers.emplace_back([this]() {
+            while(running) {
+                std::unique_lock ul(req_mutex);
+                req_cv.wait(ul, [this]() { return requests.size() > 0 || !running; });
+                if (!running) return;
+                auto svc = requests.front();
+                requests.pop_front();
+                ul.unlock();
+                svc->handle_request();
+            }
+        });
+    }
+    RBLog("Server >> Workers ready!", LogLevel::INFO);
 }
 
 void Server::stop() {
-    if (!running.load()) return;
-    running.store(false);
+    if (!running) return;
+    running = false;
     
     asio::io_service ios2;
     tcp::endpoint ep(asio::ip::address::from_string("127.0.0.1"), port);
@@ -80,15 +90,28 @@ void Server::stop() {
     }
     thread_ptr->join();
     RBLog("SERVER >> Acceptor thread joined.", LogLevel::DEBUG);
+    RBLog("SERVER >> Waiting for workers to terminate...", LogLevel::INFO);
+    req_cv.notify_all();
+    for (auto & w : workers) {
+        try {
+            w.join();
+        } catch (RBException &e) {
+            RBLog("SERVER >> RBException while joining worker: " + e.getMsg(), LogLevel::ERROR);
+        } catch (std::exception &e) {
+            RBLog("SERVER >> std::exception while joining worker: " + std::string(e.what()), LogLevel::ERROR);
+        }
+    }
 }
 
 void Server::run() {
-    RBLog("SRV >> Server started");
-    while (running.load())
-    {
+    RBLog("SERVER >> Server started", LogLevel::INFO);
+    while (running) {
         sockPtr_t sock(new asio::ip::tcp::socket(ios));
         tcp_acceptor.accept(*sock); // This function blocks until a connection has been accepted
-        if (running.load()) Service::serve(sock, callback);
-        else sock->close();
+        if (running) {
+            std::lock_guard lg(req_mutex);
+            requests.emplace_back(Service::create(sock, callback));
+            req_cv.notify_all();
+        } else sock->close();
     }
 }

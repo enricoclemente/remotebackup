@@ -22,17 +22,14 @@ typedef
 
 class Service : public std::enable_shared_from_this<Service> {
 public:
-  ~Service()
-  {
+  ~Service() {
     RBLog("~Service()\n");
   }
 
-  static void serve(sockPtr_t sock, RBSrvCallback);
-
+  static std::shared_ptr<Service> create(sockPtr_t sock, RBSrvCallback);
+  void handle_request();
 private:
   Service(sockPtr_t sock, RBSrvCallback);
-
-  void handleClient();
 
   sockPtr_t sock;
   std::function<void(sockPtr_t)> handler;
@@ -46,10 +43,11 @@ private:
 
 class Server {
 public:
-  Server(unsigned short port_num, const RBSrvCallback &);
+  Server(unsigned short port_num, int n_workers, const RBSrvCallback &);
 
   void start();
   void stop();
+  bool is_running() { return running; }
 
   ~Server() {
     RBLog("~Server()");
@@ -64,4 +62,10 @@ private:
   asio::io_service ios;
   asio::ip::tcp::acceptor tcp_acceptor;
   RBSrvCallback callback;
+  std::vector<std::thread> workers;
+  int n_workers = 16;
+
+  std::condition_variable req_cv;
+  std::mutex req_mutex;
+  std::list<std::shared_ptr<Service>> requests;
 };

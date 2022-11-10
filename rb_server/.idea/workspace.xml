@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
+    <generated>
+      <config projectName="TCPServer" targetName="server" />
+    </generated>
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="2e0f5800-7c1c-47e1-82fe-1754cc058670" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../rb_client/Buffer.h" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/Buffer.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/FileWatcher.h" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/FileWatcher.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/OutputQueue.h" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/OutputQueue.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/ProtobufHelpers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/ProtobufHelpers.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/ProtobufHelpers.h" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/ProtobufHelpers.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/client.dir/Buffer.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/client.dir/Buffer.cpp.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/client.dir/CXX.includecache" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/client.dir/CXX.includecache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/client.dir/OutputQueue.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/client.dir/OutputQueue.cpp.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/client.dir/ProtobufHelpers.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/client.dir/ProtobufHelpers.cpp.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/client.dir/depend.internal" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/client.dir/depend.internal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/client.dir/depend.make" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/client.dir/depend.make" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/client.dir/main.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/client.dir/main.cpp.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/client.dir/packet.pb.cc.o" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/CMakeFiles/client.dir/packet.pb.cc.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/client" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/client" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/packet.pb.cc" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/packet.pb.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/cmake-build-debug/packet.pb.h" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/cmake-build-debug/packet.pb.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rb_client/packet.proto" beforeDir="false" afterPath="$PROJECT_DIR$/../rb_client/packet.proto" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProtobufHelpers.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/ProtobufHelpers.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProtobufHelpers.h" beforeDir="false" afterPath="$PROJECT_DIR$/ProtobufHelpers.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/server.dir/CXX.includecache" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/server.dir/CXX.includecache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/server.dir/ProtobufHelpers.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/server.dir/ProtobufHelpers.cpp.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/server.dir/depend.internal" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/server.dir/depend.internal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/server.dir/depend.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/server.dir/depend.make" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/server.dir/main.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/server.dir/main.cpp.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/server.dir/packet.pb.cc.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/server.dir/packet.pb.cc.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/packet.pb.cc" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/packet.pb.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/packet.pb.h" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/packet.pb.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/server" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/server" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packet.proto" beforeDir="false" afterPath="$PROJECT_DIR$/packet.proto" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectId" id="1kjVlMtEUBnYVpKyOwlhRJ1NTWm" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="cf.first.check.clang-format" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="server" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TCPServer" TARGET_NAME="server" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TCPServer" RUN_TARGET_NAME="server">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="2e0f5800-7c1c-47e1-82fe-1754cc058670" name="Default Changelist" comment="" />
+      <created>1606214137724</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1606214137724</updated>
+      <workItem from="1606214139459" duration="28000" />
+      <workItem from="1606226402831" duration="1614000" />
+      <workItem from="1606242390918" duration="1677000" />
+      <workItem from="1606305764039" duration="2824000" />
+      <workItem from="1606310829662" duration="2179000" />
+      <workItem from="1606313693381" duration="550000" />
+      <workItem from="1606324039254" duration="3313000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="2" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="458" y="190" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1606226573995">
+      <screen x="0" y="23" width="1440" height="827" />
+    </state>
+    <state x="458" y="190" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.23.1440.827@0.23.1440.827" timestamp="1606226573995" />
+    <state width="1398" height="214" key="GridCell.Tab.0.bottom" timestamp="1606328303605">
+      <screen x="0" y="23" width="1440" height="827" />
+    </state>
+    <state width="1398" height="214" key="GridCell.Tab.0.bottom/0.23.1440.827@0.23.1440.827" timestamp="1606328303605" />
+    <state width="1398" height="214" key="GridCell.Tab.0.center" timestamp="1606328303605">
+      <screen x="0" y="23" width="1440" height="827" />
+    </state>
+    <state width="1398" height="214" key="GridCell.Tab.0.center/0.23.1440.827@0.23.1440.827" timestamp="1606328303605" />
+    <state width="1398" height="214" key="GridCell.Tab.0.left" timestamp="1606328303604">
+      <screen x="0" y="23" width="1440" height="827" />
+    </state>
+    <state width="1398" height="214" key="GridCell.Tab.0.left/0.23.1440.827@0.23.1440.827" timestamp="1606328303604" />
+    <state width="1398" height="214" key="GridCell.Tab.0.right" timestamp="1606328303605">
+      <screen x="0" y="23" width="1440" height="827" />
+    </state>
+    <state width="1398" height="214" key="GridCell.Tab.0.right/0.23.1440.827@0.23.1440.827" timestamp="1606328303605" />
+    <state width="1398" height="266" key="GridCell.Tab.1.bottom" timestamp="1606313144783">
+      <screen x="0" y="23" width="1440" height="827" />
+    </state>
+    <state width="1398" height="266" key="GridCell.Tab.1.bottom/0.23.1440.827@0.23.1440.827" timestamp="1606313144783" />
+    <state width="1398" height="266" key="GridCell.Tab.1.center" timestamp="1606313144782">
+      <screen x="0" y="23" width="1440" height="827" />
+    </state>
+    <state width="1398" height="266" key="GridCell.Tab.1.center/0.23.1440.827@0.23.1440.827" timestamp="1606313144782" />
+    <state width="1398" height="266" key="GridCell.Tab.1.left" timestamp="1606313144781">
+      <screen x="0" y="23" width="1440" height="827" />
+    </state>
+    <state width="1398" height="266" key="GridCell.Tab.1.left/0.23.1440.827@0.23.1440.827" timestamp="1606313144781" />
+    <state width="1398" height="266" key="GridCell.Tab.1.right" timestamp="1606313144782">
+      <screen x="0" y="23" width="1440" height="827" />
+    </state>
+    <state width="1398" height="266" key="GridCell.Tab.1.right/0.23.1440.827@0.23.1440.827" timestamp="1606313144782" />
+  </component>
+</project>

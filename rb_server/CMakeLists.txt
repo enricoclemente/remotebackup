@@ -1,15 +1,15 @@
-cmake_minimum_required(VERSION 3.0.0)
-PROJECT(rb_server)
+file(GLOB rb_server_SRC
+    "inc/*.h"
+    "src/*.cpp"
+)
 
-SET(Boost_USE_STATIC_LIBS OFF)
-SET(Boost_USE_MULTITHREAD ON)
-FIND_PACKAGE(Boost 1.42.0 REQUIRED COMPONENTS system thread regex)
-IF(Boost_FOUND)
-  INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-  LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
-ENDIF(Boost_FOUND)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${remotebackup_SOURCE_DIR}/rb_server/inc)
 
-SET(USED_LIBS ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIBRARY})
+add_executable(server ${rb_server_SRC})
 
-ADD_EXECUTABLE(rb_server main.cpp)
-TARGET_LINK_LIBRARIES(rb_server ${USED_LIBS})
+find_package(SQLite3 REQUIRED)
+find_package(OpenSSL REQUIRED)
+
+target_link_libraries(server rb_lib ${SQLite3_LIBRARIES} OpenSSL::Crypto)
+link_directories(${remotebackup_SOURCE_DIR}/rb_lib/src)

@@ -1,15 +1,12 @@
-cmake_minimum_required(VERSION 3.0.0)
-PROJECT(rb_client)
+file(GLOB rb_client_SRC
+        "inc/*.h"
+        "src/*.cpp"
+        )
 
-SET(Boost_USE_STATIC_LIBS OFF)
-SET(Boost_USE_MULTITHREAD ON)
-FIND_PACKAGE(Boost 1.42.0 REQUIRED COMPONENTS system thread regex)
-IF(Boost_FOUND)
-  INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-  LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
-ENDIF(Boost_FOUND)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${remotebackup_SOURCE_DIR}/rb_client/inc)
 
-SET(USED_LIBS ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIBRARY})
+add_executable(client ${rb_client_SRC})
 
-ADD_EXECUTABLE(rb_client main.cpp)
-TARGET_LINK_LIBRARIES(rb_client ${USED_LIBS})
+target_link_libraries(client rb_lib)
+link_directories(${remotebackup_SOURCE_DIR}/rb_lib/src)
